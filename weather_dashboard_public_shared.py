@@ -106,7 +106,7 @@ start_date = end_date - pd.Timedelta(days=3)
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
 
 # Tick labels: first and last tick show date, others show hour
-tick_labels = [t.strftime("%m-%d %I:%M %p") for t in ticks]
+tick_labels = [t.strftime("%m-%d/n%I:%M %p") for t in ticks]
 tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
 tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
 
@@ -174,27 +174,6 @@ fig.update_layout(
     yaxis_title="Humedad Relative (%)",
     showlegend=False
 )
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
-
-# Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
-    ),
-    yaxis_title="Humedad Relativa (%)",
-    showlegend=False
-)
 
 st.plotly_chart(fig, use_container_width=True)
 
@@ -202,9 +181,6 @@ st.plotly_chart(fig, use_container_width=True)
 # Wind Speed
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
-
-ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6H')
-tick_labels = [t.strftime("%I:%M %p") for t in ticks]
 
 # Hover: only y-value, no colored box
 fig.update_traces(
@@ -374,6 +350,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
