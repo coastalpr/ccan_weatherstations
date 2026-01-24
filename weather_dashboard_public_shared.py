@@ -155,7 +155,7 @@ fig.update_layout(
         mirror=False,                 # no extra axis lines
         side='bottom',                # ticks and labels at the bottom
     ),
-    yaxis=dict(showline=True),       # keep y-axis if desired
+    yaxis=dict(showline=False),       # keep y-axis if desired
     yaxis_title="Temperatura (°F)",
     xaxis_title="Hora del Día",
     showlegend=False,
@@ -313,3 +313,4 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
