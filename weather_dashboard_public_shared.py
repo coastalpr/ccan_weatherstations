@@ -110,7 +110,7 @@ y_labels = {
 }
 
 ## Air Temperature
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "", "Hora": ""})
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura", "Hora": ""})
 
 fig.update_layout(
     xaxis=dict(
@@ -250,6 +250,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
