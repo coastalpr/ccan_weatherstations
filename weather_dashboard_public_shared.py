@@ -139,7 +139,10 @@ fig.update_layout(
         spikesnap='cursor',
         range=[start_date, end_date], # initial zoom last 3 days
     ),
-
+    yaxis_title="Temperatura (°F)",
+    xaxis_title="Hora del Día",
+    showlegend=False
+)
 
 
 st.plotly_chart(fig, use_container_width=True)
@@ -274,6 +277,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
