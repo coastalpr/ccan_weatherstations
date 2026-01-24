@@ -151,7 +151,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
-            dict(dtickrange=[None, None], value="%m-%d\n%I:%M %p")
+            dict(dtickrange=[None, None], value="%yy-%m-%d\n%I:%M %p")
         ],
         nticks=24
     )
@@ -286,6 +286,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
