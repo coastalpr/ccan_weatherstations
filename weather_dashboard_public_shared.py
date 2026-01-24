@@ -132,8 +132,21 @@ st.markdown(
 #     use_container_width=True
 # )
 
+
+# Friendly name mapping
+y_labels = {
+    "air_temperature": "Temperatura",
+    "relative_humidity": "Humedad Relative (%)",
+    "wind_avg": "Velocidad del Viento (nudos)",
+    "wind_direction": "Dirección del Viento (grados)",
+    "rain_accumulated": "Precipitación Acumulada (pulgadas)",
+    "solar_radiation": "Radiación Solar (W/m^2)",
+    "uv": "Índice UV",
+    "lightning_strike_avg_distance": "Distancia del Rayo (millas)"
+}
+
 ## Air Temperature
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire")
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": y_labels["air_temperature"], "Hora": "Hora del Día"})
 
 fig.update_layout(
     xaxis=dict(
@@ -273,6 +286,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
