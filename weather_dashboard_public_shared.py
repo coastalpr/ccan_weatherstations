@@ -121,15 +121,15 @@ st.markdown(
 ## Air Temperature
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
-# Update layout
+# Remove blue vertical line and customize hover
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>'  # only show y-value
+)
+
+# Change hovermode to show only individual points (no vertical line)
 fig.update_layout(
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,
-        tickangle=90,
-        range=[start_date, end_date]  # <-- initial zoom to last 3 days
-    ),
-    hovermode="x unified",
+    hovermode="closest",   # <--- this removes the vertical line
+    xaxis=dict(range=[start_date, end_date], tickangle=90),
     xaxis_title="Hora del Día",
     yaxis_title="Temperatura (°F)"
 )
@@ -266,6 +266,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
