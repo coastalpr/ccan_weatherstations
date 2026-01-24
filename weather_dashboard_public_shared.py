@@ -144,7 +144,7 @@ fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"
 fig.update_layout(
     xaxis=dict(
         tickformat="%Y-%m-%d\n%I:%M %p",  # format for each tick
-        dtick=6 * 3600000,                     # 1-hour intervals
+        dtick=12 * 3600000,                     # 1-hour intervals
         tickangle=45                        # optional, rotate labels if crowded
     )
 )
@@ -246,6 +246,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
