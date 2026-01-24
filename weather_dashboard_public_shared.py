@@ -126,24 +126,18 @@ fig.update_traces(
     hovertemplate='%{y:.1f} °F<extra></extra>'
 )
 
-# Layout
+# Update layout
 fig.update_layout(
-    hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
-        showspikes=True,
-        spikemode='across',
-        spikecolor='rgba(0,0,0,0)',  # hide vertical line
-        spikesnap='cursor',
-        range=[start_date, end_date] # initial zoom to last 3 days
+        range=[start_date, end_date]  # <-- initial zoom to last 3 days
     ),
-    yaxis_title="Temperatura (°F)",
+    hovermode="x unified",
     xaxis_title="Hora del Día",
-    showlegend=False
+    yaxis_title="Temperatura (°F)"
 )
-
 
 
 st.plotly_chart(fig, use_container_width=True)
@@ -278,6 +272,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
