@@ -141,11 +141,17 @@ st.plotly_chart(fig, use_container_width=True)
     ## Wind Speed
 fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='H')
+tick_labels = [t.strftime("%I:%M %p") for t in ticks]
+
+# Replace first and last label with date
+tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
+tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
+
 fig.update_layout(
     xaxis=dict(
-        tickformat="%Y-%m-%d\n%I:%M %p",  # format for each tick
-        dtick=12 * 3600000,                     # 1-hour intervals
-        tickangle=45                        # optional, rotate labels if crowded
+        tickvals=ticks,
+        ticktext=tick_labels
     )
 )
 
@@ -246,6 +252,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
