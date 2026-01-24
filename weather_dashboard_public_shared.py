@@ -134,8 +134,7 @@ tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
 
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
-
-# Hover: only y-value
+# Hover: only y-value, no color box
 fig.update_traces(
     hovertemplate='%{y:.1f} °F<extra></extra>'
 )
@@ -147,17 +146,21 @@ fig.update_layout(
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
+        showline=False,               # remove black x-axis line
         showspikes=True,
         spikemode='across',
-        spikecolor='rgba(0,0,0,0)',  # hide vertical line
+        spikecolor='rgba(0,0,0,0)',   # hide vertical line
         spikesnap='cursor',
         range=[start_date, end_date],
-        showline=True
+        mirror=False,                 # no extra axis lines
+        side='bottom',                # ticks and labels at the bottom
     ),
+    yaxis=dict(showline=True),       # keep y-axis if desired
     yaxis_title="Temperatura (°F)",
     xaxis_title="Hora del Día",
     showlegend=False,
 )
+
 
 # Add corner annotations for start/end date
 fig.add_annotation(
@@ -310,47 +313,3 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
