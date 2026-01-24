@@ -123,14 +123,14 @@ st.markdown(
 ## ----------------------------------------
 
 # Initial zoom: last 3 days
-end_date = df['Hora'].max()
-start_date = end_date - pd.Timedelta(days=3)
+#end_date = df['Hora'].max()
+#start_date = end_date - pd.Timedelta(days=3)
 
 # Ticks every 3 hours
-ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
-tick_labels = [t.strftime("%I:%M %p") for t in ticks]
-tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
-tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
+#ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
+#tick_labels = [t.strftime("%I:%M %p") for t in ticks]
+#tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
+#tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
 
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
@@ -149,6 +149,7 @@ fig.update_layout(
         tickangle=90,
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
         range=[start_date, end_date],
         side='bottom'
     ),
@@ -289,6 +290,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
