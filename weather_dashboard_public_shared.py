@@ -171,7 +171,7 @@ fig.update_layout(
         range=[start_date, end_date],
         side='bottom'
     ),
-    yaxis_title="Temperatura (°F)",
+    yaxis_title="Humedad Relative (%)",
     showlegend=False
 )
 # Hover: only y-value, no colored box
@@ -235,18 +235,27 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento",labels={"wind_direction": "Dirección del Vienton(º)"})
 
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Dirección del Viento (º)",
+    showlegend=False
 )
-fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Dirección del Viento (grados)"
-)
+
 st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
@@ -254,18 +263,27 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Precipitación Acumulada (\")",
+    showlegend=False
 )
-fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Precipitación Acumulada (pulgadas)"
-)
+
 st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
@@ -273,17 +291,25 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
 
-fig.update_layout(
-    xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
 )
+
+# Layout
 fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Radiación Solar (Wm-2)"
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Radiación Solar (Wm-2)",
+    showlegend=False
 )
 
 st.plotly_chart(fig, use_container_width=True)
@@ -293,18 +319,25 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
-fig.update_layout(
-    xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
 )
 
+# Layout
 fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Índice UV"
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Índice UV",
+    showlegend=False
 )
 st.plotly_chart(fig, use_container_width=True)
 
@@ -313,18 +346,27 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Distancia del Rayo (mi)",
+    showlegend=False
 )
-fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Distancia del Rayo (millas)"
-)
+
 st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
@@ -332,6 +374,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
