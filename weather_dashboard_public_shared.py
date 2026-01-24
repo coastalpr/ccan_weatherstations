@@ -126,7 +126,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
     ## Humidity
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": y_labels["relative_humidity"], "Hora": "Hora"})
+fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa"})
 
 fig.update_layout(
     xaxis=dict(
@@ -143,7 +143,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Wind Speed
-fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": y_labels["wind_avg"], "Hora": "Hora"})
+fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento"})
 
 fig.update_layout(
     xaxis=dict(
@@ -160,7 +160,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Wind Direction
-fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento")
+fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento",labels={"wind_direction": "Dirección del Viento"})
 
 fig.update_layout(
     xaxis=dict(
@@ -177,7 +177,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Rain Accumulation
-fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada")
+fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación"})
 
 fig.update_layout(
     xaxis=dict(
@@ -194,7 +194,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Solar Radiation
-fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar")
+fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar"})
 
 fig.update_layout(
     xaxis=dict(
@@ -212,7 +212,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## UV
-fig = px.line(df, x="Hora", y="uv", title="Índice UV")
+fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_layout(
     xaxis=dict(
@@ -230,7 +230,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Strike
-fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo")
+fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo"})
 
 fig.update_layout(
     xaxis=dict(
@@ -250,6 +250,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
