@@ -146,7 +146,6 @@ fig.update_layout(
     showlegend=False
 )
 
-
 st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
@@ -154,18 +153,49 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
 
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
-        ],
-        nticks=23
-    )
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Temperatura (°F)",
+    showlegend=False
 )
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
 fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Humedad Relativa (%)"
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Humedad Relativa (%)",
+    showlegend=False
 )
+
 st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
@@ -176,21 +206,28 @@ fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6H')
 tick_labels = [t.strftime("%I:%M %p") for t in ticks]
 
-# Replace first and last label with date
-tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
-tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
 
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
-        ticktext=tick_labels
-    )
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Velocidad del Viento (kts)",
+    showlegend=False
 )
 
-fig.update_layout(
-    xaxis_title="Hora del Día",
-    yaxis_title="Velocidad del Viento (nudos)"
-)
 st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
@@ -295,6 +332,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
