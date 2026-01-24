@@ -126,22 +126,22 @@ fig.update_traces(
     hovertemplate='%{y:.1f} °F<extra></extra>'
 )
 
-# Keep hovermode unified but hide the vertical line
+# Keep unified hover without vertical line
 fig.update_layout(
     hovermode="x unified",
     xaxis=dict(
         range=[start_date, end_date],
         tickangle=90,
-        showspikes=True,              # enable spikes
-        spikemode='across',           # spike across the plot
-        spikecolor='rgba(0,0,0,0)',   # make spike invisible
+        showspikes=True,
+        spikemode='across',
+        spikecolor='rgba(0,0,0,0)',  # hide vertical line
         spikesnap='cursor',
-        showline=True
     ),
-    yaxis=dict(showspikes=False),     # optional: hide y spikes
+    yaxis_title="Temperatura (°F)",
     xaxis_title="Hora del Día",
-    yaxis_title="Temperatura (°F)"
+    showlegend=False  # optional: hide legend if you don’t want it
 )
+
 
 
 st.plotly_chart(fig, use_container_width=True)
@@ -276,6 +276,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
