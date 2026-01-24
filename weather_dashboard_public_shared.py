@@ -97,27 +97,18 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Friendly name mapping
-y_labels = {
-    "air_temperature": "Temperatura",
-    "relative_humidity": "Humedad Relativa",
-    "wind_avg": "Velocidad del Viento",
-    "wind_direction": "Dirección del Viento",
-    "rain_accumulated": "Precipitación Acumulada",
-    "solar_radiation": "Radiación Solar",
-    "uv": "Índice UV",
-    "lightning_strike_avg_distance": "Distancia del Rayo"
-}
 
+
+df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 ## Air Temperature
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura"})
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%y-%m-%d\n%H:%M %p")
         ],
-        nticks=24
+        nticks=23
     )
 )
 fig.update_layout(
@@ -126,14 +117,14 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
     ## Humidity
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa"})
+fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=24
+        nticks=23
     )
 )
 fig.update_layout(
@@ -143,14 +134,14 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Wind Speed
-fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento"})
+fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=24
+        nticks=223
     )
 )
 fig.update_layout(
@@ -160,14 +151,14 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Wind Direction
-fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento",labels={"wind_direction": "Dirección del Viento"})
+fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento",labels={"wind_direction": "Dirección del Vienton(º)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=23
     )
 )
 fig.update_layout(
@@ -177,14 +168,14 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Rain Accumulation
-fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación"})
+fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (")"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=23
     )
 )
 fig.update_layout(
@@ -194,19 +185,19 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Solar Radiation
-fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar"})
+fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=23
     )
 )
 fig.update_layout(
     xaxis_title="Hora del Día",
-    yaxis_title="Radiación Solar (W/m^2)"
+    yaxis_title="Radiación Solar (Wm-2)"
 )
 
 st.plotly_chart(fig, use_container_width=True)
@@ -219,7 +210,7 @@ fig.update_layout(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=23
     )
 )
 
@@ -230,14 +221,14 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
     ## Strike
-fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo"})
+fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=23
     )
 )
 fig.update_layout(
@@ -250,6 +241,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
