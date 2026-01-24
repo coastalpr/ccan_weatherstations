@@ -103,7 +103,7 @@ end_date = df['Hora'].max()
 start_date = end_date - pd.Timedelta(days=3)
 
 # Generate hourly ticks (optional: every 6 hours)
-ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6H')
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='1H')
 
 # Tick labels: first and last tick show date, others show hour
 tick_labels = [t.strftime("%I:%M %p") for t in ticks]
@@ -266,6 +266,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
