@@ -41,6 +41,13 @@ DATA_FILE = "weather_data.nc"
 df = load_weather_data(DATA_FILE)
 
 # -----------------------------
+# ADJUSTING
+# -----------------------------
+df["air_temperature"] = df["air_temperature"] * 1.8 + 32
+df["wind_avg"] = df["wind_avg"] * 1.94384
+df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
+df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
+# -----------------------------
 # SIDEBAR FILTERS
 # -----------------------------
 #st.sidebar.header("📅 Filters")
@@ -83,8 +90,8 @@ st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c2.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
-c3.metric("🌬️ Velocidad del Viento (nudos)", f"{latest.wind_avg:.1f}")
-c4.metric("🧭 Dirección del Viento (grados)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
+c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
+c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
 c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 
 # -----------------------------
@@ -98,8 +105,6 @@ st.markdown(
 )
 
 
-
-df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 ## Air Temperature
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
@@ -241,6 +246,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
