@@ -134,9 +134,12 @@ tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
 
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
-# Hover: only y-value, no color box
+
+# Hover: only y-value, no colored box
 fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>'
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+    hoverinfo='y',
+    hoveron='points+fills'  # disables line color change on hover
 )
 
 # Layout
@@ -144,40 +147,15 @@ fig.update_layout(
     hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
-        ticktext=tick_labels,
+        ticktext=tick_labels,   # date + hour for all ticks
         tickangle=90,
-        showline=False,               # remove black x-axis line
-        showspikes=True,
-        spikemode='across',
-        spikecolor='rgba(0,0,0,0)',   # hide vertical line
-        spikesnap='cursor',
+        showline=False,         # no black line
+        showspikes=False,       # no vertical blue line
         range=[start_date, end_date],
-        mirror=False,                 # no extra axis lines
-        side='bottom',                # ticks and labels at the bottom
+        side='bottom'
     ),
-    yaxis=dict(showline=False),       # keep y-axis if desired
     yaxis_title="Temperatura (°F)",
-    xaxis_title="Hora del Día",
-    showlegend=False,
-)
-
-
-# Add corner annotations for start/end date
-fig.add_annotation(
-    x=start_date,
-    y=df['air_temperature'].max(),
-    text=start_date.strftime("%Y-%m-%d"),
-    showarrow=False,
-    xanchor='left',
-    yanchor='top',
-)
-fig.add_annotation(
-    x=end_date,
-    y=df['air_temperature'].max(),
-    text=end_date.strftime("%Y-%m-%d"),
-    showarrow=False,
-    xanchor='right',
-    yanchor='top',
+    showlegend=False
 )
 
 
@@ -313,4 +291,5 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
