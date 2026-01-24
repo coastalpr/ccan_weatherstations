@@ -100,7 +100,7 @@ st.markdown(
 # Friendly name mapping
 y_labels = {
     "air_temperature": "Temperatura",
-    "relative_humidity": "Humedad Relative",
+    "relative_humidity": "Humedad Relativa",
     "wind_avg": "Velocidad del Viento",
     "wind_direction": "Dirección del Viento",
     "rain_accumulated": "Precipitación Acumulada",
@@ -110,7 +110,7 @@ y_labels = {
 }
 
 ## Air Temperature
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": y_labels["air_temperature"], "Hora": "Hora del Día"})
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": y_labels["air_temperature"], "Hora": "Hora"})
 
 fig.update_layout(
     xaxis=dict(
@@ -126,7 +126,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
     ## Humidity
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": y_labels["relative_humidity"], "Hora": "Hora del Día"})
+fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": y_labels["relative_humidity"], "Hora": "Hora"})
 
 fig.update_layout(
     xaxis=dict(
@@ -138,19 +138,19 @@ fig.update_layout(
 )
 fig.update_layout(
     xaxis_title="Hora del Día",
-    yaxis_title="Humedad Relative (%)"
+    yaxis_title="Humedad Relativa (%)"
 )
 st.plotly_chart(fig, use_container_width=True)
 
     ## Wind Speed
-fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento")
+fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": y_labels["wind_avg"], "Hora": "Hora"})
 
 fig.update_layout(
     xaxis=dict(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=8
+        nticks=24
     )
 )
 fig.update_layout(
@@ -250,6 +250,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
