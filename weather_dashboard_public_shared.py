@@ -97,42 +97,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-#st.plotly_chart(
-#     px.line(df, x="timestamp", y="temperature", title="Temperatura del Air"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.line(df, x="timestamp", y="humidity", title="Humedad Relativa"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.line(df, x="timestamp", y="wind_speed", title="Velocidad del Viento"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.line(df, x="timestamp", y="wind_direction", title="Velocidad del Viento"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.bar(df, x="timestamp", y="rain_accumulation", title="Lluvia Acumulado"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.line(df, x="timestamp", y="solar_radiation", title="Radiación Solar"),
-#     use_container_width=True
-# )
-
-# st.plotly_chart(
-#     px.line(df, x="timestamp", y="strike_distance", title="Distancia del Rayo"),
-#     use_container_width=True
-# )
-
-
 # Friendly name mapping
 y_labels = {
     "air_temperature": "Temperatura",
@@ -162,7 +126,7 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
     ## Humidity
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa"labels={"relative_humidity": y_labels["relative_humidity"], "Hora": "Hora del Día"})
+fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": y_labels["relative_humidity"], "Hora": "Hora del Día"})
 
 fig.update_layout(
     xaxis=dict(
@@ -286,6 +250,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
