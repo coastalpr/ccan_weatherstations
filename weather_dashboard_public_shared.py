@@ -102,7 +102,7 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 end_date = df['Hora'].max()
 start_date = end_date - pd.Timedelta(days=3)
 
-# Generate hourly ticks (optional: every 6 hours)
+# Generate hourly ticks (optional: every 1 hour)
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='1H')
 
 # Tick labels: first and last tick show date, others show hour
@@ -118,25 +118,63 @@ st.markdown(
 )
 
 
-## Air Temperature
+## ----------------------------------------
+# Air Temperature
+## ----------------------------------------
+
+# Initial zoom: last 3 days
+end_date = df['Hora'].max()
+start_date = end_date - pd.Timedelta(days=3)
+
+# Ticks every 3 hours
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
+tick_labels = [t.strftime("%I:%M %p") for t in ticks]
+tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
+tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
+
+
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
-# Hover: show only values
+# Hover: only y-value
 fig.update_traces(
     hovertemplate='%{y:.1f} °F<extra></extra>'
 )
 
-# Update layout
+# Layout
 fig.update_layout(
+    hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
-        range=[start_date, end_date]  # <-- initial zoom to last 3 days
+        showspikes=True,
+        spikemode='across',
+        spikecolor='rgba(0,0,0,0)',  # hide vertical line
+        spikesnap='cursor',
+        range=[start_date, end_date],
+        showline=True
     ),
-    hovermode="x unified",
+    yaxis_title="Temperatura (°F)",
     xaxis_title="Hora del Día",
-    yaxis_title="Temperatura (°F)"
+    showlegend=False,
+)
+
+# Add corner annotations for start/end date
+fig.add_annotation(
+    x=start_date,
+    y=df['air_temperature'].max(),
+    text=start_date.strftime("%Y-%m-%d"),
+    showarrow=False,
+    xanchor='left',
+    yanchor='top',
+)
+fig.add_annotation(
+    x=end_date,
+    y=df['air_temperature'].max(),
+    text=end_date.strftime("%Y-%m-%d"),
+    showarrow=False,
+    xanchor='right',
+    yanchor='top',
 )
 
 
@@ -272,6 +310,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
