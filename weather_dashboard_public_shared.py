@@ -141,7 +141,7 @@ fig.update_layout(
         tickformatstops=[
             dict(dtickrange=[None, None], value="%Y-%m-%d\n%I:%M %p")
         ],
-        nticks=223
+        nticks=23
     )
 )
 fig.update_layout(
@@ -241,6 +241,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
