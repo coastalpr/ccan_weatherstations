@@ -98,6 +98,19 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # PLOTS
 # -----------------------------
 
+# Determine last 3 days
+end_date = df['Hora'].max()
+start_date = end_date - pd.Timedelta(days=3)
+
+# Generate hourly ticks (optional: every 6 hours)
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6H')
+
+# Tick labels: first and last tick show date, others show hour
+tick_labels = [t.strftime("%I:%M %p") for t in ticks]
+tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
+tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
+
+
 st.subheader("")
 st.markdown(
     "<h3 style='color:#1f77b4;'>Datos Adicionales</h3>",
@@ -108,18 +121,19 @@ st.markdown(
 ## Air Temperature
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
+# Update layout
 fig.update_layout(
     xaxis=dict(
-        tickformatstops=[
-            dict(dtickrange=[None, None], value="%y-%m-%d\n%H:%M %p")
-        ],
-        nticks=23
-    )
-)
-fig.update_layout(
+        tickvals=ticks,
+        ticktext=tick_labels,
+        tickangle=90,
+        range=[start_date, end_date]  # <-- initial zoom to last 3 days
+    ),
+    hovermode="x unified",
     xaxis_title="Hora del Día",
     yaxis_title="Temperatura (°F)"
 )
+
 st.plotly_chart(fig, use_container_width=True)
     ## Humidity
 fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
@@ -252,6 +266,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
