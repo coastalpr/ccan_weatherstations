@@ -103,7 +103,7 @@ end_date = df['Hora'].max()
 start_date = end_date - pd.Timedelta(days=3)
 
 # Generate hourly ticks (optional: every 1 hour)
-ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='1H')
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
 
 # Tick labels: first and last tick show date, others show hour
 tick_labels = [t.strftime("%I:%M %p") for t in ticks]
@@ -121,17 +121,6 @@ st.markdown(
 ## ----------------------------------------
 # Air Temperature
 ## ----------------------------------------
-
-# Initial zoom: last 3 days
-#end_date = df['Hora'].max()
-#start_date = end_date - pd.Timedelta(days=3)
-
-# Ticks every 3 hours
-#ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3H')
-#tick_labels = [t.strftime("%I:%M %p") for t in ticks]
-#tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
-#tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
-
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
@@ -159,7 +148,10 @@ fig.update_layout(
 
 
 st.plotly_chart(fig, use_container_width=True)
-    ## Humidity
+
+## ----------------------------------------
+# Humidity
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
 
 fig.update_layout(
@@ -176,7 +168,9 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-    ## Wind Speed
+## ----------------------------------------
+# Wind Speed
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6H')
@@ -199,7 +193,9 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-    ## Wind Direction
+## ----------------------------------------
+# Wind Direction
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="wind_direction", title="Dirección del Viento",labels={"wind_direction": "Dirección del Vienton(º)"})
 
 fig.update_layout(
@@ -216,7 +212,9 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-    ## Rain Accumulation
+## ----------------------------------------
+# Rain Accumulation
+## ----------------------------------------
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_layout(
@@ -233,7 +231,9 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-    ## Solar Radiation
+## ----------------------------------------
+# Solar Radiation
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
 
 fig.update_layout(
@@ -251,7 +251,9 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-    ## UV
+## ----------------------------------------
+# UV
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_layout(
@@ -269,7 +271,9 @@ fig.update_layout(
 )
 st.plotly_chart(fig, use_container_width=True)
 
-    ## Strike
+## ----------------------------------------
+# Lightning Strike
+## ----------------------------------------
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_layout(
@@ -285,11 +289,13 @@ fig.update_layout(
     yaxis_title="Distancia del Rayo (millas)"
 )
 st.plotly_chart(fig, use_container_width=True)
+
 # -----------------------------
 # FOOTER
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
