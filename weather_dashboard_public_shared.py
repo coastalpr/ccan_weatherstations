@@ -138,8 +138,6 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 # Hover: only y-value, no colored box
 fig.update_traces(
     hovertemplate='%{y:.1f} °F<extra></extra>',
-    hoverinfo='y',
-    hoveron='points+fills'  # disables line color change on hover
 )
 
 # Layout
@@ -150,7 +148,7 @@ fig.update_layout(
         ticktext=tick_labels,   # date + hour for all ticks
         tickangle=90,
         showline=False,         # no black line
-        showspikes=False,       # no vertical blue line
+        showspikes=True,       # no vertical blue line
         range=[start_date, end_date],
         side='bottom'
     ),
@@ -291,5 +289,6 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
