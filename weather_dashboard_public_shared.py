@@ -270,30 +270,30 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 # Solar Radiation
 ## ----------------------------------------
-fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
+#fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
 
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
+#fig.update_traces(
+#    hovertemplate='%{y:.1f} °F<extra></extra>',
+#)
 
 # Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
-    ),
-    yaxis_title="Radiación Solar (Wm-2)",
-    showlegend=False
-)
+#fig.update_layout(
+#    hovermode="x unified",
+#    xaxis=dict(
+#        tickvals=ticks,
+#        ticktext=tick_labels,   # date + hour for all ticks
+#        tickangle=90,
+#        showline=False,         # no black line
+#        showspikes=True,       # no vertical blue line
+#        spikecolor='rgb(128,128,128)',
+#        range=[start_date, end_date],
+#        side='bottom'
+#    ),
+#    yaxis_title="Radiación Solar (Wm-2)",
+#    showlegend=False
+#)
 
-st.plotly_chart(fig, use_container_width=True)
+#st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # UV
@@ -355,6 +355,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
