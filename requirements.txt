@@ -2,6 +2,12 @@ streamlit
 pandas
 numpy
 xarray
-
 plotly
-streamlit
+pandas
+numpy
+plotly
+xarray
+pytz
+rasterio
+Pillow
+
