@@ -110,6 +110,12 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # SATELLITE / RADAR LOOP
 # -----------------------------
 RADAR_FOLDER = "radar_images"
+for tif_file in os.listdir(RADAR_FOLDER):
+    if tif_file.endswith(".tif"):
+        img = Image.open(os.path.join(RADAR_FOLDER, tif_file))
+        png_file = tif_file.replace(".tif", ".png")
+        img.save(os.path.join(RADAR_FOLDER, png_file))
+        
 
 if not os.path.exists(RADAR_FOLDER):
     st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add PNG images.")
@@ -389,6 +395,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
