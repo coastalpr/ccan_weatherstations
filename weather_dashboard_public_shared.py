@@ -106,46 +106,27 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
-st.subheader("🌐 Radar Satelital en Vivo - Caribe")
-st.caption("Actualizado automáticamente desde NOAA MRMS cada 15 segundos")
+st.subheader("🌐 Radar Satelital Local - Caribe")
+st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
-radar_placeholder = st.empty()
+# Path to local radar images folder
+RADAR_FOLDER = "radar_images"
 
-base_url = "https://mrms.ncep.noaa.gov/RIDGEII/L2/CARIB/BREF_QCD/"
-
-@st.cache_data(ttl=60*5)
-def get_radar_image_urls():
-    """Fetch the last 20 radar images from MRMS with proper headers."""
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
-                       (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
-    }
-    try:
-        response = requests.get(base_url, headers=headers)
-        response.raise_for_status()
-        files = re.findall(r'href="(.*?\.png)"', response.text)
-        files.sort()
-        return [base_url + f for f in files[-20:]]
-    except Exception as e:
-        st.error(f"No se pudo obtener la lista de imágenes: {e}")
-        return []
-
-# Fetch image URLs
-radar_images = get_radar_image_urls()
+# Get list of PNG images
+radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".png")])
 
 if not radar_images:
-    st.warning("No se encontraron imágenes de radar disponibles.")
+    st.warning("No se encontraron imágenes de radar locales.")
 else:
-    # Loop through images continuously
+    radar_placeholder = st.empty()
+
+    # Loop images continuously
     import itertools
-    for img_url in itertools.cycle(radar_images):
-        try:
-            response = requests.get(img_url, headers={"User-Agent": "Mozilla/5.0"})
-            img = Image.open(BytesIO(response.content)).convert("RGBA")
-            radar_placeholder.image(img, use_column_width=True)
-        except Exception as e:
-            st.warning(f"Error cargando imagen de radar: {e}")
-        st.experimental_rerun()  # reload Streamlit to get next image
+    for img_file in itertools.cycle(radar_images):
+        img_path = os.path.join(RADAR_FOLDER, img_file)
+        img = Image.open(img_path).convert("RGBA")
+        radar_placeholder.image(img, use_column_width=True)
+        time.sleep(0.5)  # Adjust speed as desired
     
 # -----------------------------
 # PLOTS
@@ -408,6 +389,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
