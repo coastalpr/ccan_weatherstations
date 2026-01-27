@@ -115,13 +115,17 @@ base_url = "https://mrms.ncep.noaa.gov/RIDGEII/L2/CARIB/BREF_QCD/"
 
 @st.cache_data(ttl=60*5)
 def get_radar_image_urls():
-    """Fetch the last 20 radar images from MRMS."""
+    """Fetch the last 20 radar images from MRMS with proper headers."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
+                       (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+    }
     try:
-        response = requests.get(base_url)
+        response = requests.get(base_url, headers=headers)
         response.raise_for_status()
         files = re.findall(r'href="(.*?\.png)"', response.text)
         files.sort()
-        return [base_url + f for f in files[-20:]]  # last 20 images
+        return [base_url + f for f in files[-20:]]
     except Exception as e:
         st.error(f"No se pudo obtener la lista de imágenes: {e}")
         return []
@@ -129,29 +133,19 @@ def get_radar_image_urls():
 # Fetch image URLs
 radar_images = get_radar_image_urls()
 
-# If no images, show warning
 if not radar_images:
     st.warning("No se encontraron imágenes de radar disponibles.")
 else:
-    # Use Streamlit's autorefresh to loop
-    count = st.experimental_get_query_params().get("radar_count", [0])[0]
-    count = int(count)
-    
-    # Show one image per refresh
-    img_url = radar_images[count % len(radar_images)]
-    try:
-        response = requests.get(img_url)
-        img = Image.open(BytesIO(response.content)).convert("RGBA")
-        radar_placeholder.image(img, use_column_width=True)
-    except Exception as e:
-        st.warning(f"Error cargando imagen de radar: {e}")
-
-    # Increment counter for next refresh
-    count += 1
-    st.experimental_set_query_params(radar_count=count)
-
-    # Refresh the page every 15 seconds
-    st.experimental_rerun_interval = 15 * 1000  # milliseconds
+    # Loop through images continuously
+    import itertools
+    for img_url in itertools.cycle(radar_images):
+        try:
+            response = requests.get(img_url, headers={"User-Agent": "Mozilla/5.0"})
+            img = Image.open(BytesIO(response.content)).convert("RGBA")
+            radar_placeholder.image(img, use_column_width=True)
+        except Exception as e:
+            st.warning(f"Error cargando imagen de radar: {e}")
+        st.experimental_rerun()  # reload Streamlit to get next image
     
 # -----------------------------
 # PLOTS
@@ -414,6 +408,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
