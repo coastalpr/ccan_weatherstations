@@ -17,6 +17,9 @@ from PIL import Image
 from io import BytesIO
 import time
 import re
+import os
+import itertools
+
 
 # -----------------------------
 # PAGE CONFIG
@@ -106,27 +109,24 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
-st.subheader("🌐 Radar Satelital Local - Caribe")
-st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
-
-# Path to local radar images folder
 RADAR_FOLDER = "radar_images"
 
-# Get list of PNG images
-radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".png")])
-
-if not radar_images:
-    st.warning("No se encontraron imágenes de radar locales.")
+if not os.path.exists(RADAR_FOLDER):
+    st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add PNG images.")
 else:
-    radar_placeholder = st.empty()
+    radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".png")])
 
-    # Loop images continuously
-    import itertools
-    for img_file in itertools.cycle(radar_images):
-        img_path = os.path.join(RADAR_FOLDER, img_file)
-        img = Image.open(img_path).convert("RGBA")
-        radar_placeholder.image(img, use_column_width=True)
-        time.sleep(0.5)  # Adjust speed as desired
+    if not radar_images:
+        st.warning(f"No radar images found in {RADAR_FOLDER}. Please add PNG files.")
+    else:
+        radar_placeholder = st.empty()
+
+        # Animate radar images continuously
+        for img_file in itertools.cycle(radar_images):
+            img_path = os.path.join(RADAR_FOLDER, img_file)
+            img = Image.open(img_path).convert("RGBA")
+            radar_placeholder.image(img, use_column_width=True)
+            time.sleep(0.5)
     
 # -----------------------------
 # PLOTS
@@ -389,6 +389,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
