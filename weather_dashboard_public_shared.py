@@ -19,6 +19,9 @@ import time
 import re
 import os
 import itertools
+import rasterio
+import itertools
+import numpy as np
 
 
 # -----------------------------
@@ -109,30 +112,38 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
+st.subheader("🌐 Radar Satelital Local - Caribe")
+st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
+
 RADAR_FOLDER = "radar_images"
-for tif_file in os.listdir(RADAR_FOLDER):
-    if tif_file.endswith(".tif"):
-        img = Image.open(os.path.join(RADAR_FOLDER, tif_file))
-        png_file = tif_file.replace(".tif", ".png")
-        img.save(os.path.join(RADAR_FOLDER, png_file))
-        
 
 if not os.path.exists(RADAR_FOLDER):
-    st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add PNG images.")
+    st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add TIF images.")
 else:
-    radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
+    tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
 
-    if not radar_images:
-        st.warning(f"No radar images found in {RADAR_FOLDER}. Please add PNG files.")
+    if not tif_files:
+        st.warning(f"No TIF radar images found in {RADAR_FOLDER}.")
     else:
         radar_placeholder = st.empty()
 
-        # Animate radar images continuously
-        for img_file in itertools.cycle(radar_images):
-            img_path = os.path.join(RADAR_FOLDER, img_file)
-            img = Image.open(img_path).convert("RGBA")
-            radar_placeholder.image(img, use_column_width=True)
-            time.sleep(0.5)
+        for tif_file in itertools.cycle(tif_files):
+            tif_path = os.path.join(RADAR_FOLDER, tif_file)
+            try:
+                # Open GeoTIFF with rasterio
+                with rasterio.open(tif_path) as src:
+                    # Read first band
+                    band1 = src.read(1)
+                    # Normalize to 0-255
+                    band1 = band1.astype(float)
+                    band1 -= band1.min()
+                    band1 /= band1.max()
+                    band1 *= 255
+                    img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
+                    
+                radar_placeholder.image(img, use_column_width=True)
+            except Exception as e:
+                st.warning(f"Error loading {tif_file}: {e}")
     
 # -----------------------------
 # PLOTS
@@ -395,6 +406,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
