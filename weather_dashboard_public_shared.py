@@ -106,43 +106,52 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
-st.subheader("🌐 Radar Satelital - Caribe")
-st.caption("Últimas imágenes de radar desde NOAA MRMS")
+st.subheader("🌐 Radar Satelital en Vivo - Caribe")
+st.caption("Actualizado automáticamente desde NOAA MRMS cada 15 segundos")
 
 radar_placeholder = st.empty()
 
-# Base URL for MRMS Caribbean reflectivity (BREF_QCD)
 base_url = "https://mrms.ncep.noaa.gov/RIDGEII/L2/CARIB/BREF_QCD/"
 
 @st.cache_data(ttl=60*5)
 def get_radar_image_urls():
-    """Get the last 20 radar images from MRMS."""
+    """Fetch the last 20 radar images from MRMS."""
     try:
         response = requests.get(base_url)
         response.raise_for_status()
-        # Extract PNG image filenames
         files = re.findall(r'href="(.*?\.png)"', response.text)
-        files.sort()  # ascending order
-        # Take only the last 20 images
-        return [base_url + f for f in files[-20:]]
+        files.sort()
+        return [base_url + f for f in files[-20:]]  # last 20 images
     except Exception as e:
         st.error(f"No se pudo obtener la lista de imágenes: {e}")
         return []
 
+# Fetch image URLs
 radar_images = get_radar_image_urls()
 
-# Display images as a loop
-if radar_images:
-    for img_url in radar_images:
-        try:
-            response = requests.get(img_url)
-            img = Image.open(BytesIO(response.content)).convert("RGBA")
-            radar_placeholder.image(img, use_column_width=True)
-            time.sleep(0.5)  # pause to simulate animation
-        except Exception as e:
-            print(f"Error cargando {img_url}: {e}")
-else:
+# If no images, show warning
+if not radar_images:
     st.warning("No se encontraron imágenes de radar disponibles.")
+else:
+    # Use Streamlit's autorefresh to loop
+    count = st.experimental_get_query_params().get("radar_count", [0])[0]
+    count = int(count)
+    
+    # Show one image per refresh
+    img_url = radar_images[count % len(radar_images)]
+    try:
+        response = requests.get(img_url)
+        img = Image.open(BytesIO(response.content)).convert("RGBA")
+        radar_placeholder.image(img, use_column_width=True)
+    except Exception as e:
+        st.warning(f"Error cargando imagen de radar: {e}")
+
+    # Increment counter for next refresh
+    count += 1
+    st.experimental_set_query_params(radar_count=count)
+
+    # Refresh the page every 15 seconds
+    st.experimental_rerun_interval = 15 * 1000  # milliseconds
     
 # -----------------------------
 # PLOTS
@@ -405,6 +414,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
