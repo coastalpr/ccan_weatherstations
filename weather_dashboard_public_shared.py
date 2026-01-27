@@ -143,6 +143,7 @@ if radar_images:
             print(f"Error cargando {img_url}: {e}")
 else:
     st.warning("No se encontraron imágenes de radar disponibles.")
+    
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -404,6 +405,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
