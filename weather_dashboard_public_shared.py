@@ -114,7 +114,7 @@ RADAR_FOLDER = "radar_images"
 if not os.path.exists(RADAR_FOLDER):
     st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add PNG images.")
 else:
-    radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".png")])
+    radar_images = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
 
     if not radar_images:
         st.warning(f"No radar images found in {RADAR_FOLDER}. Please add PNG files.")
@@ -389,6 +389,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
