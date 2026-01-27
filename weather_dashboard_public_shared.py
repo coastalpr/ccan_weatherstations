@@ -10,6 +10,14 @@ import datetime
 import pytz
 
 # -----------------------------
+# SATELLITE / RADAR LOOP
+# -----------------------------
+import requests
+from PIL import Image
+from io import BytesIO
+import time
+
+# -----------------------------
 # PAGE CONFIG
 # -----------------------------
 st.set_page_config(
@@ -94,6 +102,39 @@ c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
 c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 
+st.subheader("🌐 Radar Satelital - Caribe")
+st.caption("Imágenes de radar actualizadas automáticamente desde NOAA MRMS")
+
+radar_placeholder = st.empty()
+
+# Base URL for MRMS Caribbean reflectivity (BREF_QCD)
+base_url = "https://mrms.ncep.noaa.gov/RIDGEII/L2/CARIB/BREF_QCD/"
+
+@st.cache_data(ttl=60*5)
+def get_radar_images():
+    # Fetch the HTML page listing images
+    response = requests.get(base_url)
+    response.raise_for_status()
+    
+    # Extract .png filenames (assuming MRMS serves PNG images)
+    import re
+    files = re.findall(r'href="(.*?\.png)"', response.text)
+    
+    # Sort newest first
+    files.sort()
+    return [base_url + f for f in files]
+
+radar_images = get_radar_images()
+
+# Loop through images
+for img_url in radar_images[-20:]:  # last 20 images
+    try:
+        response = requests.get(img_url)
+        img = Image.open(BytesIO(response.content)).convert("RGBA")  # ensure transparency
+        radar_placeholder.image(img, use_column_width=True)
+        time.sleep(0.5)  # pause 0.5s for loop effect
+    except Exception as e:
+        print(f"Error loading {img_url}: {e}")
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -355,6 +396,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
