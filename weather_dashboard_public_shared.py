@@ -83,6 +83,29 @@ df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.62
 #    (df.timestamp.dt.date <= end_date)
 #)
 #df = df.loc[mask]
+# -----------------------------
+# UV
+# -----------------------------
+# Assuming latest.uv is the UV index value
+uv_index = latest.uv  # Replace with actual UV index value
+
+# Define color based on UV index
+if uv_index <= 2:
+    color = "green"
+    description = "Riesgo: Bajo"
+elif 3 <= uv_index <= 5:
+    color = "yellow"
+    description = "Riesgo: Moderado"
+elif 6 <= uv_index <= 7:
+    color = "orange"
+    description = "Riesgo: Alto"
+elif 8 <= uv_index <= 10:
+    color = "red"
+    description = "Riesgo: Muy Alto"
+else:
+    color = "purple"
+    description = "Riesgo: Extremo"
+
 
 # -----------------------------
 # CURRENT CONDITIONS
@@ -107,8 +130,17 @@ c1.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c2.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
 c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
-c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
+#c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
+# Display the metric using c5
+c5.metric("☀️ Índice UV", f"{uv_index:.1f}", color=color)
 
+# Display the description using markdown for styling
+st.markdown(
+    f"""
+    <p style="font-size: 14px; color:{color};">{description}</p>
+    """, 
+    unsafe_allow_html=True
+)
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
@@ -408,6 +440,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
