@@ -232,11 +232,11 @@ fig.update_layout(
         spikecolor='rgb(128,128,128)',
         range=[start_date, end_date],
         side='bottom',
-        fixedrange=True,  # Disable zoom on the x-axis
+        #fixedrange=True,  # Disable zoom on the x-axis
     ),
-    yaxis=dict(
-        fixedrange=True  # Disable zoom on the y-axis
-    ),
+    #yaxis=dict(
+        #fixedrange=True  # Disable zoom on the y-axis
+    #),
     yaxis_title="Temperatura (°F)",
     #showlegend=True
     showlegend=False,
@@ -455,6 +455,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
