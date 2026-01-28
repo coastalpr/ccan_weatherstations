@@ -167,21 +167,9 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # In the last column (c5), display UV index and description on the same line with matching font size
 
 with c5:
-    # Use st.markdown to display both UV index and description on the same line
-#    st.markdown(f"<p style=color:#000000; font-size: 0.5rem; display:inline; margin: 0; line-height: 1;'>☀️ Índice UV</p>", unsafe_allow_html=True)
-#    st.markdown(f"<p style='color:{color}; font-size: 2.2rem; display:inline; margin-top: -5px; line-height: 1;'>{latest.uv:.1f}</p>", unsafe_allow_html=True)
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
 
-# In the last column (c5), display UV index and description with matching font size, no bold text, and minimal space
-#with c5:
-#    st.markdown(
-#        f"""
-#        <p style='color:#000000; font-size: 0.8rem; font-weight: normal; margin: 0; line-height: 1;'>☀️ Índice UV </p>
-#        <p style='color:#000000; font-size: 1.5rem; font-weight: normal; margin: 0; line-height: 1;'> {latest.uv:.1f} </p>
-#        <p style='color:{color}; font-size: 2rem; font-weight: normal; margin: 0; line-height: 1;'> {description}</p>
-#        """, 
-#        unsafe_allow_html=True
-#    )
+
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
@@ -276,18 +264,12 @@ fig.update_layout(
     yaxis_title="Temperatura (°F)",
     showlegend=False
 )
-
-# Update the layout to allow horizontal scrolling
+# Allow horizontal scrolling by not fixing x-axis range
 fig.update_layout(
     dragmode=False,  # Disable panning (dragging)
     xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
     yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
-    hovermode="x unified",  # Cleaner hover interaction
-    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional, add margins for better fit
-    autosize=False,  # Set fixed chart size
-    width=1200,  # Fixed width (increase if needed to fit more data)
-    height=500,  # Fixed height
-    showlegend=True  # Optional: You can disable if not needed
+    showlegend=False  # Optional: Disable if not needed
 )
 st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
@@ -492,6 +474,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
