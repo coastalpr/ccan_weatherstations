@@ -41,17 +41,12 @@ link_url = "https://ccan-upr.org"
 col1, col2, col3 = st.columns([1, 2, 1])  # Column width ratio
 
 # Add clickable image to the middle column (col2)
-with col2:
-    st.markdown(f"""
-        <a href="{link_url}" target="_blank">
-            <img src="{image_path}" style="width: 100%;"/>
-        </a>
-    """, unsafe_allow_html=True)
-    
-st.set_page_config(
-    page_title="CCAN Weather Dashboard",
-    layout="wide"
-)
+# Direct test with image and link
+st.markdown(f"""
+    <a href="{link_url}" target="_blank">
+        <img src="{image_path}" style="width: 100%;"/>
+    </a>
+""", unsafe_allow_html=True)
 
 #st.title("🌦️ CCAN Weather Dashboard")
 #st.title("ESTACIÓN METEOROLÓGICA")
