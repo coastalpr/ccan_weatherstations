@@ -135,12 +135,14 @@ c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
 #c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 # Display the metric using c5
-c5.metric("☀️ Índice UV", f"{latest.uv:.1f}",f"{description}",f"{description}")
+c5.metric("☀️ Índice UV", f"{latest.uv:.1f}",f"{description}")
 
-# Display the description using markdown for styling
+# Display the description below the metric using markdown (separate from the metric)
 st.markdown(
     f"""
-    <p style="font-size: 14px; color:{color};">{description}</p>
+    <div style="background-color:{background_color}; padding: 10px; border-radius: 5px;">
+        <p style="font-size: 14px; color:{color}; margin: 0;">{description}</p>
+    </div>
     """, 
     unsafe_allow_html=True
 )
@@ -443,6 +445,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
