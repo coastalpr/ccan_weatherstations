@@ -27,6 +27,9 @@ import numpy as np
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
+# Add logo at the top
+st.image("logo.png", width=150)  # You can adjust width as needed
+
 st.set_page_config(
     page_title="CCAN Weather Dashboard",
     layout="wide"
@@ -461,6 +464,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
