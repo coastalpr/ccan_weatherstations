@@ -138,7 +138,7 @@ c1.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c2.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
 c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
-c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color="#FF5733"))
+c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color="#FF5733")
 # Display the metric using c5
 #c5.metric("☀️ Índice UV", f"{latest.uv:.1f}",f"{description}")
 
@@ -443,6 +443,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
