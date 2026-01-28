@@ -263,15 +263,11 @@ fig.update_traces(
 fig.update_layout(
     hovermode="x unified",
     xaxis=dict(
-        tickmode='array',
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
+        tickmode='auto',  # Automatic tick generation
         tickangle=90,
         showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
+        showspikes=True,        # Show vertical spikes on hover
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
     ),
     yaxis_title="Temperatura (°F)",
     showlegend=False
@@ -280,17 +276,17 @@ fig.update_layout(
 # Update the layout to allow horizontal scrolling
 fig.update_layout(
     dragmode=False,  # Disable panning (dragging)
-    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
-    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
+    xaxis=dict(fixedrange=False),  # Allow scroll zoom on x-axis
+    yaxis=dict(fixedrange=False),  # Allow scroll zoom on y-axis
     hovermode="x unified",  # Cleaner hover interaction
     margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional, add margins for better fit
-    autosize=False,  # Set fixed chart size
-    width=1200,  # Fixed width (increase if needed to fit more data)
+    autosize=True,  # Let Plotly automatically adjust size
     height=500,  # Fixed height
     showlegend=True  # Optional: You can disable if not needed
 )
-st.plotly_chart(fig, use_container_width=True)
 
+# Display the plot
+st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 # Humidity
 ## ----------------------------------------
@@ -493,6 +489,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
