@@ -147,9 +147,9 @@ c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.w
 # In the last column (c5), display UV index and description on the same line with matching font size
 with c5:
     # Use st.markdown to display both UV index and description on the same line
-    st.markdown(f"<p  style='color:{"black"}; font-size: 0.85rem; display:inline;'>☀️ Índice UV</p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color:{color}; font-size: 2.2rem; display:inline;'>{latest.uv:.1f}</p>", unsafe_allow_html=True)
-    st.markdown(f"<p style='color:{color}; font-size: 0.85rem; display:inline;'> {description}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p  style=color:#000000; font-size: 0.85rem; display:inline; margin-top: 0;'>☀️ Índice UV</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:{color}; font-size: 2.2rem; display:inline; margin-top: 0;'>{latest.uv:.1f}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:{color}; font-size: 0.85rem; display:inline; margin-top: 0;'> {description}</p>", unsafe_allow_html=True)
 
 
 # -----------------------------
@@ -451,6 +451,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
