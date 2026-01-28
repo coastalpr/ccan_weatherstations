@@ -238,7 +238,7 @@ fig.update_layout(
         #fixedrange=True  # Disable zoom on the y-axis
     #),
     yaxis_title="Temperatura (°F)",
-    showlegend=True
+    showlegend=True,
     #showlegend=False,
     margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
     autosize=True,  # Let Plotly automatically adjust size
@@ -455,6 +455,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
