@@ -37,9 +37,6 @@ image_path = "radar_images/logo.png"
 # Link URL (destination when image is clicked)
 link_url = "https://ccan-upr.org"
 
-# Create columns
-col1, col2, col3 = st.columns([1, 2, 1])  # Column width ratio
-
 # Add clickable image to the middle column (col2)
 # Direct test with image and link
 st.markdown(f"""
@@ -481,6 +478,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
