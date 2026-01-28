@@ -29,7 +29,7 @@ import numpy as np
 # -----------------------------
 # Add logo at the top
 #st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
-st.image("radar_images/logo.png", use_column_width=True)  # You can adjust width as needed
+st.image("radar_images/logo.png", f"[Go to the page]({redirect_url})", use_column_width=True)  # You can adjust width as needed
 
 
 # Link URL (destination when image is clicked)
@@ -470,6 +470,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
