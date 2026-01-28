@@ -28,14 +28,16 @@ import numpy as np
 # PAGE CONFIG
 # -----------------------------
 # Add logo at the top
-st.image("radar_images/logo.png", width=150)  # You can adjust width as needed
+st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
 
 st.set_page_config(
     page_title="CCAN Weather Dashboard",
     layout="wide"
 )
 
-st.title("🌦️ CCAN Weather Dashboard")
+#st.title("🌦️ CCAN Weather Dashboard")
+st.title("CCAN Weather Dashboard")
+
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
 # -----------------------------
@@ -464,6 +466,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
