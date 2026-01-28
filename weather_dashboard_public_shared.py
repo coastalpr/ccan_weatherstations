@@ -264,13 +264,7 @@ fig.update_layout(
     yaxis_title="Temperatura (°F)",
     showlegend=False
 )
-# Allow horizontal scrolling by not fixing x-axis range
-fig.update_layout(
-    dragmode=True,  # Disable panning (dragging)
-    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
-    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
-    showlegend=True  # Optional: Disable if not needed
-)
+
 
 fig.update_layout(
     showlegend=True,  # Optional, you can disable the legend if not needed
@@ -501,6 +495,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
