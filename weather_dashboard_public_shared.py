@@ -62,6 +62,9 @@ df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 df["wind_avg"] = df["wind_avg"] * 1.94384
 df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
 df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
+
+latest = df.iloc[-1]
+
 # -----------------------------
 # SIDEBAR FILTERS
 # -----------------------------
@@ -121,7 +124,7 @@ st.markdown(
     "<h3 style='color:#1f77b4;'>Datos en Tiempo Real</h3>",
     unsafe_allow_html=True
 )
-latest = df.iloc[-1]
+#latest = df.iloc[-1]
 
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
@@ -440,6 +443,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
