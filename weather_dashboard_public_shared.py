@@ -138,11 +138,20 @@ c1.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c2.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
 c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
-c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color=color)
+#c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color=color)
 # Display the metric using c5
 #c5.metric("☀️ Índice UV", f"{latest.uv:.1f}",f"{description}")
 
-
+# Display the UV index with background color using markdown (custom styling)
+st.markdown(
+    f"""
+    <div style="background-color:{background_color}; padding: 10px; border-radius: 5px;">
+        <h3 style="color:{color};">☀️ Índice UV: {latest.uv:.1f}</h3>
+        <p style="color:{color};">{description}</p>
+    </div>
+    """, 
+    unsafe_allow_html=True
+)
 
 # -----------------------------
 # SATELLITE / RADAR LOOP
@@ -443,6 +452,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
