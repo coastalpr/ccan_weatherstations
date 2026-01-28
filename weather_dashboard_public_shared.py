@@ -271,6 +271,33 @@ fig.update_layout(
     yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
     showlegend=True  # Optional: Disable if not needed
 )
+
+fig.update_layout(
+    showlegend=True,  # Optional, you can disable the legend if not needed
+    xaxis=dict(
+        fixedrange=True  # Disable zoom on the x-axis
+    ),
+    yaxis=dict(
+        fixedrange=True  # Disable zoom on the y-axis
+    ),
+    updatemenus=[{
+        'buttons': [
+            {
+                'args': [None, {'xaxis.range': [df['Hora'].min(), df['Hora'].max()], 'yaxis.range': [df['air_temperature'].min(), df['air_temperature'].max()]}],
+                'label': 'Reset Zoom',
+                'method': 'relayout',
+            }
+        ],
+        'direction': 'left',
+        'pad': {'r': 10, 't': 10},
+        'showactive': False,
+        'type': 'buttons',
+        'x': 0.1,
+        'xanchor': 'left',
+        'y': 0,
+        'yanchor': 'top'
+    }]
+)
 st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 # Humidity
@@ -474,6 +501,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
