@@ -156,7 +156,7 @@ with c5:
     st.markdown(
         f"""
         <p style='color:#000000; font-size: 0.8rem; font-weight: normal; display:inline; margin: 0; line-height: 1;'>☀️ Índice UV </p>
-        <p style='color:#000000; font-size: 1.5rem; font-weight: normal; display:inline; margin: 0; line-height: 1;'> {latest.uv:.1f}</p>
+        <p style='color:#000000; font-size: 1.5rem; font-weight: normal; display:inline; margin: 0; line-height: 1;'> {latest.uv:.1f} </p>
         <p style='color:{color}; font-size: 2rem; font-weight: normal; display:inline; margin: 0; line-height: 1;'> {description}</p>
         """, 
         unsafe_allow_html=True
@@ -460,6 +460,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
