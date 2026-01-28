@@ -40,13 +40,13 @@ redirect_url = "https://ccan-upr.org"
 image_url = "radar_images/logo.png"  # Replace with your image URL or local path
 
 # Title text
-title_text = "Weather Dashboard"
+title_text = "Estación Meteorológica"
 
 # Create columns
 col1, col2 = st.columns([1, 5])  # Column width ratio: first column for the image, second for the title
 
 with col1:
-    st.image(image_url, width=200)  # Adjust width as needed
+    st.image(image_url, width=300)  # Adjust width as needed
 
 with col2:
     st.title(title_text)
@@ -481,6 +481,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
