@@ -63,8 +63,6 @@ df["wind_avg"] = df["wind_avg"] * 1.94384
 df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
 df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
 
-latest = df.iloc[-1]
-
 # -----------------------------
 # SIDEBAR FILTERS
 # -----------------------------
@@ -86,6 +84,23 @@ latest = df.iloc[-1]
 #    (df.timestamp.dt.date <= end_date)
 #)
 #df = df.loc[mask]
+
+# -----------------------------
+# CURRENT CONDITIONS
+# -----------------------------
+
+def wind_direction_cardinal(degrees):
+    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    ix = int((degrees + 22.5) // 45) % 8
+    return dirs[ix]
+
+#st.subheader("Datos en Tiempo Real")
+st.markdown(
+    "<h3 style='color:#1f77b4;'>Datos en Tiempo Real</h3>",
+    unsafe_allow_html=True
+)
+latest = df.iloc[-1]
+
 # -----------------------------
 # UV
 # -----------------------------
@@ -110,21 +125,6 @@ else:
     description = "Riesgo: Extremo"
 
 
-# -----------------------------
-# CURRENT CONDITIONS
-# -----------------------------
-
-def wind_direction_cardinal(degrees):
-    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-    ix = int((degrees + 22.5) // 45) % 8
-    return dirs[ix]
-
-#st.subheader("Datos en Tiempo Real")
-st.markdown(
-    "<h3 style='color:#1f77b4;'>Datos en Tiempo Real</h3>",
-    unsafe_allow_html=True
-)
-#latest = df.iloc[-1]
 
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
@@ -443,38 +443,3 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
