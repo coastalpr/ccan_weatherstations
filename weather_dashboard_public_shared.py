@@ -33,7 +33,7 @@ st.image("radar_images/logo.png", use_column_width=True)  # You can adjust width
 
 
 # Link URL (destination when image is clicked)
-link_url = "https://ccan-upr.org"
+redirect_url = "https://ccan-upr.org"
 st.markdown(f"[Go to the page]({redirect_url})", unsafe_allow_html=True)
 
 
@@ -470,6 +470,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
