@@ -29,12 +29,9 @@ import numpy as np
 # -----------------------------
 # Add logo at the top
 redirect_url = "https://ccan-upr.org"
-#st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
 #st.image("radar_images/logo.png", caption=f"({redirect_url})", use_column_width=True)  # You can adjust width as needed
 
 #st.title("🌦️ CCAN Weather Dashboard")
-#st.title("ESTACIÓN METEOROLÓGICA")
-#st.title("Estación Meteorológica")
 
 # Image URL or local path
 image_url = "radar_images/logo.png"  # Replace with your image URL or local path
@@ -50,8 +47,6 @@ with col1:
 
 with col2:
     st.title(title_text)
-
-
 
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
@@ -82,28 +77,6 @@ df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 df["wind_avg"] = df["wind_avg"] * 1.94384
 df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
 df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
-
-# -----------------------------
-# SIDEBAR FILTERS
-# -----------------------------
-#st.sidebar.header("📅 Filters")
-
-#start_date = st.sidebar.date_input(
-#    "Start date", df.timestamp.min().date()
-#)
-
-#end_date = st.sidebar.date_input(
-#    "End date", df.timestamp.max().date()
-#)
-
-#start_time = st.sidebar.time_input("Hora inicio", datetime.time(0, 0))
-#end_time = st.sidebar.time_input("Hora fin", datetime.time(23, 59))
-
-#mask = (
-#    (df.timestamp.dt.date >= start_date) &
-#    (df.timestamp.dt.date <= end_date)
-#)
-#df = df.loc[mask]
 
 # -----------------------------
 # CURRENT CONDITIONS
@@ -168,7 +141,6 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 
 with c5:
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
-
 
 # -----------------------------
 # SATELLITE / RADAR LOOP
@@ -266,10 +238,20 @@ fig.update_layout(
         fixedrange=True  # Disable zoom on the y-axis
     ),
     yaxis_title="Temperatura (°F)",
-    showlegend=True
+    #showlegend=True
+    showlegend=False,
+    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
+    autosize=True,  # Let Plotly automatically adjust size
+    height=500,  # Fixed height for clarity
 )
 
-
+# Allow horizontal scrolling by not fixing x-axis range
+fig.update_layout(
+    dragmode=False,  # Disable panning (dragging)
+    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
+    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
+    showlegend=True  # Optional: You can disable if not needed
+)
 st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 # Humidity
@@ -473,6 +455,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
