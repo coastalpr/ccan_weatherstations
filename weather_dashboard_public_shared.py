@@ -238,8 +238,8 @@ fig.update_layout(
         #fixedrange=True  # Disable zoom on the y-axis
     #),
     yaxis_title="Temperatura (°F)",
-    #showlegend=True
-    showlegend=False,
+    showlegend=True
+    #showlegend=False,
     margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
     autosize=True,  # Let Plotly automatically adjust size
     height=500,  # Fixed height for clarity
@@ -250,7 +250,7 @@ fig.update_layout(
     dragmode=False,  # Disable panning (dragging)
     xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
     yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
-    showlegend=True  # Optional: You can disable if not needed
+    #showlegend=True  # Optional: You can disable if not needed
 )
 st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
@@ -455,6 +455,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
