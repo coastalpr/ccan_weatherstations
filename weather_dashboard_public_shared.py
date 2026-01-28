@@ -29,21 +29,13 @@ import numpy as np
 # -----------------------------
 # Add logo at the top
 #st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
-#st.image("radar_images/logo.png", use_column_width=True)  # You can adjust width as needed
+st.image("radar_images/logo.png", use_column_width=True)  # You can adjust width as needed
 
-# Image path (can be local or URL)
-image_path = "radar_images/logo.png"
 
 # Link URL (destination when image is clicked)
 link_url = "https://ccan-upr.org"
+st.markdown(f"[Go to the page]({redirect_url})", unsafe_allow_html=True)
 
-# Add clickable image to the middle column (col2)
-# Direct test with image and link
-st.markdown(f"""
-    <a href="{link_url}" target="_blank">
-        <img src="{image_path}" style="width: 100%;"/>
-    </a>
-""", unsafe_allow_html=True)
 
 #st.title("🌦️ CCAN Weather Dashboard")
 #st.title("ESTACIÓN METEOROLÓGICA")
@@ -478,6 +470,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
