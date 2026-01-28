@@ -30,13 +30,27 @@ import numpy as np
 # Add logo at the top
 redirect_url = "https://ccan-upr.org"
 #st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
-st.image("radar_images/logo.png", caption=f"({redirect_url})", use_column_width=True)  # You can adjust width as needed
-
-
+#st.image("radar_images/logo.png", caption=f"({redirect_url})", use_column_width=True)  # You can adjust width as needed
 
 #st.title("🌦️ CCAN Weather Dashboard")
 #st.title("ESTACIÓN METEOROLÓGICA")
-st.title("Estación Meteorológica")
+#st.title("Estación Meteorológica")
+
+# Image URL or local path
+image_url = "radar_images/logo.png"  # Replace with your image URL or local path
+
+# Title text
+title_text = "Weather Dashboard"
+
+# Create columns
+col1, col2 = st.columns([1, 6])  # Column width ratio: first column for the image, second for the title
+
+with col1:
+    st.image(image_url, width=50)  # Adjust width as needed
+
+with col2:
+    st.title(title_text)
+
 
 
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
@@ -467,6 +481,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
