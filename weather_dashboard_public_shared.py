@@ -110,18 +110,23 @@ uv_index = latest.uv  # Replace with actual UV index value
 # Define color based on UV index
 if latest.uv <= 2:
     color = "green"
+    background_color = "#d4edda"  # Light green background
     description = "Riesgo: Bajo"
 elif 3 <= latest.uv <= 5:
     color = "yellow"
+    background_color = "#fff3cd"  # Light yellow background
     description = "Riesgo: Moderado"
 elif 6 <= latest.uv <= 7:
     color = "orange"
+    background_color = "#ffeeba"  # Light orange background
     description = "Riesgo: Alto"
 elif 8 <= latest.uv <= 10:
     color = "red"
+    background_color = "#f8d7da"  # Light red background
     description = "Riesgo: Muy Alto"
 else:
     color = "purple"
+    background_color = "#f1c6e7"  # Light purple background
     description = "Riesgo: Extremo"
 
 
@@ -445,6 +450,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
