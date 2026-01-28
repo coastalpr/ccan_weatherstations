@@ -28,12 +28,12 @@ import numpy as np
 # PAGE CONFIG
 # -----------------------------
 # Add logo at the top
+redirect_url = "https://ccan-upr.org"
 #st.image("radar_images/logo.png", width=300)  # You can adjust width as needed
 st.image("radar_images/logo.png", caption=f"[Go to the page]({redirect_url})", use_column_width=True)  # You can adjust width as needed
 
 
-# Link URL (destination when image is clicked)
-redirect_url = "https://ccan-upr.org"
+
 st.markdown(f"[Go to the page]({redirect_url})", unsafe_allow_html=True)
 
 
@@ -470,6 +470,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
