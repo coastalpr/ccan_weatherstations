@@ -207,7 +207,6 @@ for tif_file in itertools.cycle(tif_files):
         layers=[layer],
         initial_view_state=view_state,
         map_style="mapbox://styles/mapbox/satellite-v9",
-        mapbox_key=MAPBOX_TOKEN
     )
 
     radar_placeholder.pydeck_chart(r)
@@ -492,6 +491,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
