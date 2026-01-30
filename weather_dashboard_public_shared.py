@@ -192,6 +192,7 @@ else:
         mapbox_key="pk.eyJ1IjoicGF0cmlhMDYiLCJhIjoiY2owbnp2NmNuMDBvcDJxcXN4dWpkNHZ6ZSJ9.plBt8zbA58Osne9MsUrKzw"
     )
 
+
     st.pydeck_chart(r)
     
 # -----------------------------
@@ -471,6 +472,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
