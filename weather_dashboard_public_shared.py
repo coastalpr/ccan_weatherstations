@@ -186,6 +186,7 @@ else:
 
                 # Resize radar to match zoomed satellite
                 radar_img_resized = radar_img.resize(sat_cropped.size, resample=Image.BILINEAR)
+                radar_img_resized.putalpha(128)  # 0–255 alpha
 
                 # Overlay radar on satellite
                 combined = Image.alpha_composite(sat_cropped, radar_img_resized)
@@ -472,6 +473,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
