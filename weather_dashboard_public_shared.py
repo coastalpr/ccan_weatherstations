@@ -148,8 +148,8 @@ with c5:
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
-st.subheader("🌐 Radar Satelital Local - Caribe")
-st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
+#st.subheader("🌐 Radar Satelital Local - Caribe")
+#st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 import streamlit as st
 import pydeck as pdk
@@ -163,64 +163,6 @@ import time
 RADAR_FOLDER = "radar_images"
 MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
 ANIMATION_DELAY = 0
-
-# Get all radar files
-tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
-if not tif_files:
-    st.warning("No radar images found.")
-    st.stop()
-
-radar_placeholder = st.empty()
-
-for tif_file in itertools.cycle(tif_files):
-    tif_path = os.path.join(RADAR_FOLDER, tif_file)
-
-    # Open GeoTIFF
-    with rasterio.open(tif_path) as src:
-        band = src.read(1)
-        nodata = src.nodata if src.nodata is not None else 0
-    
-        # Mask nodata values
-        mask = band == nodata
-        band = np.ma.masked_array(band, mask=mask)
-    
-        # Normalize for colormap
-        band_norm = (band - band.min()) / (band.max() - band.min())
-    
-        # Apply colormap (e.g., 'turbo', 'viridis', or original radar colors)
-        colormap = cm.get_cmap('turbo')  # pick a colormap
-        rgba_img = (colormap(band_norm) * 255).astype(np.uint8)
-    
-        # Set alpha 0 for masked pixels (transparent background)
-        rgba_img[mask, 3] = 0  # alpha channel
-    
-        # Convert to PIL Image
-        img = Image.fromarray(rgba_img)
-
-    # Create BitmapLayer with correct bounds
-    layer = pdk.Layer(
-        "BitmapLayer",
-        data=None,
-        image=tmp_png,
-        bounds=[left, bottom, right, top],
-        opacity=0
-    )
-
-    # Set view to center of radar image
-    view_state = pdk.ViewState(
-        latitude=(bottom + top) / 2,
-        longitude=(left + right) / 2,
-        zoom=7
-    )
-
-    r = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/satellite-v9",
-    )
-
-    radar_placeholder.pydeck_chart(r)
-    time.sleep(ANIMATION_DELAY)
 
 
     
@@ -501,6 +443,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
