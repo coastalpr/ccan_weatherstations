@@ -160,7 +160,7 @@ import time
 
 RADAR_FOLDER = "radar_images"
 MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
-ANIMATION_DELAY = 0.5
+ANIMATION_DELAY = 0
 
 # Get all radar files
 tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
@@ -491,6 +491,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
