@@ -149,8 +149,10 @@ st.subheader("🌐 Radar Satelital Local - Caribe")
 st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 RADAR_FOLDER = "radar_images"
-SATELLITE_PATH = "satellite_image.png"  # must be georeferenced
-ZOOM_REGION = (-75.5, 18.0, -74.0, 19.0)  # min_lon, min_lat, max_lon, max_lat
+SATELLITE_PATH = "satellite_image.png"
+
+# Define pixel crop box: (left, upper, right, lower)
+ZOOM_BOX = (500, 300, 1000, 800)
 
 if not os.path.exists(RADAR_FOLDER):
     st.warning(f"Radar folder not found: {RADAR_FOLDER}.")
@@ -163,54 +165,23 @@ else:
         st.warning(f"No TIF radar images found in {RADAR_FOLDER}.")
     else:
         radar_placeholder = st.empty()
-
-        # Open satellite GeoTIFF
-        with rasterio.open(SATELLITE_PATH) as sat_src:
-            # Clip satellite to zoom region safely
-            left, bottom, right, top = sat_src.bounds
-            min_lon = max(ZOOM_REGION[0], left)
-            max_lon = min(ZOOM_REGION[2], right)
-            min_lat = max(ZOOM_REGION[1], bottom)
-            max_lat = min(ZOOM_REGION[3], top)
-
-            r_min, c_min = sat_src.index(min_lon, max_lat)
-            r_max, c_max = sat_src.index(max_lon, min_lat)
-
-            sat_band = sat_src.read(1)[r_min:r_max, c_min:c_max]
-            sat_img = Image.fromarray(sat_band).convert("RGBA")
+        sat_img = Image.open(SATELLITE_PATH).convert("RGBA")
+        sat_cropped = sat_img.crop(ZOOM_BOX)
 
         for tif_file in itertools.cycle(tif_files):
             tif_path = os.path.join(RADAR_FOLDER, tif_file)
             try:
-                with rasterio.open(tif_path) as radar_src:
-                    # Clip zoom region to radar bounds
-                    l, b, r, t = radar_src.bounds
-                    min_lon_radar = max(ZOOM_REGION[0], l)
-                    max_lon_radar = min(ZOOM_REGION[2], r)
-                    min_lat_radar = max(ZOOM_REGION[1], b)
-                    max_lat_radar = min(ZOOM_REGION[3], t)
+                with rasterio.open(tif_path) as src:
+                    band1 = src.read(1)
+                    # normalize
+                    band1 = (band1 - band1.min()) / (band1.max() - band1.min()) * 255
+                    radar_img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
+                    radar_img.putalpha(128)
 
-                    # Convert to rows/cols
-                    r_min, c_min = radar_src.index(min_lon_radar, max_lat_radar)
-                    r_max, c_max = radar_src.index(max_lon_radar, min_lat_radar)
+                    # resize radar to match satellite crop size
+                    radar_img_resized = radar_img.resize(sat_cropped.size, resample=Image.BILINEAR)
 
-                    # Skip files if zoom region outside radar bounds
-                    if r_max <= r_min or c_max <= c_min:
-                        st.warning(f"Skipping {tif_file}: no overlap with zoom region")
-                        continue
-
-                    radar_band = radar_src.read(1)[r_min:r_max, c_min:c_max]
-
-                    # Normalize and convert to RGBA
-                    radar_band = (radar_band - radar_band.min()) / (radar_band.max() - radar_band.min()) * 255
-                    radar_img = Image.fromarray(radar_band.astype(np.uint8)).convert("RGBA")
-                    radar_img.putalpha(128)  # semi-transparent
-
-                    # Resize radar to match satellite zoom
-                    radar_img_resized = radar_img.resize(sat_img.size, resample=Image.BILINEAR)
-
-                    # Overlay and display
-                    combined = Image.alpha_composite(sat_img, radar_img_resized)
+                    combined = Image.alpha_composite(sat_cropped, radar_img_resized)
                     radar_placeholder.image(combined, use_column_width=True)
 
             except Exception as e:
@@ -493,6 +464,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
