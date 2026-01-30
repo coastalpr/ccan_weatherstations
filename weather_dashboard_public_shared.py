@@ -185,11 +185,12 @@ else:
         zoom=7
     )
 
+    MAPBOX_TOKEN = os.getenv("MAPBOX_API_KEY")
     r = pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
         map_style="mapbox://styles/mapbox/satellite-v9",
-        mapbox_key="pk.eyJ1IjoicGF0cmlhMDYiLCJhIjoiY2owbnp2NmNuMDBvcDJxcXN4dWpkNHZ6ZSJ9.plBt8zbA58Osne9MsUrKzw"
+        mapbox_key=MAPBOX_TOKEN
     )
 
 
@@ -472,6 +473,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
