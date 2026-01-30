@@ -182,14 +182,28 @@ else:
             tif_path = os.path.join(RADAR_FOLDER, tif_file)
             try:
                 # Open radar GeoTIFF
-                with rasterio.open(tif_path) as radar_src:
-                    # Crop radar to same zoom region
-                    r_min, c_min = radar_src.index(ZOOM_REGION[0], ZOOM_REGION[3])
-                    r_max, c_max = radar_src.index(ZOOM_REGION[2], ZOOM_REGION[1])
-                    radar_band = radar_src.read(1)[r_min:r_max, c_min:c_max]
 
-                    # Normalize
-                    radar_band = (radar_band - radar_band.min()) / (radar_band.max() - radar_band.min()) * 255
+                with rasterio.open(tif_path) as radar_src:
+                    # Original raster bounds
+                    left, bottom, right, top = radar_src.bounds  # in lon/lat
+                
+                    # Clip zoom region to raster bounds
+                    min_lon = max(ZOOM_REGION[0], left)
+                    max_lon = min(ZOOM_REGION[2], right)
+                    min_lat = max(ZOOM_REGION[1], bottom)
+                    max_lat = min(ZOOM_REGION[3], top)
+                
+                    # Convert to row/col
+                    r_min, c_min = radar_src.index(min_lon, max_lat)
+                    r_max, c_max = radar_src.index(max_lon, min_lat)
+                
+                    # Ensure r_max > r_min and c_max > c_min
+                    if r_max <= r_min or c_max <= c_min:
+                        st.warning(f"Zoom region outside radar bounds: {tif_file}")
+                        continue
+                
+                    radar_band = radar_src.read(1)[r_min:r_max, c_min:c_max]
+               
                     radar_img = Image.fromarray(radar_band.astype(np.uint8)).convert("RGBA")
 
                     # Resize radar to match satellite crop size
@@ -480,6 +494,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
