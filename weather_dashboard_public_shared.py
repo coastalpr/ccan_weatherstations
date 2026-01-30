@@ -150,7 +150,10 @@ st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 # Folders
 RADAR_FOLDER = "radar_images"
-SATELLITE_PATH = "satellite_image.png"  # your base satellite image
+SATELLITE_PATH = "satellite_image.tif"  # must be georeferenced (GeoTIFF)
+
+# Define zoom region in lat/lon: (min_lon, min_lat, max_lon, max_lat)
+ZOOM_REGION = (-75.5, 18.0, -74.0, 19.0)  # example coordinates
 
 # Check folders
 if not os.path.exists(RADAR_FOLDER):
@@ -165,33 +168,37 @@ else:
     else:
         radar_placeholder = st.empty()
 
-        # Open base satellite image
-        sat_img = Image.open(SATELLITE_PATH).convert("RGBA")
+        # Open satellite GeoTIFF
+        with rasterio.open(SATELLITE_PATH) as sat_src:
+            # Compute pixel coordinates of zoom region
+            row_min, col_min = sat_src.index(ZOOM_REGION[0], ZOOM_REGION[3])  # top-left
+            row_max, col_max = sat_src.index(ZOOM_REGION[2], ZOOM_REGION[1])  # bottom-right
 
-        # Define the crop box for zooming: (left, upper, right, lower)
-        zoom_box = (500, 300, 1000, 800)  # adjust to your region of interest
-        sat_cropped = sat_img.crop(zoom_box)
+            # Read and crop satellite
+            sat_band = sat_src.read(1)[row_min:row_max, col_min:col_max]
+            sat_img = Image.fromarray(sat_band).convert("RGBA")
 
         for tif_file in itertools.cycle(tif_files):
             tif_path = os.path.join(RADAR_FOLDER, tif_file)
             try:
                 # Open radar GeoTIFF
-                with rasterio.open(tif_path) as src:
-                    band1 = src.read(1)
-                    band1 = band1.astype(float)
-                    band1 -= band1.min()
-                    band1 /= band1.max()
-                    band1 *= 255
-                    radar_img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
+                with rasterio.open(tif_path) as radar_src:
+                    # Crop radar to same zoom region
+                    r_min, c_min = radar_src.index(ZOOM_REGION[0], ZOOM_REGION[3])
+                    r_max, c_max = radar_src.index(ZOOM_REGION[2], ZOOM_REGION[1])
+                    radar_band = radar_src.read(1)[r_min:r_max, c_min:c_max]
 
-                # Resize radar to match zoomed satellite
-                radar_img_resized = radar_img.resize(sat_cropped.size, resample=Image.BILINEAR)
-                radar_img_resized.putalpha(128)  # 0–255 alpha
+                    # Normalize
+                    radar_band = (radar_band - radar_band.min()) / (radar_band.max() - radar_band.min()) * 255
+                    radar_img = Image.fromarray(radar_band.astype(np.uint8)).convert("RGBA")
 
-                # Overlay radar on satellite
-                combined = Image.alpha_composite(sat_cropped, radar_img_resized)
+                    # Resize radar to match satellite crop size
+                    radar_img_resized = radar_img.resize(sat_img.size, resample=Image.BILINEAR)
 
-                radar_placeholder.image(combined, use_column_width=True)
+                    # Overlay radar on satellite
+                    combined = Image.alpha_composite(sat_img, radar_img_resized)
+
+                    radar_placeholder.image(combined, use_column_width=True)
 
             except Exception as e:
                 st.warning(f"Error loading {tif_file}: {e}")
@@ -473,6 +480,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
