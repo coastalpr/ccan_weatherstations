@@ -8,6 +8,7 @@ import xarray as xr
 import plotly.express as px
 import datetime
 import pytz
+import pydeck as pdk
 
 # -----------------------------
 # SATELLITE / RADAR LOOP
@@ -470,6 +471,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
