@@ -34,7 +34,7 @@ redirect_url = "https://ccan-upr.org"
 #st.title("🌦️ CCAN Weather Dashboard")
 
 # Image URL or local path
-image_url = "radar_images/logo.png"  # Replace with your image URL or local path
+image_url = "logo.png"  # Replace with your image URL or local path
 
 # Title text
 title_text = "Estación Meteorológica"
@@ -455,6 +455,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
