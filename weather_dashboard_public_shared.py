@@ -178,7 +178,7 @@ for tif_file in itertools.cycle(tif_files):
         band = src.read(1)
         band = (band - band.min()) / (band.max() - band.min()) * 255
         img = Image.fromarray(band.astype(np.uint8)).convert("RGBA")
-        img.putalpha(128)
+        #img.putalpha(128)
 
         # Get geographic bounds from the GeoTIFF
         left, bottom, right, top = src.bounds  # lon/lat
@@ -193,7 +193,7 @@ for tif_file in itertools.cycle(tif_files):
         data=None,
         image=tmp_png,
         bounds=[left, bottom, right, top],
-        opacity=0.6
+        opacity=0
     )
 
     # Set view to center of radar image
@@ -491,6 +491,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
