@@ -150,51 +150,7 @@ st.subheader("🌐 Radar Satelital Local - Caribe")
 st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 RADAR_FOLDER = "radar_images"
-ZOOM_BOUNDS = [-75.5, 18.0, -74.0, 19.0]  # [minLon, minLat, maxLon, maxLat]
 
-tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
-if not tif_files:
-    st.warning("No radar images found.")
-else:
-    radar_file = tif_files[0]  # just show first one for example
-    tif_path = os.path.join(RADAR_FOLDER, radar_file)
-
-    # Open GeoTIFF and normalize
-    with rasterio.open(tif_path) as src:
-        band = src.read(1)
-        band = (band - band.min()) / (band.max() - band.min()) * 255
-        img = Image.fromarray(band.astype(np.uint8)).convert("RGBA")
-        img.putalpha(128)  # semi-transparent
-
-    # Save temporary PNG for Pydeck
-    tmp_path = f"/tmp/{radar_file}.png"
-    img.save(tmp_path)
-
-    # Create Pydeck BitmapLayer
-    layer = pdk.Layer(
-        "BitmapLayer",
-        data=None,
-        image=tmp_path,
-        bounds=ZOOM_BOUNDS,
-        opacity=0.6,
-    )
-
-    view_state = pdk.ViewState(
-        latitude=(ZOOM_BOUNDS[1]+ZOOM_BOUNDS[3])/2,
-        longitude=(ZOOM_BOUNDS[0]+ZOOM_BOUNDS[2])/2,
-        zoom=7
-    )
-
-MAPBOX_TOKEN = os.getenv("MAPBOX_API_KEY")
-    r = pdk.Deck(
-        layers=[layer],
-        initial_view_state=view_state,
-        map_style="mapbox://styles/mapbox/satellite-v9",
-        mapbox_key=MAPBOX_TOKEN
-    )
-
-
-    st.pydeck_chart(r)
     
 # -----------------------------
 # PLOTS
@@ -473,6 +429,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
