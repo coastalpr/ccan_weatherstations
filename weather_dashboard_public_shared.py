@@ -148,10 +148,15 @@ with c5:
 st.subheader("🌐 Radar Satelital Local - Caribe")
 st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
+# Folders
 RADAR_FOLDER = "radar_images"
+SATELLITE_PATH = "satellite_image.png"  # your base satellite image
 
+# Check folders
 if not os.path.exists(RADAR_FOLDER):
     st.warning(f"Radar folder not found: {RADAR_FOLDER}. Please create it and add TIF images.")
+elif not os.path.exists(SATELLITE_PATH):
+    st.warning(f"Satellite image not found: {SATELLITE_PATH}")
 else:
     tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
 
@@ -160,21 +165,33 @@ else:
     else:
         radar_placeholder = st.empty()
 
+        # Open base satellite image
+        sat_img = Image.open(SATELLITE_PATH).convert("RGBA")
+
+        # Define the crop box for zooming: (left, upper, right, lower)
+        zoom_box = (500, 300, 1000, 800)  # adjust to your region of interest
+        sat_cropped = sat_img.crop(zoom_box)
+
         for tif_file in itertools.cycle(tif_files):
             tif_path = os.path.join(RADAR_FOLDER, tif_file)
             try:
-                # Open GeoTIFF with rasterio
+                # Open radar GeoTIFF
                 with rasterio.open(tif_path) as src:
-                    # Read first band
                     band1 = src.read(1)
-                    # Normalize to 0-255
                     band1 = band1.astype(float)
                     band1 -= band1.min()
                     band1 /= band1.max()
                     band1 *= 255
-                    img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
-                    
-                radar_placeholder.image(img, use_column_width=True)
+                    radar_img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
+
+                # Resize radar to match zoomed satellite
+                radar_img_resized = radar_img.resize(sat_cropped.size, resample=Image.BILINEAR)
+
+                # Overlay radar on satellite
+                combined = Image.alpha_composite(sat_cropped, radar_img_resized)
+
+                radar_placeholder.image(combined, use_column_width=True)
+
             except Exception as e:
                 st.warning(f"Error loading {tif_file}: {e}")
     
@@ -455,6 +472,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
