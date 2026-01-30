@@ -23,6 +23,8 @@ import itertools
 import rasterio
 import itertools
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import cm
 
 
 # -----------------------------
@@ -176,16 +178,24 @@ for tif_file in itertools.cycle(tif_files):
     # Open GeoTIFF
     with rasterio.open(tif_path) as src:
         band = src.read(1)
-        band = (band - band.min()) / (band.max() - band.min()) * 255
-        img = Image.fromarray(band.astype(np.uint8)).convert("RGBA")
-        #img.putalpha(128)
-
-        # Get geographic bounds from the GeoTIFF
-        left, bottom, right, top = src.bounds  # lon/lat
-
-    # Save PNG in app folder
-    tmp_png = os.path.join(RADAR_FOLDER, "tmp.png")
-    img.save(tmp_png)
+        nodata = src.nodata if src.nodata is not None else 0
+    
+        # Mask nodata values
+        mask = band == nodata
+        band = np.ma.masked_array(band, mask=mask)
+    
+        # Normalize for colormap
+        band_norm = (band - band.min()) / (band.max() - band.min())
+    
+        # Apply colormap (e.g., 'turbo', 'viridis', or original radar colors)
+        colormap = cm.get_cmap('turbo')  # pick a colormap
+        rgba_img = (colormap(band_norm) * 255).astype(np.uint8)
+    
+        # Set alpha 0 for masked pixels (transparent background)
+        rgba_img[mask, 3] = 0  # alpha channel
+    
+        # Convert to PIL Image
+        img = Image.fromarray(rgba_img)
 
     # Create BitmapLayer with correct bounds
     layer = pdk.Layer(
@@ -491,6 +501,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
