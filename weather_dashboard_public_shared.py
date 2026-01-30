@@ -149,43 +149,49 @@ st.subheader("🌐 Radar Satelital Local - Caribe")
 st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 RADAR_FOLDER = "radar_images"
-SATELLITE_PATH = "satellite_image.png"
+ZOOM_BOUNDS = [-75.5, 18.0, -74.0, 19.0]  # [minLon, minLat, maxLon, maxLat]
 
-# Define pixel crop box: (left, upper, right, lower)
-ZOOM_BOX = (500, 300, 1000, 800)
-
-if not os.path.exists(RADAR_FOLDER):
-    st.warning(f"Radar folder not found: {RADAR_FOLDER}.")
-elif not os.path.exists(SATELLITE_PATH):
-    st.warning(f"Satellite image not found: {SATELLITE_PATH}")
+tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
+if not tif_files:
+    st.warning("No radar images found.")
 else:
-    tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
+    radar_file = tif_files[0]  # just show first one for example
+    tif_path = os.path.join(RADAR_FOLDER, radar_file)
 
-    if not tif_files:
-        st.warning(f"No TIF radar images found in {RADAR_FOLDER}.")
-    else:
-        radar_placeholder = st.empty()
-        sat_img = Image.open(SATELLITE_PATH).convert("RGBA")
-        sat_cropped = sat_img.crop(ZOOM_BOX)
+    # Open GeoTIFF and normalize
+    with rasterio.open(tif_path) as src:
+        band = src.read(1)
+        band = (band - band.min()) / (band.max() - band.min()) * 255
+        img = Image.fromarray(band.astype(np.uint8)).convert("RGBA")
+        img.putalpha(128)  # semi-transparent
 
-        for tif_file in itertools.cycle(tif_files):
-            tif_path = os.path.join(RADAR_FOLDER, tif_file)
-            try:
-                with rasterio.open(tif_path) as src:
-                    band1 = src.read(1)
-                    # normalize
-                    band1 = (band1 - band1.min()) / (band1.max() - band1.min()) * 255
-                    radar_img = Image.fromarray(band1.astype(np.uint8)).convert("RGBA")
-                    radar_img.putalpha(128)
+    # Save temporary PNG for Pydeck
+    tmp_path = f"/tmp/{radar_file}.png"
+    img.save(tmp_path)
 
-                    # resize radar to match satellite crop size
-                    radar_img_resized = radar_img.resize(sat_cropped.size, resample=Image.BILINEAR)
+    # Create Pydeck BitmapLayer
+    layer = pdk.Layer(
+        "BitmapLayer",
+        data=None,
+        image=tmp_path,
+        bounds=ZOOM_BOUNDS,
+        opacity=0.6,
+    )
 
-                    combined = Image.alpha_composite(sat_cropped, radar_img_resized)
-                    radar_placeholder.image(combined, use_column_width=True)
+    view_state = pdk.ViewState(
+        latitude=(ZOOM_BOUNDS[1]+ZOOM_BOUNDS[3])/2,
+        longitude=(ZOOM_BOUNDS[0]+ZOOM_BOUNDS[2])/2,
+        zoom=7
+    )
 
-            except Exception as e:
-                st.warning(f"Error loading {tif_file}: {e}")
+    r = pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        map_style="mapbox://styles/mapbox/satellite-v9",
+        mapbox_key="pk.eyJ1IjoicGF0cmlhMDYiLCJhIjoiY2owbnp2NmNuMDBvcDJxcXN4dWpkNHZ6ZSJ9.plBt8zbA58Osne9MsUrKzw"
+    )
+
+    st.pydeck_chart(r)
     
 # -----------------------------
 # PLOTS
@@ -464,6 +470,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
