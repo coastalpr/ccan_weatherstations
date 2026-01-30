@@ -149,7 +149,70 @@ with c5:
 st.subheader("🌐 Radar Satelital Local - Caribe")
 st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
+import streamlit as st
+import pydeck as pdk
+import rasterio
+from PIL import Image
+import numpy as np
+import os
+import itertools
+import time
+
 RADAR_FOLDER = "radar_images"
+MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
+ANIMATION_DELAY = 0.5
+
+# Get all radar files
+tif_files = sorted([f for f in os.listdir(RADAR_FOLDER) if f.endswith(".tif")])
+if not tif_files:
+    st.warning("No radar images found.")
+    st.stop()
+
+radar_placeholder = st.empty()
+
+for tif_file in itertools.cycle(tif_files):
+    tif_path = os.path.join(RADAR_FOLDER, tif_file)
+
+    # Open GeoTIFF
+    with rasterio.open(tif_path) as src:
+        band = src.read(1)
+        band = (band - band.min()) / (band.max() - band.min()) * 255
+        img = Image.fromarray(band.astype(np.uint8)).convert("RGBA")
+        img.putalpha(128)
+
+        # Get geographic bounds from the GeoTIFF
+        left, bottom, right, top = src.bounds  # lon/lat
+
+    # Save PNG in app folder
+    tmp_png = os.path.join(RADAR_FOLDER, "tmp.png")
+    img.save(tmp_png)
+
+    # Create BitmapLayer with correct bounds
+    layer = pdk.Layer(
+        "BitmapLayer",
+        data=None,
+        image=tmp_png,
+        bounds=[left, bottom, right, top],
+        opacity=0.6
+    )
+
+    # Set view to center of radar image
+    view_state = pdk.ViewState(
+        latitude=(bottom + top) / 2,
+        longitude=(left + right) / 2,
+        zoom=7
+    )
+
+    r = pdk.Deck(
+        layers=[layer],
+        initial_view_state=view_state,
+        map_style="mapbox://styles/mapbox/satellite-v9",
+        mapbox_key=MAPBOX_TOKEN
+    )
+
+    radar_placeholder.pydeck_chart(r)
+    time.sleep(ANIMATION_DELAY)
+
 
     
 # -----------------------------
@@ -429,6 +492,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
