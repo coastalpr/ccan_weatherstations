@@ -150,7 +150,7 @@ st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
 # Folders
 RADAR_FOLDER = "radar_images"
-SATELLITE_PATH = "satellite_image.tif"  # must be georeferenced (GeoTIFF)
+SATELLITE_PATH = "satellite_image.png"  # must be georeferenced (GeoTIFF)
 
 # Define zoom region in lat/lon: (min_lon, min_lat, max_lon, max_lat)
 ZOOM_REGION = (-75.5, 18.0, -74.0, 19.0)  # example coordinates
@@ -480,6 +480,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
