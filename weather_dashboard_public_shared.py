@@ -240,7 +240,7 @@ fig.update_layout(
     yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
     showlegend=True  # Optional: You can disable if not needed
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 ## ----------------------------------------
 # Humidity
 ## ----------------------------------------
@@ -268,7 +268,7 @@ fig.update_layout(
     showlegend=False
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Wind Speed
@@ -402,7 +402,7 @@ fig.update_layout(
     showlegend=False
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Rain Accumulation
@@ -430,7 +430,7 @@ fig.update_layout(
     showlegend=False
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Solar Radiation
@@ -485,7 +485,7 @@ fig.update_layout(
     yaxis_title="Índice UV",
     showlegend=False
 )
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Lightning Strike
@@ -513,7 +513,7 @@ fig.update_layout(
     showlegend=False
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # -----------------------------
 # FOOTER
