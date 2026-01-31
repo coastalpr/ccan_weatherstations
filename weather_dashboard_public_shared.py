@@ -25,6 +25,7 @@ import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import plotly.graph_objects as go
 
 
 # -----------------------------
@@ -273,31 +274,97 @@ st.plotly_chart(fig, use_container_width=True)
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
+# Convert direction to radians (meteorological → math)
+theta = np.deg2rad(270 - df["wind_direction"])
 
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
+# Scale factor for arrow length (tune this)
+scale = 0.02
 
-# Layout
-fig.update_layout(
+# Vector components
+u = df["wind_avg"] * np.cos(theta) * scale
+v = df["wind_avg"] * np.sin(theta) * scale
+
+def wind_color(speed):
+    if speed < 5:
+        return "blue"
+    elif speed < 15:
+        return "green"
+    elif speed < 25:
+        return "orange"
+    else:
+        return "red"
+
+colors = df["wind_avg"].apply(wind_color)
+
+fig = go.Figure()
+
+for x, y, dx, dy, c, spd, wd in zip(
+    df["Hora"],
+    np.zeros(len(df)),   # baseline
+    u,
+    v,
+    colors,
+    df["wind_avg"],
+    df["wind_direction"]
+):
+    fig.add_trace(go.Scatter(
+        x=[x, x + dx],
+        y=[y, y + dy],
+        mode="lines+markers",
+        line=dict(color=c, width=2),
+        marker=dict(size=4),
+        hovertemplate=(
+            f"Velocidad: {spd:.1f} kts<br>"
+            f"Dirección: {wd:.0f}°<extra></extra>"
+        ),
+        showlegend=False
+    ))
+    
+    fig.update_layout(
+    title="Viento (Velocidad + Dirección)",
     hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
+        ticktext=tick_labels,
         tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
+        showspikes=True,
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
+        range=[start_date, end_date]
     ),
-    yaxis_title="Velocidad del Viento (kts)",
-    showlegend=False
+    yaxis=dict(
+        visible=False,
+        range=[-1, 1]
+    ),
+    height=450
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
+#fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
+
+# Hover: only y-value, no colored box
+#fig.update_traces(
+    #hovertemplate='%{y:.1f} °F<extra></extra>',
+#)
+
+# Layout
+#fig.update_layout(
+    #hovermode="x unified",
+    #xaxis=dict(
+        #tickvals=ticks,
+        #ticktext=tick_labels,   # date + hour for all ticks
+        #tickangle=90,
+        #showline=False,         # no black line
+        #showspikes=True,       # no vertical blue line
+        #spikecolor='rgb(128,128,128)',
+        #range=[start_date, end_date],
+        #side='bottom'
+    #),
+    #yaxis_title="Velocidad del Viento (kts)",
+    #showlegend=False
+#)
+
+#st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # Wind Direction
