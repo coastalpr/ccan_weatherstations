@@ -308,8 +308,8 @@ for x, y, dx, dy, c, spd, wd in zip(
     df["wind_direction"]
 ):
     fig.add_trace(go.Scatter(
-        x=[x, x + dx],
-        y=[y, y + dy],
+        x=[x, x],          # same timestamp
+        y=[0, dy],         # arrow goes up/down
         mode="lines+markers",
         line=dict(color=c, width=2),
         marker=dict(size=4),
