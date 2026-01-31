@@ -275,64 +275,65 @@ st.plotly_chart(fig, width="stretch")
 ## ----------------------------------------
 
 
-# ----------------------------------------
-# Wind (Speed + Direction vectors)
-# ----------------------------------------
-
+# Convert wind direction from meteorological to mathematical angle
+# (0° = east, 90° = north)
 theta = np.deg2rad(270 - df["wind_direction"])
-scale = 0.15
 
-v = df["wind_avg"] * np.sin(theta) * scale
+# Scale factor for arrows
+arrow_length = 0.3  # fraction of wind speed (adjust for visibility)
 
-theta = np.deg2rad(270 - df["wind_direction"])
-scale = 0.15
+# Compute arrow endpoints
+dx = arrow_length * np.cos(theta)
+dy = arrow_length * np.sin(theta)
 
-v = df["wind_avg"] * np.sin(theta) * scale
+# Choose colors by wind speed
+def wind_color(speed):
+    if speed < 5:
+        return "blue"
+    elif speed < 15:
+        return "green"
+    elif speed < 25:
+        return "orange"
+    else:
+        return "red"
 
+colors = df["wind_avg"].apply(wind_color)
+
+# Create figure
 fig = go.Figure()
 
-for x, dy, spd, wd in zip(
-    df["Hora"],
-    v,
-    df["wind_avg"],
-    df["wind_direction"]
+# Each arrow is a line starting at (Hora, wind_avg) and ending at (Hora + dx, wind_avg + dy)
+for x, y, delta_x, delta_y, c, spd, wd in zip(
+    df["Hora"], df["wind_avg"], dx, dy, colors, df["wind_avg"], df["wind_direction"]
 ):
     fig.add_trace(go.Scatter(
-        x=[x, x],
-        y=[0, dy],
-        mode="lines",
-        line=dict(
-            color="red" if spd > 20 else "orange" if spd > 10 else "blue",
-            width=3
-        ),
-        hovertemplate=(
-            f"Velocidad: {spd:.1f} kts<br>"
-            f"Dirección: {wd:.0f}°<extra></extra>"
-        ),
+        x=[x, x + np.timedelta64(int(delta_x*3600*24), 's')],  # shift x for arrow visually
+        y=[y, y + delta_y],
+        mode="lines+markers",
+        line=dict(color=c, width=3),
+        marker=dict(size=4),
+        hovertemplate=f"Velocidad: {spd:.1f} kts<br>Dirección: {wd:.0f}°<extra></extra>",
         showlegend=False
     ))
 
-# ✅ layout MUST be outside the loop
+# Layout
 fig.update_layout(
-    title="Viento (Velocidad + Dirección)",
-    hovermode="x unified",
+    title="Viento: Velocidad y Dirección",
     xaxis=dict(
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
+        range=[start_date, end_date],
         showspikes=True,
         spikecolor="gray",
-        range=[start_date, end_date]
     ),
-    yaxis=dict(
-        range=[-5, 5],
-        title="Vector viento"
-    ),
-    width=1100,
-    height=450
+    yaxis=dict(title="Velocidad del viento (kts)"),
+    hovermode="x unified",
+    height=500,
+    width=1100
 )
 
-# ✅ must be stretch, not content
+# Render in Streamlit
 st.plotly_chart(fig, width="stretch")
 
 #fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
