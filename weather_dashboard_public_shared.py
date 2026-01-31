@@ -269,7 +269,7 @@ fig.update_layout(
     showlegend=False
 )
 
-st.plotly_chart(fig, width="content")
+st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # Wind Speed
@@ -338,7 +338,7 @@ for x, y, dx, dy, c, spd, wd in zip(
     height=450
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="content")
 
 #fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
