@@ -59,13 +59,13 @@ st.caption("Los datos meteorológicos recopilados por la estación Tempest se pr
 # -----------------------------
 @st.cache_data(ttl=60)
 def load_weather_data(nc_file):
-    ds = xr.open_dataset(nc_file)
+    ds = xr.open_dataset(nc_file, decode_timedelta=True)
     df = ds.to_dataframe().reset_index()
 
-    # Ensure timestamp
     if "time" in df.columns:
         df["Hora"] = pd.to_datetime(df["time"]) - pd.Timedelta(hours=4)
         df["timestamp_ampm"] = df["Hora"].dt.strftime("%I:%M %p")
+
     return df.sort_values("Hora")
 
 # -----------------------------
