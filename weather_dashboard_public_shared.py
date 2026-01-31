@@ -284,6 +284,11 @@ scale = 0.15
 
 v = df["wind_avg"] * np.sin(theta) * scale
 
+theta = np.deg2rad(270 - df["wind_direction"])
+scale = 0.15
+
+v = df["wind_avg"] * np.sin(theta) * scale
+
 fig = go.Figure()
 
 for x, dy, spd, wd in zip(
