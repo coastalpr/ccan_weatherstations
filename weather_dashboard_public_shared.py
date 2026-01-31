@@ -273,27 +273,7 @@ st.plotly_chart(fig, width="stretch")
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-# Convert direction to radians (meteorological → math)
-theta = np.deg2rad(270 - df["wind_direction"])
 
-# Scale factor for arrow length (tune this)
-scale = 0.02
-
-# Vector components
-u = df["wind_avg"] * np.cos(theta) * scale
-v = df["wind_avg"] * np.sin(theta) * scale
-
-def wind_color(speed):
-    if speed < 5:
-        return "blue"
-    elif speed < 15:
-        return "green"
-    elif speed < 25:
-        return "orange"
-    else:
-        return "red"
-
-colors = df["wind_avg"].apply(wind_color)
 
 # ----------------------------------------
 # Wind (Speed + Direction vectors)
