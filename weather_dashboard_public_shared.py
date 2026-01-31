@@ -298,21 +298,20 @@ colors = df["wind_avg"].apply(wind_color)
 
 fig = go.Figure()
 
-for x, y, dx, dy, c, spd, wd in zip(
+for x, dy, spd, wd in zip(
     df["Hora"],
-    np.zeros(len(df)),   # baseline
-    u,
     v,
-    colors,
     df["wind_avg"],
     df["wind_direction"]
 ):
     fig.add_trace(go.Scatter(
-        x=[x, x],          # same timestamp
-        y=[0, dy],         # arrow goes up/down
-        mode="lines+markers",
-        line=dict(color=c, width=2),
-        marker=dict(size=4),
+        x=[x, x],
+        y=[-1, dy],   # <-- baseline NOT zero
+        mode="lines",
+        line=dict(
+            color="red" if spd > 20 else "green" if spd > 10 else "blue",
+            width=3
+        ),
         hovertemplate=(
             f"Velocidad: {spd:.1f} kts<br>"
             f"Dirección: {wd:.0f}°<extra></extra>"
@@ -328,12 +327,12 @@ for x, y, dx, dy, c, spd, wd in zip(
         ticktext=tick_labels,
         tickangle=90,
         showspikes=True,
-        spikecolor='rgb(128,128,128)',
+        spikecolor="gray",
         range=[start_date, end_date]
     ),
     yaxis=dict(
-        visible=False,
-        range=[-1, 1]
+        range=[-5, 5],   # CRITICAL
+        title="Vector viento"
     ),
     height=450
 )
