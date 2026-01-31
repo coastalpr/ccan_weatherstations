@@ -344,6 +344,7 @@ fig.update_layout(
         range=[-5, 5],
         title="Vector viento"
     ),
+    width=1100,
     height=450
 )
 
