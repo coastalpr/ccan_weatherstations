@@ -296,6 +296,15 @@ def wind_color(speed):
 
 colors = df["wind_avg"].apply(wind_color)
 
+# ----------------------------------------
+# Wind (Speed + Direction vectors)
+# ----------------------------------------
+
+theta = np.deg2rad(270 - df["wind_direction"])
+scale = 0.15
+
+v = df["wind_avg"] * np.sin(theta) * scale
+
 fig = go.Figure()
 
 for x, dy, spd, wd in zip(
@@ -306,10 +315,10 @@ for x, dy, spd, wd in zip(
 ):
     fig.add_trace(go.Scatter(
         x=[x, x],
-        y=[-1, dy],   # <-- baseline NOT zero
+        y=[0, dy],
         mode="lines",
         line=dict(
-            color="red" if spd > 20 else "green" if spd > 10 else "blue",
+            color="red" if spd > 20 else "orange" if spd > 10 else "blue",
             width=3
         ),
         hovertemplate=(
@@ -318,8 +327,9 @@ for x, dy, spd, wd in zip(
         ),
         showlegend=False
     ))
-    
-    fig.update_layout(
+
+# ✅ layout MUST be outside the loop
+fig.update_layout(
     title="Viento (Velocidad + Dirección)",
     hovermode="x unified",
     xaxis=dict(
@@ -331,13 +341,14 @@ for x, dy, spd, wd in zip(
         range=[start_date, end_date]
     ),
     yaxis=dict(
-        range=[-5, 5],   # CRITICAL
+        range=[-5, 5],
         title="Vector viento"
     ),
     height=450
 )
 
-st.plotly_chart(fig, width="content")
+# ✅ must be stretch, not content
+st.plotly_chart(fig, width="stretch")
 
 #fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
