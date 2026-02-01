@@ -157,7 +157,7 @@ if not RADAR_FOLDER.exists():
 
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
-    st.warning("No TIF files found in the radar_images folder.")
+    st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
 # -----------------------------
@@ -167,45 +167,63 @@ map_lat, map_lon = 18.0, -66.5
 map_zoom = 8
 DELAY_SECONDS = 1.0
 
-# Create a placeholder for the map
+# -----------------------------
+# Placeholder for the Plotly map
+# -----------------------------
 map_placeholder = st.empty()
 
 # -----------------------------
-# Loop through TIFs and update map
+# Loop through TIFs and animate
 # -----------------------------
-while True:  # Loop indefinitely
+while True:
     for tif_path in tif_files:
         try:
-            # Open TIF
             with rasterio.open(tif_path) as src:
-                bounds = src.bounds
-                if src.crs != "EPSG:4326":
-                    bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
-
+                # Read TIF and convert to RGB image
                 img = src.read()
+                img = reshape_as_image(img)
                 if img.shape[0] == 1:
                     img = np.repeat(img, 3, axis=0)
-                img = reshape_as_image(img)
                 if img.dtype != np.uint8:
                     img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+                pil_img = Image.fromarray(img)
 
-                # Create new map for this frame
-                m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+                # Get bounds in lat/lon
+                bounds = src.bounds
+                if src.crs.to_string() != "EPSG:4326":
+                    bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
-                folium.raster_layers.ImageOverlay(
-                    name=tif_path.name,
-                    image=img,
-                    bounds=[[bounds.bottom, bounds.left], [bounds.top, bounds.right]],
-                    opacity=0.6,
-                    interactive=True,
-                    cross_origin=False,
-                    zindex=1
-                ).add_to(m)
+                # Create Plotly figure
+                fig = go.Figure()
 
-                folium.LayerControl().add_to(m)
+                # Overlay radar image
+                fig.add_layout_image(
+                    dict(
+                        source=pil_img,
+                        xref="x",
+                        yref="y",
+                        x=bounds.left,
+                        y=bounds.top,
+                        sizex=bounds.right - bounds.left,
+                        sizey=bounds.top - bounds.bottom,
+                        sizing="stretch",
+                        opacity=0.6,
+                        layer="above"
+                    )
+                )
 
-                # Update map in the same placeholder
-                map_placeholder.folium_static = st_folium(m, width=800, height=600)
+                # Mapbox background
+                fig.update_layout(
+                    mapbox=dict(
+                        style="satellite",
+                        center=dict(lat=map_lat, lon=map_lon),
+                        zoom=map_zoom
+                    ),
+                    margin={"r":0,"t":0,"l":0,"b":0}
+                )
+
+                # Display map in placeholder
+                map_placeholder.plotly_chart(fig, use_container_width=True)
 
                 time.sleep(DELAY_SECONDS)
 
@@ -617,6 +635,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
