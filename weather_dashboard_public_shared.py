@@ -192,34 +192,101 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+import plotly.express as px
+
 df_wind = df[
     (df["wind_avg"] > 0.5) &
     (df["wind_direction"].notna())
 ].iloc[::4].copy()
 
+# Convert meteorological → mathematical angle
 theta = np.deg2rad(270 - df_wind["wind_direction"])
-dy = np.sin(theta)
 
-arrow_dx = pd.Timedelta(minutes=30)
-arrow_dy = 1.5
+# Direction unit vectors
+ux = np.cos(theta)
+uy = np.sin(theta)
+
+# Normalize axes (seconds vs kts)
+x_scale = 30 * 60          # 30 minutes in seconds
+y_scale = df_wind["wind_avg"].max()
+
+# Arrow magnitude proportional to speed
+speed_norm = df_wind["wind_avg"] / df_wind["wind_avg"].max()
+
+# Final components
+dx = ux * speed_norm * x_scale
+dy = uy * speed_norm * y_scale * 0.25
 
 fig = go.Figure()
 
+colorscale = px.colors.sequential.Turbo
+norm = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
+    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
+)
 
+for i, row in df_wind.iterrows():
+    color = colorscale[int(norm.loc[i] * (len(colorscale) - 1))]
+
+    # Arrow shaft
+    fig.add_trace(go.Scatter(
+        x=[
+            row["Hora"],
+            row["Hora"] + pd.to_timedelta(dx.loc[i], unit="s")
+        ],
+        y=[
+            row["wind_avg"],
+            row["wind_avg"] + dy.loc[i]
+        ],
+        mode="lines",
+        line=dict(color=color, width=2),
+        showlegend=False,
+        hovertemplate=(
+            f"Velocidad: {row['wind_avg']:.1f} kts<br>"
+            f"Dirección: {row['wind_direction']:.0f}°"
+            "<extra></extra>"
+        )
+    ))
+
+    # Arrowhead
+    fig.add_trace(go.Scatter(
+        x=[row["Hora"] + pd.to_timedelta(dx.loc[i], unit="s")],
+        y=[row["wind_avg"] + dy.loc[i]],
+        mode="markers",
+        marker=dict(
+            symbol="triangle-up",
+            size=8,
+            angle=row["wind_direction"],
+            color=color
+        ),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+# Colorbar (dummy trace)
 fig.add_trace(go.Scatter(
-    x=df_wind["Hora"],
-    y=df_wind["wind_avg"],
+    x=[None],
+    y=[None],
     mode="markers",
     marker=dict(
-        symbol="triangle-up",
-        size=10,
-        angle=df_wind["wind_direction"],
-        color=df_wind["wind_avg"],
         colorscale="Turbo",
-        showscale=True
+        cmin=df_wind["wind_avg"].min(),
+        cmax=df_wind["wind_avg"].max(),
+        color=df_wind["wind_avg"],
+        showscale=True,
+        colorbar=dict(title="Wind speed (kts)")
     ),
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{marker.angle:.0f}°<extra></extra>"
+    hoverinfo="none"
 ))
+
+fig.update_layout(
+    title="Wind Quiver Plot",
+    xaxis_title="Hora",
+    yaxis_title="Wind speed (kts)",
+    template="plotly_white"
+)
 
 
 
@@ -504,6 +571,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
