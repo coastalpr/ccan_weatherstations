@@ -13,3 +13,4 @@ Pillow
 pydeck
 matplotlib
 netcdf4
+folium
