@@ -195,9 +195,16 @@ dy_plot = dy  # y-axis in kts
 
 # Color mapping
 colorscale = px.colors.sequential.Turbo
-df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
-    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-)
+
+for i, row in df_wind.iterrows():
+    # Normalize wind speed for this row
+    norm_val = (row["wind_avg"] - df_wind["wind_avg"].min()) / (
+        df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
+    )
+
+    # Map to color safely
+    color_idx = int(norm_val * (len(colorscale) - 1))
+    color = colorscale[color_idx]
 
 # -------------------------------
 # Build figure
@@ -445,6 +452,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
