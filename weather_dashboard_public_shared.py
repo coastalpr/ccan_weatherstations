@@ -202,14 +202,17 @@ dy_plot = dy  # already in kts
 
 # Color mapping
 colorscale = px.colors.sequential.Turbo
-# Compute normalized value
-norm_val = (row["wind_avg"] - df_wind["wind_avg"].min()) / (
-    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-)
-
-# Map to color
-color_idx = int(norm_val * (len(colorscale) - 1))
-color = colorscale[color_idx]
+for i, row in df_wind.iterrows():
+    # Normalize wind speed for this row
+    norm_val = (row["wind_avg"] - df_wind["wind_avg"].min()) / (
+        df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
+    )
+    
+    # Map to color
+    color_idx = int(norm_val * (len(colorscale) - 1))
+    color = colorscale[color_idx]
+    
+    # Now use `color` for your arrow trace
 # ----------------------------------------
 # Build figure
 # ----------------------------------------
@@ -470,6 +473,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
