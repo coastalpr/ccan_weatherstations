@@ -192,7 +192,19 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
+df_wind = df[
+    (df["wind_avg"] > 0.5) &
+    (df["wind_direction"].notna())
+].iloc[::4].copy()
+
+theta = np.deg2rad(270 - df_wind["wind_direction"])
+dy = np.sin(theta)
+
+arrow_dx = pd.Timedelta(minutes=30)
+arrow_dy = 1.5
+
 fig = go.Figure()
+
 
 fig.add_trace(go.Scatter(
     x=df_wind["Hora"],
@@ -492,6 +504,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
