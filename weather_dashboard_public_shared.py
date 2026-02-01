@@ -146,72 +146,42 @@ st.caption("Animación de radar usando imágenes locales desde radar_images/")
 from rasterio.warp import transform_bounds
 from pathlib import Path
 
-
 RADAR_FOLDER = Path("radar_images")
-DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 3.0, 1.0, step=0.5)
+DELAY_SECONDS = 1.0
 
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
-if not tif_files:
-    st.warning("No TIF files found in radar_images folder.")
-    st.stop()
+tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
 
-map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
-map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
-
-# -----------------------------
-# 1. Create a single map
-# -----------------------------
-m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
-folium.LayerControl().add_to(m)
-
-# Display the map once in a placeholder
-map_placeholder = st.empty()
-map_placeholder.st_folium(m, width=800, height=600)
-
-# -----------------------------
-# 2. Loop through TIFs and update overlay
-# -----------------------------
-overlay = None  # store the current ImageOverlay
+map_lat = 18.0
+map_lon = -66.5
+map_zoom = 12
 
 for tif_path in tif_files:
-    try:
-        with rasterio.open(tif_path) as src:
-            bounds = src.bounds
-            if src.crs != "EPSG:4326":
-                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+    with rasterio.open(tif_path) as src:
+        bounds = src.bounds
+        if src.crs != "EPSG:4326":
+            bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
-            img = src.read()
-            if img.shape[0] == 1:
-                img = np.repeat(img, 3, axis=0)
-            img = reshape_as_image(img)
-            if img.dtype != np.uint8:
-                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+        img = src.read()
+        if img.shape[0] == 1:
+            img = np.repeat(img, 3, axis=0)
+        img = reshape_as_image(img)
+        if img.dtype != np.uint8:
+            img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-            # Remove previous overlay if exists
-            if overlay:
-                m.remove_child(overlay)
+        # Create a new map every time
+        m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+        folium.raster_layers.ImageOverlay(
+            name=tif_path.name,
+            image=img,
+            bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+            opacity=0.7
+        ).add_to(m)
+        folium.LayerControl().add_to(m)
 
-            # Add new overlay
-            overlay = folium.raster_layers.ImageOverlay(
-                name=tif_path.name,
-                image=img,
-                bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
-                opacity=0.7,
-                interactive=True,
-                cross_origin=False,
-                zindex=1
-            )
-            overlay.add_to(m)
+        # Render the map (no placeholder method)
+        st_folium(m, width=800, height=600)
 
-            # Refresh map in the same placeholder
-            map_placeholder.st_folium(m, width=800, height=600)
-
-            time.sleep(DELAY_SECONDS)
-
-    except Exception as e:
-        st.error(f"Failed to load {tif_path.name}: {e}")
-
+        time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -618,6 +588,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
