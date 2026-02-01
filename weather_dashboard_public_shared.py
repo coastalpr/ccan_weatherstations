@@ -145,81 +145,77 @@ with c5:
 # -----------------------------
 # SATELLITE / RADAR LOOP
 # -----------------------------
-#st.subheader("🌐 Radar Satelital Local - Caribe")
-#st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
+st.subheader("🌐 Radar Satelital - Caribe")
+st.caption("Animación de radar usando imágenes locales desde radar_images/")
 
+from rasterio.warp import transform_bounds
+from pathlib import Path
 
-RADAR_FOLDER = "radar_images"
-MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
-ANIMATION_DELAY = 0
+RADAR_FOLDER = Path("radar_images")
 
-# GitHub API URL to list folder contents
-api_url = f"https://api.github.com/repos/coastalpr/ccan_weatherstations/contents/radar_images?ref=main"
-
-# Fetch file list
-resp = requests.get(api_url)
-if resp.status_code != 200:
-    st.error(f"Failed to fetch GitHub folder: {resp.status_code}")
+# Check folder exists
+if not RADAR_FOLDER.exists():
+    st.error(f"Radar folder not found: {RADAR_FOLDER}")
     st.stop()
 
-files = resp.json()
-tif_files = [f for f in files if f["name"].lower().endswith((".tif", ".tiff"))]
+# Get all TIF files
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 
 if not tif_files:
-    st.warning("No TIF files found in the folder.")
+    st.warning("No TIF files found in the radar_images folder.")
     st.stop()
 
-st.sidebar.write(f"Found {len(tif_files)} TIF files in the folder.")
+st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
 
 # -----------------------------
-# 2. Map settings
+# Map settings
 # -----------------------------
-lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
-zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
+map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
 
-m = folium.Map(location=[lat, lon], zoom_start=zoom, tiles="Esri.WorldImagery")
+m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
 
 # -----------------------------
-# 3. Loop through TIFs and overlay
+# Loop over TIFs and overlay
 # -----------------------------
-for tif_info in tif_files:
-    name = tif_info["name"]
-    download_url = tif_info["download_url"]
-
+for tif_path in tif_files:
+    fname = tif_path.name
     try:
-        r = requests.get(download_url)
-        r.raise_for_status()
+        with rasterio.open(tif_path) as src:
+            bounds = src.bounds
+            if src.crs != "EPSG:4326":
+                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
-        with MemoryFile(r.content) as mem:
-            with mem.open() as src:
-                img = src.read()
-                bounds = src.bounds
-                img = reshape_as_image(img)
+            img = src.read()
 
-                # Normalize to 0-255 for display
-                if img.dtype != np.uint8:
-                    img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+            # Handle single-band TIF
+            if img.shape[0] == 1:
+                img = np.repeat(img, 3, axis=0)
 
-                folium.raster_layers.ImageOverlay(
-                    name=name,
-                    image=img,
-                    bounds=[[bounds.bottom, bounds.left], [bounds.top, bounds.right]],
-                    opacity=0.6,
-                    interactive=True,
-                    cross_origin=False,
-                    zindex=1
-                ).add_to(m)
+            img = reshape_as_image(img)
+
+            # Normalize to 0-255
+            if img.dtype != np.uint8:
+                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+
+            # Overlay on map
+            folium.raster_layers.ImageOverlay(
+                name=fname,
+                image=img,
+                bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+                opacity=0.6,
+                interactive=True,
+                cross_origin=False,
+                zindex=1
+            ).add_to(m)
 
     except Exception as e:
-        st.error(f"Failed to load {name}: {e}")
+        st.error(f"Failed to load {fname}: {e}")
 
-# -----------------------------
-# 4. Add layer control and show
-# -----------------------------
+# Add layer toggle and display map
 folium.LayerControl().add_to(m)
 st_folium(m, width=800, height=600)
-
 
 # -----------------------------
 # PLOTS
@@ -627,6 +623,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
