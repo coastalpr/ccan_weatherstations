@@ -184,7 +184,7 @@ df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 # -------------------------------
 # Arrow parameters
 # -------------------------------
-arrow_len = 0.5  # same length for all arrows (y-axis units)
+arrow_len = 1  # same length for all arrows (y-axis units)
 colorscale = px.colors.sequential.Viridis  # green → yellow → red
 df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
     df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
@@ -453,6 +453,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
