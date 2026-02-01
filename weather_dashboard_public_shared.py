@@ -211,18 +211,15 @@ for tif_path in tif_files:
 # -----------------------------
 map_placeholder = st.empty()
 
-# -----------------------------
-# Animate radar frames on Mapbox
-# -----------------------------
+# Loop through frames
 for i, frame in enumerate(frames):
-    # Convert PIL image to base64 PNG
+    # Convert PIL image to base64
     img_base64 = pil_to_base64(frame["image"])
     minx, miny, maxx, maxy = frame["bounds"]
 
-    # Create empty Scattermapbox figure
-    fig = go.Figure(go.Scattermapbox())
+    # Use Scattermap instead of deprecated Scattermapbox
+    fig = go.Figure(go.Scattermap())
 
-    # Add radar image as a Mapbox raster layer
     fig.update_layout(
         mapbox=dict(
             style="satellite",
@@ -233,10 +230,10 @@ for i, frame in enumerate(frames):
                     sourcetype="image",
                     source=img_base64,
                     coordinates=[
-                        [minx, maxy],  # top-left
-                        [maxx, maxy],  # top-right
-                        [maxx, miny],  # bottom-right
-                        [minx, miny]   # bottom-left
+                        [minx, maxy],
+                        [maxx, maxy],
+                        [maxx, miny],
+                        [minx, miny]
                     ],
                     opacity=0.6
                 )
@@ -246,7 +243,7 @@ for i, frame in enumerate(frames):
         showlegend=False
     )
 
-    # Update the placeholder — ensures only one chart is displayed at a time
+    # Update the placeholder — ensures no duplicate IDs
     map_placeholder.plotly_chart(fig, use_container_width=True)
 
     # Optional delay between frames
@@ -571,6 +568,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
