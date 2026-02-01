@@ -195,81 +195,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-## ----------------------------------------
-# Air Temperature
-## ----------------------------------------
-
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
-
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
-
-# Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickmode='array',
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom',
-        #fixedrange=True,  # Disable zoom on the x-axis
-    ),
-    #yaxis=dict(
-        #fixedrange=True  # Disable zoom on the y-axis
-    #),
-    yaxis_title="Temperatura (°F)",
-    showlegend=True,
-    #showlegend=False,
-    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
-    autosize=True,  # Let Plotly automatically adjust size
-    height=500,  # Fixed height for clarity
-)
-
-# Allow horizontal scrolling by not fixing x-axis range
-fig.update_layout(
-    dragmode=False,  # Disable panning (dragging)
-    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
-    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
-    showlegend=True  # Optional: You can disable if not needed
-)
-st.plotly_chart(fig, width="stretch")
-## ----------------------------------------
-# Humidity
-## ----------------------------------------
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
-
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
-
-# Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
-    ),
-    yaxis_title="Humedad Relative (%)",
-    showlegend=False
-)
-
-st.plotly_chart(fig, width="stretch")
-
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
@@ -390,6 +315,82 @@ fig.update_layout(
 st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
+# Air Temperature
+## ----------------------------------------
+
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
+
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
+fig.update_layout(
+    hovermode="x unified",
+    xaxis=dict(
+        tickmode='array',
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom',
+        #fixedrange=True,  # Disable zoom on the x-axis
+    ),
+    #yaxis=dict(
+        #fixedrange=True  # Disable zoom on the y-axis
+    #),
+    yaxis_title="Temperatura (°F)",
+    showlegend=True,
+    #showlegend=False,
+    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
+    autosize=True,  # Let Plotly automatically adjust size
+    height=500,  # Fixed height for clarity
+)
+
+# Allow horizontal scrolling by not fixing x-axis range
+fig.update_layout(
+    dragmode=False,  # Disable panning (dragging)
+    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
+    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
+    showlegend=True  # Optional: You can disable if not needed
+)
+st.plotly_chart(fig, width="stretch")
+## ----------------------------------------
+# Humidity
+## ----------------------------------------
+fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
+
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
+fig.update_layout(
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom'
+    ),
+    yaxis_title="Humedad Relative (%)",
+    showlegend=False
+)
+
+st.plotly_chart(fig, width="stretch")
+
+
+
+## ----------------------------------------
 # Rain Accumulation
 ## ----------------------------------------
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
@@ -505,6 +506,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
