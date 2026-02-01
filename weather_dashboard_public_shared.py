@@ -192,76 +192,62 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-
-# Wind speed and direction
-speed = df["wind_avg"]       # y-axis
-direction = df["wind_direction"]  # in degrees
-time = df["Hora"]            # x-axis
-
-# Color by speed
-def wind_color(spd):
-    if spd < 10:
-        return "green"
-    elif spd < 20:
-        return "yellow"
-    elif spd < 30:
-        return "orange"
-    else:
-        return "red"
-
-colors = speed.apply(wind_color)
-
-# Arrow length scaling factor
-arrow_scale = 0.5
-
-# Convert direction to radians for plotting
-theta = np.deg2rad(270 - direction)  # meteorological to mathematical
-
-# Compute arrow endpoints
-dx = arrow_scale * np.cos(theta)
-dy = arrow_scale * np.sin(theta)
-
 # ----------------------------------------
-# Wind Direction (circular-safe)
+# Wind quiver-style plot (Speed on Y, Direction as arrows)
 # ----------------------------------------
 
-df["wind_u"] = np.cos(np.deg2rad(df["wind_direction"]))
-df["wind_v"] = np.sin(np.deg2rad(df["wind_direction"]))
+# Data
+time = df["Hora"]
+speed = df["wind_avg"]          # kts
+direction = df["wind_direction"]  # degrees (meteorological)
+
+# Convert meteorological direction → mathematical radians
+theta = np.deg2rad(270 - direction)
+
+# Arrow scaling (visual only)
+arrow_len_y = 0.6    # vertical arrow length
+arrow_len_x = pd.Timedelta(minutes=20)
+
+# Components
+dx = np.cos(theta)
+dy = np.sin(theta)
 
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(
-    x=df["Hora"],
-    y=df["wind_u"],
-    name="Componente Este-Oeste",
-    line=dict(color="royalblue"),
-    hovertemplate="U: %{y:.2f}<extra></extra>"
-))
-
-fig.add_trace(go.Scatter(
-    x=df["Hora"],
-    y=df["wind_v"],
-    name="Componente Norte-Sur",
-    line=dict(color="darkorange"),
-    hovertemplate="V: %{y:.2f}<extra></extra>"
-))
+for t, spd, dx_i, dy_i, wd in zip(time, speed, dx, dy, direction):
+    fig.add_trace(go.Scatter(
+        x=[t, t + arrow_len_x * dx_i],
+        y=[spd, spd + arrow_len_y * dy_i],
+        mode="lines",
+        line=dict(width=2),
+        showlegend=False,
+        hovertemplate=(
+            f"Velocidad: {spd:.1f} kts<br>"
+            f"Dirección: {wd:.0f}°<extra></extra>"
+        )
+    ))
 
 fig.update_layout(
-    title="Dirección del Viento (componentes)",
+    title="Viento: Velocidad (Y) y Dirección (flechas)",
     hovermode="x unified",
     xaxis=dict(
+        title="Hora",
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
+        range=[start_date, end_date],
         showspikes=True,
-        spikecolor="gray",
-        range=[start_date, end_date]
+        spikecolor="gray"
     ),
-    yaxis_title="Componente del viento",
+    yaxis=dict(
+        title="Velocidad del viento (kts)",
+        rangemode="tozero"
+    ),
     height=450
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 
 
 #fig = go.Figure()
@@ -543,6 +529,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
