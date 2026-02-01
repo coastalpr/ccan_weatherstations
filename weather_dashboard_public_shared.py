@@ -146,99 +146,114 @@ with c5:
 st.subheader("🌐 Radar Satelital - Caribe")
 st.caption("Animación de radar usando imágenes locales desde radar_images/")
 import streamlit as st
-import plotly.graph_objects as go
 import rasterio
 from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
 from pathlib import Path
 from PIL import Image
 import numpy as np
+import base64
 import time
+import plotly.graph_objects as go
 
-#st.set_page_config(layout="wide")
-#st.title("🌐 Radar Satelital Animado - Caribe (Plotly Mapbox)")
+st.set_page_config(layout="wide")
+st.title("🌐 Radar Satelital Animado - Caribe (Mapbox Raster)")
 
 # -----------------------------
 # Radar folder
 # -----------------------------
 RADAR_FOLDER = Path("radar_images")
-if not RADAR_FOLDER.exists():
-    st.error(f"Radar folder not found: {RADAR_FOLDER}")
-    st.stop()
-
-tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
-st.markdown(f"Found {len(tif_files)} radar frames.")
-
 # -----------------------------
 # Map settings
 # -----------------------------
-map_lat, map_lon = 18.0, -66.0
+map_lat, map_lon = 18.0, -66.5
 map_zoom = 8
-DELAY_SECONDS = 0.8  # Animation speed in seconds
+DELAY_SECONDS = 0.8  # animation speed
 
 # -----------------------------
-# Preload TIFs
+# Helper: Convert PIL to base64 PNG
 # -----------------------------
-# Preload images
+def pil_to_base64(pil_img):
+    from io import BytesIO
+    buffer = BytesIO()
+    pil_img.save(buffer, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode()
+
+# -----------------------------
+# Preload TIF frames
+# -----------------------------
 frames = []
 for tif_path in tif_files:
-    with rasterio.open(tif_path) as src:
-        img = src.read()
-        if img.shape[0] == 1:
-            img = np.repeat(img, 3, axis=0)
-        img = reshape_as_image(img)
-        if img.dtype != np.uint8:
-            img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
-        pil_img = Image.fromarray(img)
+    try:
+        with rasterio.open(tif_path) as src:
+            img = src.read()
+            if img.shape[0] == 1:
+                img = np.repeat(img, 3, axis=0)
+            img = reshape_as_image(img)
+            if img.dtype != np.uint8:
+                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+            pil_img = Image.fromarray(img)
 
-        bounds = src.bounds
-        if src.crs.to_string() != "EPSG:4326":
-            bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+            bounds = src.bounds
+            if src.crs.to_string() != "EPSG:4326":
+                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
-        frames.append({"image": pil_img, "bounds": bounds, "name": tif_path.name})
+            frames.append({
+                "name": tif_path.name,
+                "image": pil_img,
+                "bounds": bounds
+            })
+    except Exception as e:
+        st.error(f"Failed to load {tif_path.name}: {e}")
 
 if not frames:
     st.stop()
 
-# Single placeholder for the map
+# -----------------------------
+# Placeholder for the map
+# -----------------------------
 map_placeholder = st.empty()
 
+# -----------------------------
 # Loop through frames
+# -----------------------------
 for frame in frames:
-    fig = go.Figure()
-    fig.add_layout_image(
-        dict(
-            source=frame["image"],
-            xref="x",
-            yref="y",
-            x=frame["bounds"].left,
-            y=frame["bounds"].top,
-            sizex=frame["bounds"].right - frame["bounds"].left,
-            sizey=frame["bounds"].top - frame["bounds"].bottom,
-            sizing="stretch",
-            opacity=0.6,
-            layer="above"
-        )
-    )
+    # Convert image to base64 PNG for Mapbox raster layer
+    img_base64 = pil_to_base64(frame["image"])
+    bounds = frame["bounds"]
 
-    # OpenStreetMap background (no API key needed)
+    fig = go.Figure(go.Scattermapbox())
+
+    # Add Mapbox raster layer
     fig.update_layout(
         mapbox=dict(
-            style="open-street-map",
+            style="satellite",
             center=dict(lat=map_lat, lon=map_lon),
-            zoom=map_zoom
+            zoom=map_zoom,
+            layers=[
+                dict(
+                    sourcetype="image",
+                    source=img_base64,
+                    coordinates=[
+                        [bounds.left, bounds.top],      # top-left
+                        [bounds.right, bounds.top],     # top-right
+                        [bounds.right, bounds.bottom],  # bottom-right
+                        [bounds.left, bounds.bottom]    # bottom-left
+                    ],
+                    opacity=0.6
+                )
+            ]
         ),
         margin={"r":0,"t":0,"l":0,"b":0},
         showlegend=False
     )
 
-    # **Update the same placeholder**
     map_placeholder.plotly_chart(fig, use_container_width=True)
-
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -646,6 +661,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
