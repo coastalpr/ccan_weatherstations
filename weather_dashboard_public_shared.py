@@ -24,6 +24,8 @@ import rasterio
 from rasterio.plot import reshape_as_image
 import folium
 from streamlit_folium import st_folium
+px.set_mapbox_access_token(MAPBOX_API_KEY)
+
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
@@ -635,6 +637,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
