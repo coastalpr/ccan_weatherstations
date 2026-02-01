@@ -144,110 +144,6 @@ with c5:
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
 
 # -----------------------------
-# SATELLITE / RADAR LOOP
-# -----------------------------
-st.subheader("🌐 Radar Satelital - Caribe")
-st.caption("Animación de radar usando imágenes locales desde radar_images/")
-import streamlit as st
-import rasterio
-from rasterio.plot import reshape_as_image
-from rasterio.warp import transform_bounds
-from pathlib import Path
-from PIL import Image
-import numpy as np
-import base64
-import time
-import plotly.graph_objects as go
-
-# -----------------------------
-# Helper: Convert PIL image to base64
-# -----------------------------
-def pil_to_base64(img):
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    return "data:image/png;base64," + base64.b64encode(buffered.getvalue()).decode()
-
-# -----------------------------
-# Radar folder and files
-# -----------------------------
-RADAR_FOLDER = Path("radar_images")
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
-
-if not tif_files:
-    st.warning("No TIF files found in 'radar_images' folder.")
-    st.stop()
-
-# -----------------------------
-# Map settings
-# -----------------------------
-map_center_lat, map_center_lon = 18.0, -66.5
-map_zoom = 20
-DELAY_SECONDS = 0.8
-
-# -----------------------------
-# Preload radar frames
-# -----------------------------
-frames = []
-for tif_path in tif_files:
-    with rasterio.open(tif_path) as src:
-        img = src.read()
-        # If grayscale, convert to RGB
-        if img.shape[0] == 1:
-            img = np.repeat(img, 3, axis=0)
-        img = reshape_as_image(img)
-        # Normalize to uint8 if needed
-        if img.dtype != np.uint8:
-            img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
-        pil_img = Image.fromarray(img)
-
-        bounds = src.bounds
-        if src.crs.to_string() != "EPSG:4326":
-            bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
-
-        frames.append({"image": pil_img, "bounds": bounds})
-
-# -----------------------------
-# Placeholder for Mapbox map
-# -----------------------------
-map_placeholder = st.empty()
-
-# Loop through frames
-for i, frame in enumerate(frames):
-    # Convert PIL image to base64
-    img_base64 = pil_to_base64(frame["image"])
-    minx, miny, maxx, maxy = frame["bounds"]
-
-    # Scattermap instead of deprecated Scattermapbox
-    fig = go.Figure(go.Scattermap())
-
-    fig.update_layout(
-        mapbox=dict(
-            style="satellite",
-            center=dict(lat=map_center_lat, lon=map_center_lon),
-            zoom=map_zoom,
-            layers=[
-                dict(
-                    sourcetype="image",
-                    source=img_base64,
-                    coordinates=[
-                        [minx, maxy],
-                        [maxx, maxy],
-                        [maxx, miny],
-                        [minx, miny]
-                    ],
-                    opacity=0.6
-                )
-            ]
-        ),
-        margin={"r":0,"t":0,"l":0,"b":0},
-        showlegend=False
-    )
-
-    # ✅ Give a unique key to avoid duplicate ID errors
-    map_placeholder.plotly_chart(fig, width="content", key=f"radar_frame_{i}")
-
-    time.sleep(DELAY_SECONDS)
-# -----------------------------
 # PLOTS
 # -----------------------------
 
@@ -567,6 +463,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
