@@ -178,8 +178,16 @@ df_wind = df[
     (df["wind_avg"] > 0.5) &
     (df["wind_direction"].notna())
 ].iloc[::4].copy()  # downsample for clarity
-arrow_len = 3  # fixed length in y-axis units
 
+# Ensure Hora is datetime
+df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
+
+# ----------------------------------------
+# Arrow vectors (all same length)
+# ----------------------------------------
+arrow_len = 3  # length of arrows in y-axis units (kts)
+
+# Convert meteorological to mathematical angle
 theta = np.deg2rad(270 - df_wind["wind_direction"])
 ux = np.cos(theta)
 uy = np.sin(theta)
@@ -187,10 +195,21 @@ uy = np.sin(theta)
 dx = ux * arrow_len
 dy = uy * arrow_len
 
-# Scale dx to time axis
+# Scale dx to match datetime x-axis
 x_span = (df_wind["Hora"].max() - df_wind["Hora"].min()).total_seconds()
-dx_plot = dx / arrow_len * 0.03 * x_span  # 3% of x-axis
-dy_plot = dy
+dx_plot = dx / arrow_len * 0.03 * x_span  # 3% of x-axis span
+dy_plot = dy  # already in kts
+
+# Color mapping
+colorscale = px.colors.sequential.Turbo
+norm = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
+    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
+)
+
+# ----------------------------------------
+# Build figure
+# ----------------------------------------
+fig = go.Figure()
 
 for i, row in df_wind.iterrows():
     color = colorscale[int(norm.loc[i] * (len(colorscale) - 1))]
@@ -235,7 +254,7 @@ fig.add_trace(go.Scatter(
         cmin=df_wind["wind_avg"].min(),
         cmax=df_wind["wind_avg"].max(),
         color=df_wind["wind_avg"],
-        showscale=False,
+        showscale=True,
         colorbar=dict(title="Wind speed (kts)")
     ),
     hoverinfo="none"
@@ -247,11 +266,11 @@ fig.update_layout(
     xaxis_title="Hora",
     yaxis_title="Wind speed (kts)",
     template="plotly_white",
-    xaxis=dict(range=[start_date, end_date])
+    xaxis=dict(range=[df_wind["Hora"].min(), df_wind["Hora"].max()])
 )
 
-# Streamlit
-st.plotly_chart(fig, width="content")
+# Streamlit plot
+st.plotly_chart(fig, use_container_width=True)
 
 
 ## ----------------------------------------
@@ -447,6 +466,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
