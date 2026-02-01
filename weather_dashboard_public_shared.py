@@ -214,12 +214,15 @@ map_placeholder = st.empty()
 # -----------------------------
 # Animate radar frames on Mapbox
 # -----------------------------
-for frame in frames:
+for i, frame in enumerate(frames):
+    # Convert PIL image to base64 PNG
     img_base64 = pil_to_base64(frame["image"])
     minx, miny, maxx, maxy = frame["bounds"]
 
+    # Create empty Scattermapbox figure
     fig = go.Figure(go.Scattermapbox())
 
+    # Add radar image as a Mapbox raster layer
     fig.update_layout(
         mapbox=dict(
             style="satellite",
@@ -243,7 +246,10 @@ for frame in frames:
         showlegend=False
     )
 
-    map_placeholder.plotly_chart(fig, width="stretch")
+    # Update the placeholder — ensures only one chart is displayed at a time
+    map_placeholder.plotly_chart(fig, use_container_width=True)
+
+    # Optional delay between frames
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -565,6 +571,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
