@@ -228,37 +228,37 @@ theta = np.deg2rad(270 - direction)  # meteorological to mathematical
 dx = arrow_scale * np.cos(theta)
 dy = arrow_scale * np.sin(theta)
 
-fig = go.Figure()
+#fig = go.Figure()
 
 # Plot each arrow as a short line starting at (time, speed)
-for t, y, deltax, deltay, c, spd, wd in zip(time, speed, dx, dy, colors, speed, direction):
-    fig.add_trace(go.Scatter(
-        x=[t, t + np.timedelta64(int(deltax*3600*24), 's')],
-        y=[y, y + deltay],
-        mode="lines",
-        line=dict(color=c, width=3),
-        hovertemplate=f"Velocidad: {spd:.1f} kts<br>Dirección: {wd:.0f}°<extra></extra>",
-        showlegend=False
-    ))
+#for t, y, deltax, deltay, c, spd, wd in zip(time, speed, dx, dy, colors, speed, direction):
+#    fig.add_trace(go.Scatter(
+#        x=[t, t + np.timedelta64(int(deltax*3600*24), 's')],
+#        y=[y, y + deltay],
+#        mode="lines",
+#        line=dict(color=c, width=3),
+#        hovertemplate=f"Velocidad: {spd:.1f} kts<br>Dirección: {wd:.0f}°<extra></extra>",
+#        showlegend=False
+#    ))
 
 # Layout
-fig.update_layout(
-    title="Viento: Velocidad y Dirección",
-    xaxis=dict(
-        title="Hora",
-        tickvals=ticks,
-        ticktext=tick_labels,
-        tickangle=0,
-        showspikes=True,
-        spikecolor="gray",
-    ),
-    yaxis=dict(title="Velocidad del viento (kts)"),
-    hovermode="x unified",
-    height=450,
-    width=1100
-)
+#fig.update_layout(
+#    title="Viento: Velocidad y Dirección",
+#    xaxis=dict(
+#        title="Hora",
+#        tickvals=ticks,
+#        ticktext=tick_labels,
+#        tickangle=0,
+#        showspikes=True,
+#        spikecolor="gray",
+#    ),
+#    yaxis=dict(title="Velocidad del viento (kts)"),
+#    hovermode="x unified",
+#    height=450,
+#    width=1100
+#)
 
-st.plotly_chart(fig, width="stretch")
+#st.plotly_chart(fig, width="stretch")
 
 #fig = px.line(df, x="Hora", y="wind_avg", title="Velocidad del Viento",labels={"wind_avg": "Velocidad del Viento (kts)"})
 
@@ -506,6 +506,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
