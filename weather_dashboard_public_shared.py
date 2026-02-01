@@ -246,60 +246,6 @@ fig.update_layout(
     height=450
 )
 
-st.plotly_chart(fig, # ----------------------------------------
-# Wind quiver-style plot (Speed on Y, Direction as arrows)
-# ----------------------------------------
-
-# Data
-time = df["Hora"]
-speed = df["wind_avg"]          # kts
-direction = df["wind_direction"]  # degrees (meteorological)
-
-# Convert meteorological direction → mathematical radians
-theta = np.deg2rad(270 - direction)
-
-# Arrow scaling (visual only)
-arrow_len_y = 0.6    # vertical arrow length
-arrow_len_x = pd.Timedelta(minutes=20)
-
-# Components
-dx = np.cos(theta)
-dy = np.sin(theta)
-
-fig = go.Figure()
-
-for t, spd, dx_i, dy_i, wd in zip(time, speed, dx, dy, direction):
-    fig.add_trace(go.Scatter(
-        x=[t, t + arrow_len_x * dx_i],
-        y=[spd, spd + arrow_len_y * dy_i],
-        mode="lines",
-        line=dict(width=2),
-        showlegend=False,
-        hovertemplate=(
-            f"Velocidad: {spd:.1f} kts<br>"
-            f"Dirección: {wd:.0f}°<extra></extra>"
-        )
-    ))
-
-fig.update_layout(
-    title="Viento: Velocidad (Y) y Dirección (flechas)",
-    hovermode="x unified",
-    xaxis=dict(
-        title="Hora",
-        tickvals=ticks,
-        ticktext=tick_labels,
-        tickangle=90,
-        range=[start_date, end_date],
-        showspikes=True,
-        spikecolor="gray"
-    ),
-    yaxis=dict(
-        title="Velocidad del viento (kts)",
-        rangemode="tozero"
-    ),
-    height=450
-)
-
 st.plotly_chart(fig, width="content")
 
 )
@@ -585,6 +531,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
