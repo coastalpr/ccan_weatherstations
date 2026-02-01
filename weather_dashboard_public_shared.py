@@ -244,7 +244,7 @@ for i, frame in enumerate(frames):
     )
 
     # ✅ Give a unique key to avoid duplicate ID errors
-    map_placeholder.plotly_chart(fig, use_container_width=True, key=f"radar_frame_{i}")
+    map_placeholder.plotly_chart(fig, width="stretch", key=f"radar_frame_{i}")
 
     time.sleep(DELAY_SECONDS)
 # -----------------------------
@@ -567,6 +567,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
