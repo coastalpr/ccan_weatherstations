@@ -248,9 +248,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="content")
 
-)
-
-
 
 #fig = go.Figure()
 
@@ -531,6 +528,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
