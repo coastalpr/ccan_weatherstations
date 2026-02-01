@@ -186,15 +186,10 @@ theta = np.deg2rad(270 - df_wind["wind_direction"])
 ux = np.cos(theta)
 uy = np.sin(theta)
 
-# Normalize arrow length
-speed_norm = df_wind["wind_avg"] / df_wind["wind_avg"].max()
-
-# Scale arrows relative to axes ranges
-x_range = (df_wind["Hora"].max() - df_wind["Hora"].min()).total_seconds()
-y_range = df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-
-dx = ux * speed_norm * x_range * 0.02   # 2% of x-axis
-dy = uy * speed_norm * y_range * 0.1    # 10% of y-axis
+# Arrow length proportional to wind magnitude
+max_arrow_len = 5  # max arrow length in y-axis units (kts)
+dx = ux * df_wind["wind_avg"] / df_wind["wind_avg"].max() * max_arrow_len
+dy = uy * df_wind["wind_avg"] / df_wind["wind_avg"].max() * max_arrow_len
 
 # Color mapping
 colorscale = px.colors.sequential.Turbo
@@ -461,6 +456,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
