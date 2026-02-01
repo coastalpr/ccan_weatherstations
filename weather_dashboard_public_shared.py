@@ -193,23 +193,24 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 # ----------------------------------------
-# Wind quiver (filtered + decimated + fast)
+# Wind quiver (FIXED: visible arrows)
 # ----------------------------------------
-df_wind = df[
-    (df["wind_avg"] > 0.5) &                 # remove calm / zeros
-    (df["wind_direction"].notna())
-].copy()
 
-df_wind = df_wind.iloc[::4]   # keep every 4th point
+df_wind = df[
+    (df["wind_avg"] > 0.5) &
+    (df["wind_direction"].notna())
+].iloc[::4]   # decimate
 
 time = df_wind["Hora"]
 speed = df_wind["wind_avg"]
 direction = df_wind["wind_direction"]
 
+# meteorological → math
 theta = np.deg2rad(270 - direction)
 
-arrow_len_y = 0.6
-arrow_len_x = pd.Timedelta(minutes=20)
+# VISUAL scaling
+arrow_minutes = 20     # horizontal arrow size
+arrow_speed = 0.6      # vertical arrow size
 
 dx = np.cos(theta)
 dy = np.sin(theta)
@@ -218,8 +219,16 @@ x_vals = []
 y_vals = []
 
 for t, spd, dx_i, dy_i in zip(time, speed, dx, dy):
-    x_vals.extend([t, t + arrow_len_x * dx_i, None])
-    y_vals.extend([spd, spd + arrow_len_y * dy_i, None])
+    x_vals.extend([
+        t,
+        t + pd.Timedelta(minutes=arrow_minutes * dx_i),
+        None
+    ])
+    y_vals.extend([
+        spd,
+        spd + arrow_speed * dy_i,
+        None
+    ])
 
 fig = go.Figure()
 
@@ -232,13 +241,13 @@ fig.add_trace(go.Scatter(
 ))
 
 fig.update_layout(
-    title="Viento: Velocidad (Y) y Dirección",
+    title="Viento: Velocidad (Y) y Dirección (flechas)",
     hovermode=False,
     xaxis=dict(
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
-        range=[start_date, end_date],
+        range=[start_date, end_date]
     ),
     yaxis=dict(
         title="Velocidad del viento (kts)",
@@ -248,7 +257,6 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 
 
 
@@ -531,6 +539,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
