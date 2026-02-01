@@ -193,60 +193,56 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 # ----------------------------------------
-# Wind quiver-style plot (Speed on Y, Direction as arrows)
+# FAST quiver-style wind plot (single trace)
 # ----------------------------------------
 
-# Data
-time = df["Hora"]
-speed = df["wind_avg"]          # kts
-direction = df["wind_direction"]  # degrees (meteorological)
+df_q = df.iloc[::3]   # ↓ decimate (VERY important)
 
-# Convert meteorological direction → mathematical radians
+time = df_q["Hora"]
+speed = df_q["wind_avg"]
+direction = df_q["wind_direction"]
+
 theta = np.deg2rad(270 - direction)
 
-# Arrow scaling (visual only)
-arrow_len_y = 0.6    # vertical arrow length
+arrow_len_y = 0.6
 arrow_len_x = pd.Timedelta(minutes=20)
 
-# Components
 dx = np.cos(theta)
 dy = np.sin(theta)
 
+# Build line segments with None separators
+x_vals = []
+y_vals = []
+
+for t, spd, dx_i, dy_i in zip(time, speed, dx, dy):
+    x_vals.extend([t, t + arrow_len_x * dx_i, None])
+    y_vals.extend([spd, spd + arrow_len_y * dy_i, None])
+
 fig = go.Figure()
 
-for t, spd, dx_i, dy_i, wd in zip(time, speed, dx, dy, direction):
-    fig.add_trace(go.Scatter(
-        x=[t, t + arrow_len_x * dx_i],
-        y=[spd, spd + arrow_len_y * dy_i],
-        mode="lines",
-        line=dict(width=2),
-        showlegend=False,
-        hovertemplate=(
-            f"Velocidad: {spd:.1f} kts<br>"
-            f"Dirección: {wd:.0f}°<extra></extra>"
-        )
-    ))
+fig.add_trace(go.Scatter(
+    x=x_vals,
+    y=y_vals,
+    mode="lines",
+    line=dict(width=2),
+    hoverinfo="skip"   # 🔥 massive speed boost
+))
 
 fig.update_layout(
     title="Viento: Velocidad (Y) y Dirección (flechas)",
-    hovermode="x unified",
+    hovermode=False,
     xaxis=dict(
-        title="Hora",
         tickvals=ticks,
         ticktext=tick_labels,
         tickangle=90,
         range=[start_date, end_date],
-        showspikes=True,
-        spikecolor="gray"
     ),
-    yaxis=dict(
-        title="Velocidad del viento (kts)",
-        rangemode="tozero"
-    ),
+    yaxis=dict(title="Velocidad del viento (kts)"),
     height=450
 )
 
-st.plotly_chart(fig, width="content")
+st.plotly_chart(fig, use_container_width=True)
+
 
 
 #fig = go.Figure()
@@ -528,6 +524,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
