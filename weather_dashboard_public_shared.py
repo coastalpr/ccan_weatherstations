@@ -202,16 +202,14 @@ dy_plot = dy  # already in kts
 
 # Color mapping
 colorscale = px.colors.sequential.Turbo
-norm = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
+# Compute normalized value
+norm_val = (row["wind_avg"] - df_wind["wind_avg"].min()) / (
     df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
 )
 
-# During iteration:
-for idx, row in df_wind.iterrows():
-    # Use positional index
-    pos = df_wind.index.get_loc(idx)  # get integer position
-    color = colorscale[int(norm.iloc[pos] * (len(colorscale) - 1))]
-
+# Map to color
+color_idx = int(norm_val * (len(colorscale) - 1))
+color = colorscale[color_idx]
 # ----------------------------------------
 # Build figure
 # ----------------------------------------
@@ -472,6 +470,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
