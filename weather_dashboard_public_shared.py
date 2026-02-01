@@ -257,7 +257,7 @@ fig.update_layout(
     xaxis_title="Hora",
     yaxis_title="Wind speed (kts)",
     template="plotly_white",
-    range=[start_date, end_date]
+    xaxis=dict(range=[start_date, end_date])
 )
 
 # Streamlit
@@ -457,6 +457,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
