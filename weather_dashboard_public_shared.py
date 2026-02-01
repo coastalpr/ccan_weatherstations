@@ -158,18 +158,29 @@ import numpy as np
 import base64
 import time
 import plotly.graph_objects as go
+
+# -----------------------------
+# Paths
+# -----------------------------
+SAT_IMAGE = Path("satellite_image.png")  # Local high-res satellite PNG for your area
 RADAR_FOLDER = Path("radar_images")
+
+# -----------------------------
+# Check files
+# -----------------------------
+if not SAT_IMAGE.exists():
+    st.error(f"Satellite image not found: {SAT_IMAGE}")
+    st.stop()
+
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
-    st.warning("No TIF files found.")
+    st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
 # -----------------------------
-# Map settings
+# Load satellite image
 # -----------------------------
-map_center_lat, map_center_lon = 18.0, -66.5
-zoom = 8  # Google Maps zoom
-DELAY_SECONDS = 0.8
+sat_img = Image.open(SAT_IMAGE)
 
 # -----------------------------
 # Preload radar frames
@@ -178,9 +189,11 @@ frames = []
 for tif_path in tif_files:
     with rasterio.open(tif_path) as src:
         img = src.read()
+        # Single-band TIF
         if img.shape[0] == 1:
             img = np.repeat(img, 3, axis=0)
         img = reshape_as_image(img)
+        # Normalize to 0-255
         if img.dtype != np.uint8:
             img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
         pil_img = Image.fromarray(img)
@@ -192,83 +205,29 @@ for tif_path in tif_files:
         frames.append({"image": pil_img, "bounds": bounds})
 
 # -----------------------------
-# Google Maps static background
-# -----------------------------
-# You can use any static map URL; here is OpenStreetMap as an example
-MAP_WIDTH, MAP_HEIGHT = 600, 400
-# Center lat/lon and zoom can be used for tile URL if needed
-
-# -----------------------------
-# Loop through frames
+# Map display placeholder
 # -----------------------------
 placeholder = st.empty()
+DELAY_SECONDS = 0.8  # animation speed
 
+# -----------------------------
+# Animate radar frames
+# -----------------------------
 for frame in frames:
     fig, ax = plt.subplots(figsize=(8,6))
-
-    # Plot Google Maps / OSM as background
-    # Example: Using a static tile image from OSM
-    # You can replace with Google Maps static URL if you have an API key
-    osm_url = f"https://tile.openstreetmap.org/{zoom}/{int((map_center_lon+180)/360*2**zoom)}/{int((1-(map_center_lat+90)/180)*2**zoom)}.png"
-    try:
-        resp = requests.get(osm_url)
-        bg = Image.open(BytesIO(resp.content))
-        ax.imshow(bg, extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]])
-    except:
-        # fallback blank background
-        ax.set_facecolor('lightgray')
-
+    
+    # Show satellite background
+    ax.imshow(sat_img, extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]])
+    
     # Overlay radar TIF
     ax.imshow(frame["image"], extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]], alpha=0.6)
-
-    ax.set_xlim(frame["bounds"][0], frame["bounds"][2])
-    ax.set_ylim(frame["bounds"][1], frame["bounds"][3])
+    
+    # Remove axes
     ax.axis("off")
-
+    
+    # Display in Streamlit
     placeholder.pyplot(fig)
     plt.close(fig)
-    time.sleep(DELAY_SECONDS)
-
-# -----------------------------
-# Placeholder for the map
-# -----------------------------
-map_placeholder = st.empty()
-
-# -----------------------------
-# Loop through frames
-# -----------------------------
-for frame in frames:
-    # Convert image to base64 PNG for Mapbox raster layer
-    img_base64 = pil_to_base64(frame["image"])
-    bounds = frame["bounds"]
-
-    fig = go.Figure(go.Scattermapbox())
-
-    # Add Mapbox raster layer
-    fig.update_layout(
-        mapbox=dict(
-            style="satellite",
-            center=dict(lat=map_lat, lon=map_lon),
-            zoom=map_zoom,
-            layers=[
-                dict(
-                    sourcetype="image",
-                    source=img_base64,
-                    coordinates=[
-                        [bounds.left, bounds.top],      # top-left
-                        [bounds.right, bounds.top],     # top-right
-                        [bounds.right, bounds.bottom],  # bottom-right
-                        [bounds.left, bounds.bottom]    # bottom-left
-                    ],
-                    opacity=0.6
-                )
-            ]
-        ),
-        margin={"r":0,"t":0,"l":0,"b":0},
-        showlegend=False
-    )
-
-    map_placeholder.plotly_chart(fig, width="content")
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -590,6 +549,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
