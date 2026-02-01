@@ -145,7 +145,6 @@ with c5:
 # -----------------------------
 st.subheader("🌐 Radar Satelital - Caribe")
 st.caption("Animación de radar usando imágenes locales desde radar_images/")
-
 import streamlit as st
 import plotly.graph_objects as go
 import rasterio
@@ -163,31 +162,42 @@ st.title("🌐 Radar Satelital Animado - Caribe (Plotly Mapbox)")
 # Radar folder
 # -----------------------------
 RADAR_FOLDER = Path("radar_images")
+if not RADAR_FOLDER.exists():
+    st.error(f"Radar folder not found: {RADAR_FOLDER}")
+    st.stop()
+
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
-    st.warning("No TIF files found.")
+    st.warning("No TIF files found in radar_images folder.")
     st.stop()
+
+st.markdown(f"Found {len(tif_files)} radar frames.")
 
 # -----------------------------
 # Map settings
 # -----------------------------
 map_lat, map_lon = 18.0, -66.5
 map_zoom = 8
-DELAY_SECONDS = 0.8
+DELAY_SECONDS = 0.8  # Animation speed in seconds
 
-# Preload all TIFs as PIL images + bounds
+# -----------------------------
+# Preload TIFs
+# -----------------------------
 frames = []
 for tif_path in tif_files:
     try:
         with rasterio.open(tif_path) as src:
             img = src.read()
+            # Handle single-band
             if img.shape[0] == 1:
                 img = np.repeat(img, 3, axis=0)
             img = reshape_as_image(img)
+            # Normalize to 0-255
             if img.dtype != np.uint8:
-                img = ((img - img.min())/(img.max()-img.min())*255).astype(np.uint8)
+                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
             pil_img = Image.fromarray(img)
 
+            # Transform bounds to lat/lon if needed
             bounds = src.bounds
             if src.crs.to_string() != "EPSG:4326":
                 bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
@@ -200,11 +210,13 @@ if not frames:
     st.warning("No radar frames loaded.")
     st.stop()
 
-# Placeholder for the map
+# -----------------------------
+# Placeholder for map
+# -----------------------------
 map_placeholder = st.empty()
 
 # -----------------------------
-# Loop through frames
+# Loop through frames (animation)
 # -----------------------------
 while True:
     for frame in frames:
@@ -226,18 +238,20 @@ while True:
             )
         )
 
-        # Mapbox background
+        # Mapbox / OpenStreetMap background
         fig.update_layout(
             mapbox=dict(
-                style="open-street-map",  # public map, no token needed
+                style="open-street-map",  # Public map, no token needed
                 center=dict(lat=map_lat, lon=map_lon),
                 zoom=map_zoom
             ),
-            margin={"r":0,"t":0,"l":0,"b":0}
+            margin={"r":0,"t":0,"l":0,"b":0},
+            showlegend=False
         )
 
-        # Display in placeholder (single panel)
+        # Display in the same placeholder
         map_placeholder.plotly_chart(fig, use_container_width=True)
+
         time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -645,6 +659,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
