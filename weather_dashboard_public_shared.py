@@ -9,10 +9,6 @@ import plotly.express as px
 import datetime
 import pytz
 import pydeck as pdk
-
-# -----------------------------
-# SATELLITE / RADAR LOOP
-# -----------------------------
 import requests
 from PIL import Image
 from io import BytesIO
@@ -22,11 +18,9 @@ import os
 import itertools
 import rasterio
 import itertools
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import plotly.graph_objects as go
-
 
 # -----------------------------
 # PAGE CONFIG
@@ -199,7 +193,6 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 
-
 # Wind speed and direction
 speed = df["wind_avg"]       # y-axis
 direction = df["wind_direction"]  # in degrees
@@ -227,6 +220,49 @@ theta = np.deg2rad(270 - direction)  # meteorological to mathematical
 # Compute arrow endpoints
 dx = arrow_scale * np.cos(theta)
 dy = arrow_scale * np.sin(theta)
+
+# ----------------------------------------
+# Wind Direction (circular-safe)
+# ----------------------------------------
+
+df["wind_u"] = np.cos(np.deg2rad(df["wind_direction"]))
+df["wind_v"] = np.sin(np.deg2rad(df["wind_direction"]))
+
+fig = go.Figure()
+
+fig.add_trace(go.Scatter(
+    x=df["Hora"],
+    y=df["wind_u"],
+    name="Componente Este-Oeste",
+    line=dict(color="royalblue"),
+    hovertemplate="U: %{y:.2f}<extra></extra>"
+))
+
+fig.add_trace(go.Scatter(
+    x=df["Hora"],
+    y=df["wind_v"],
+    name="Componente Norte-Sur",
+    line=dict(color="darkorange"),
+    hovertemplate="V: %{y:.2f}<extra></extra>"
+))
+
+fig.update_layout(
+    title="Dirección del Viento (componentes)",
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,
+        tickangle=90,
+        showspikes=True,
+        spikecolor="gray",
+        range=[start_date, end_date]
+    ),
+    yaxis_title="Componente del viento",
+    height=450
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
 
 #fig = go.Figure()
 
@@ -359,6 +395,7 @@ fig.update_layout(
     showlegend=True  # Optional: You can disable if not needed
 )
 st.plotly_chart(fig, width="stretch")
+
 ## ----------------------------------------
 # Humidity
 ## ----------------------------------------
@@ -506,6 +543,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
