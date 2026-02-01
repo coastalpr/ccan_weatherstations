@@ -174,37 +174,34 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-df_wind = df[(df["wind_avg"] > 0.5) & (df["wind_direction"].notna())].iloc[::4].copy()
+df_wind = df[
+    (df["wind_avg"] > 0.5) & 
+    (df["wind_direction"].notna())
+].iloc[::2].copy()  # downsample
+
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
-# Arrow length (same for all)
-arrow_len = 3  # kts
+# -------------------------------
+# Arrow parameters
+# -------------------------------
+arrow_len = 1.5  # same length for all arrows (y-axis units)
+colorscale = px.colors.sequential.Viridis  # green → yellow → red
+df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
+    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
+)
 
-# Convert meteorological to mathematical angles
-theta = np.deg2rad(270 - df_wind["wind_direction"])
+# Compute vector components
+theta = np.deg2rad(270 - df_wind["wind_direction"])  # meteorological to mathematical
 ux = np.cos(theta)
 uy = np.sin(theta)
 
 dx = ux * arrow_len
 dy = uy * arrow_len
 
-# Scale dx for datetime axis
+# Scale dx to datetime axis (seconds)
 x_span = (df_wind["Hora"].max() - df_wind["Hora"].min()).total_seconds()
-dx_plot = dx / arrow_len * 0.03 * x_span  # 3% of x-axis span
-dy_plot = dy  # y-axis in kts
-
-# Color mapping
-colorscale = px.colors.sequential.Turbo
-
-for i, row in df_wind.iterrows():
-    # Compute normalized value directly
-    norm_val = (row["wind_avg"] - df_wind["wind_avg"].min()) / (
-        df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-    )
-
-    # Map to color
-    color_idx = int(norm_val * (len(colorscale) - 1))
-    color = colorscale[color_idx]
+dx_plot = dx / arrow_len * 0.02 * x_span  # 2% of x-axis span
+dy_plot = dy
 
 # -------------------------------
 # Build figure
@@ -213,7 +210,8 @@ fig = go.Figure()
 
 for i, row in df_wind.iterrows():
     norm_val = row["norm"]
-    color = colorscale[int(norm_val * (len(colorscale) - 1))]
+    color_idx = int(norm_val * (len(colorscale) - 1))
+    color = colorscale[color_idx]
 
     # Arrow shaft
     fig.add_trace(go.Scatter(
@@ -221,8 +219,7 @@ for i, row in df_wind.iterrows():
         y=[row["wind_avg"], row["wind_avg"] + dy_plot[i]],
         mode="lines",
         line=dict(color=color, width=2),
-        showlegend=False,
-        hovertemplate=f"Velocidad: {row['wind_avg']:.1f} kts<br>Dirección: {row['wind_direction']:.0f}°<extra></extra>"
+        showlegend=False
     ))
 
     # Arrowhead
@@ -231,19 +228,23 @@ for i, row in df_wind.iterrows():
         x=[row["Hora"] + pd.to_timedelta(dx_plot[i], unit="s")],
         y=[row["wind_avg"] + dy_plot[i]],
         mode="markers",
-        marker=dict(symbol="triangle-up", size=8, angle=arrow_angle, color=color),
+        marker=dict(symbol="triangle-up", size=6, angle=arrow_angle, color=color),
         showlegend=False,
         hoverinfo="skip"
     ))
 
-# Colorbar
+# Dummy trace for colorbar
 fig.add_trace(go.Scatter(
     x=[None], y=[None],
     mode="markers",
-    marker=dict(colorscale="Turbo", cmin=df_wind["wind_avg"].min(),
-                cmax=df_wind["wind_avg"].max(),
-                color=df_wind["wind_avg"], showscale=True,
-                colorbar=dict(title="Wind speed (kts)")),
+    marker=dict(
+        colorscale=colorscale,
+        cmin=df_wind["wind_avg"].min(),
+        cmax=df_wind["wind_avg"].max(),
+        color=df_wind["wind_avg"],
+        showscale=True,
+        colorbar=dict(title="Wind speed")
+    ),
     hoverinfo="none"
 ))
 
@@ -251,13 +252,13 @@ fig.add_trace(go.Scatter(
 fig.update_layout(
     title="Wind Quiver Plot",
     xaxis_title="Hora",
-    yaxis_title="Wind speed (kts)",
+    yaxis_title="Wind speed [kts]",
     xaxis=dict(range=[df_wind["Hora"].min(), df_wind["Hora"].max()]),
     template="plotly_white"
 )
 
+# Streamlit
 st.plotly_chart(fig, use_container_width=True)
-
 
 ## ----------------------------------------
 # Air Temperature
@@ -452,6 +453,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
