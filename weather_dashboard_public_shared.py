@@ -155,64 +155,76 @@ import numpy as np
 import base64
 import time
 import plotly.graph_objects as go
-
-st.set_page_config(layout="wide")
-st.title("🌐 Radar Satelital Animado - Caribe (Mapbox Raster)")
-
-# -----------------------------
-# Radar folder
-# -----------------------------
 RADAR_FOLDER = Path("radar_images")
-tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
-    st.warning("No TIF files found in radar_images folder.")
+    st.warning("No TIF files found.")
     st.stop()
 
 # -----------------------------
 # Map settings
 # -----------------------------
-map_lat, map_lon = 18.0, -66.5
-map_zoom = 8
-DELAY_SECONDS = 0.8  # animation speed
+map_center_lat, map_center_lon = 18.0, -66.5
+zoom = 8  # Google Maps zoom
+DELAY_SECONDS = 0.8
 
 # -----------------------------
-# Helper: Convert PIL to base64 PNG
-# -----------------------------
-def pil_to_base64(pil_img):
-    from io import BytesIO
-    buffer = BytesIO()
-    pil_img.save(buffer, format="PNG")
-    return "data:image/png;base64," + base64.b64encode(buffer.getvalue()).decode()
-
-# -----------------------------
-# Preload TIF frames
+# Preload radar frames
 # -----------------------------
 frames = []
 for tif_path in tif_files:
+    with rasterio.open(tif_path) as src:
+        img = src.read()
+        if img.shape[0] == 1:
+            img = np.repeat(img, 3, axis=0)
+        img = reshape_as_image(img)
+        if img.dtype != np.uint8:
+            img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+        pil_img = Image.fromarray(img)
+
+        bounds = src.bounds
+        if src.crs.to_string() != "EPSG:4326":
+            bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+
+        frames.append({"image": pil_img, "bounds": bounds})
+
+# -----------------------------
+# Google Maps static background
+# -----------------------------
+# You can use any static map URL; here is OpenStreetMap as an example
+MAP_WIDTH, MAP_HEIGHT = 600, 400
+# Center lat/lon and zoom can be used for tile URL if needed
+
+# -----------------------------
+# Loop through frames
+# -----------------------------
+placeholder = st.empty()
+
+for frame in frames:
+    fig, ax = plt.subplots(figsize=(8,6))
+
+    # Plot Google Maps / OSM as background
+    # Example: Using a static tile image from OSM
+    # You can replace with Google Maps static URL if you have an API key
+    osm_url = f"https://tile.openstreetmap.org/{zoom}/{int((map_center_lon+180)/360*2**zoom)}/{int((1-(map_center_lat+90)/180)*2**zoom)}.png"
     try:
-        with rasterio.open(tif_path) as src:
-            img = src.read()
-            if img.shape[0] == 1:
-                img = np.repeat(img, 3, axis=0)
-            img = reshape_as_image(img)
-            if img.dtype != np.uint8:
-                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
-            pil_img = Image.fromarray(img)
+        resp = requests.get(osm_url)
+        bg = Image.open(BytesIO(resp.content))
+        ax.imshow(bg, extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]])
+    except:
+        # fallback blank background
+        ax.set_facecolor('lightgray')
 
-            bounds = src.bounds
-            if src.crs.to_string() != "EPSG:4326":
-                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+    # Overlay radar TIF
+    ax.imshow(frame["image"], extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]], alpha=0.6)
 
-            frames.append({
-                "name": tif_path.name,
-                "image": pil_img,
-                "bounds": bounds
-            })
-    except Exception as e:
-        st.error(f"Failed to load {tif_path.name}: {e}")
+    ax.set_xlim(frame["bounds"][0], frame["bounds"][2])
+    ax.set_ylim(frame["bounds"][1], frame["bounds"][3])
+    ax.axis("off")
 
-if not frames:
-    st.stop()
+    placeholder.pyplot(fig)
+    plt.close(fig)
+    time.sleep(DELAY_SECONDS)
 
 # -----------------------------
 # Placeholder for the map
@@ -661,6 +673,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
