@@ -27,8 +27,6 @@ from streamlit_folium import st_folium
 from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
 from pathlib import Path
-#MAPBOX_API_KEY = st.secrets["MAPBOX_API_KEY"]
-#px.set_mapbox_access_token(MAPBOX_API_KEY)
 
 # -----------------------------
 # PAGE CONFIG
@@ -50,7 +48,6 @@ col1, col2 = st.columns([2, 5])  # Column width ratio: first column for the imag
 
 with col1:
     st.image(image_url, width=300)  # Adjust width as needed
-
 with col2:
     st.title(title_text)
 
@@ -191,7 +188,7 @@ df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
 )
 
 # Compute vector components
-theta = np.deg2rad(270 - df_wind["wind_direction"])  # meteorological to mathematical
+theta = np.deg2rad(df_wind["wind_direction"])  # meteorological to mathematical
 ux = np.cos(theta)
 uy = np.sin(theta)
 
@@ -224,6 +221,7 @@ for i, row in df_wind.iterrows():
 
     # Arrowhead
     arrow_angle = (270 - row["wind_direction"]) % 360
+    arrow_angle = df_wind["wind_direction"]
     fig.add_trace(go.Scatter(
         x=[row["Hora"] + pd.to_timedelta(dx_plot[i], unit="s")],
         y=[row["wind_avg"] + dy_plot[i]],
@@ -335,8 +333,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-
-
 ## ----------------------------------------
 # Rain Accumulation
 ## ----------------------------------------
@@ -365,33 +361,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-## ----------------------------------------
-# Solar Radiation
-## ----------------------------------------
-#fig = px.line(df, x="Hora", y="solar_radiation", title="Radiación Solar",labels={"solar_radiation": "Radiación Solar (Wm-2)"})
-
-#fig.update_traces(
-#    hovertemplate='%{y:.1f} °F<extra></extra>',
-#)
-
-# Layout
-#fig.update_layout(
-#    hovermode="x unified",
-#    xaxis=dict(
-#        tickvals=ticks,
-#        ticktext=tick_labels,   # date + hour for all ticks
-#        tickangle=90,
-#        showline=False,         # no black line
-#        showspikes=True,       # no vertical blue line
-#        spikecolor='rgb(128,128,128)',
-#        range=[start_date, end_date],
-#        side='bottom'
-#    ),
-#    yaxis_title="Radiación Solar (Wm-2)",
-#    showlegend=False
-#)
-
-#st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # UV
@@ -453,182 +422,5 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
