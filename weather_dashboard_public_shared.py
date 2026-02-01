@@ -175,7 +175,7 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 df_wind = df[
-    (df["wind_avg"] > 0.5) & 
+    (df["wind_avg"] > 0.1) & 
     (df["wind_direction"].notna())
 ].iloc[::2].copy()  # downsample
 
@@ -184,7 +184,7 @@ df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 # -------------------------------
 # Arrow parameters
 # -------------------------------
-arrow_len = 1.5  # same length for all arrows (y-axis units)
+arrow_len = 0.5  # same length for all arrows (y-axis units)
 colorscale = px.colors.sequential.Viridis  # green → yellow → red
 df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
     df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
@@ -242,7 +242,7 @@ fig.add_trace(go.Scatter(
         cmin=df_wind["wind_avg"].min(),
         cmax=df_wind["wind_avg"].max(),
         color=df_wind["wind_avg"],
-        showscale=True,
+        showscale=False,
         colorbar=dict(title="Wind speed")
     ),
     hoverinfo="none"
@@ -253,7 +253,7 @@ fig.update_layout(
     title="Wind Quiver Plot",
     xaxis_title="Hora",
     yaxis_title="Wind speed [kts]",
-    xaxis=dict(range=[df_wind["Hora"].min(), df_wind["Hora"].max()]),
+    xaxis=dict(range=[start_date, end_date]),
     template="plotly_white"
 )
 
@@ -453,6 +453,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
