@@ -195,6 +195,12 @@ st.markdown(
 # ----------------------------------------
 # Wind quiver (filtered + decimated + fast)
 # ----------------------------------------
+df_wind = df[
+    (df["wind_avg"] > 0.5) &                 # remove calm / zeros
+    (df["wind_direction"].notna())
+].copy()
+
+df_wind = df_wind.iloc[::4]   # keep every 4th point
 
 time = df_wind["Hora"]
 speed = df_wind["wind_avg"]
@@ -525,6 +531,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
