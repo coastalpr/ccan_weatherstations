@@ -154,7 +154,7 @@ if not RADAR_FOLDER.exists():
     st.error(f"Radar folder not found: {RADAR_FOLDER}")
     st.stop()
 
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tif"))
 
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
@@ -167,6 +167,9 @@ map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 8)
 # Placeholder to update map
 map_placeholder = st.empty()
 
+# -----------------------------
+# Loop through TIFs
+# -----------------------------
 for tif_path in tif_files:
     try:
         with rasterio.open(tif_path) as src:
@@ -182,31 +185,27 @@ for tif_path in tif_files:
             if img.dtype != np.uint8:
                 img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-            prev_frames.append((img, bounds, tif_path.name))
-            if len(prev_frames) > TRAIL_LENGTH:
-                prev_frames.pop(0)
-
             # Create Folium map
             m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
 
-            # Overlay all frames in trail
-            for i, (frame_img, frame_bounds, frame_name) in enumerate(prev_frames):
-                opacity = 0.3 + 0.7 * ((i + 1) / len(prev_frames))
-                folium.raster_layers.ImageOverlay(
-                    name=frame_name,
-                    image=frame_img,
-                    bounds=[[frame_bounds[1], frame_bounds[0]], [frame_bounds[3], frame_bounds[2]]],
-                    opacity=opacity,
-                    interactive=True,
-                    cross_origin=False,
-                    zindex=1
-                ).add_to(m)
+            # Overlay the current TIF
+            folium.raster_layers.ImageOverlay(
+                name=tif_path.name,
+                image=img,
+                bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+                opacity=0.7,
+                interactive=True,
+                cross_origin=False,
+                zindex=1
+            ).add_to(m)
 
+            # Add layer control
             folium.LayerControl().add_to(m)
 
-            # ✅ Correct function in modern streamlit_folium
+            # Update the map in Streamlit
             map_placeholder.st_folium(m, width=800, height=600)
 
+            # Wait for a short delay
             time.sleep(DELAY_SECONDS)
 
     except Exception as e:
@@ -618,6 +617,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
