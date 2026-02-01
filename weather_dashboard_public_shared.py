@@ -147,77 +147,70 @@ from rasterio.warp import transform_bounds
 from pathlib import Path
 
 RADAR_FOLDER = Path("radar_images")
-DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.1, 3.0, 0.8, step=0.1)
-map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
-map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 10)
 
-# Load TIFs
-tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
-if not tif_files:
-    st.warning("No TIF files found in radar_images folder.")
+# Check folder exists
+if not RADAR_FOLDER.exists():
+    st.error(f"Radar folder not found: {RADAR_FOLDER}")
     st.stop()
 
-# Placeholder for the Plotly map
-map_placeholder = st.empty()
+# Get all TIF files
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+
+if not tif_files:
+    st.warning("No TIF files found in the radar_images folder.")
+    st.stop()
+
+st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
 
 # -----------------------------
-# Loop through TIFs
+# Map settings
 # -----------------------------
-while True:
-    for tif_path in tif_files:
-        try:
-            with rasterio.open(tif_path) as src:
-                img = src.read()
-                img = reshape_as_image(img)
-                if img.shape[0] == 1:
-                    img = np.repeat(img, 3, axis=0)
-                if img.dtype != np.uint8:
-                    img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+map_zoom = st.sidebar.slider("Zoom Level", 1, 12, 8)
 
-                bounds = src.bounds
-                if src.crs.to_string() != "EPSG:4326":
-                    from rasterio.warp import transform_bounds
-                    bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
 
-                # Convert image to 0-1 float for Plotly
-                img_float = img.astype(np.float32)/255.0
+# -----------------------------
+# Loop over TIFs and overlay
+# -----------------------------
+for tif_path in tif_files:
+    fname = tif_path.name
+    try:
+        with rasterio.open(tif_path) as src:
+            bounds = src.bounds
+            if src.crs != "EPSG:4326":
+                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
-                # Create Plotly figure
-                fig = go.Figure()
+            img = src.read()
 
-                fig.add_layout_image(
-                    dict(
-                        source=img_float,
-                        xref="x",
-                        yref="y",
-                        x=bounds.left,
-                        y=bounds.top,
-                        sizex=bounds.right - bounds.left,
-                        sizey=bounds.top - bounds.bottom,
-                        sizing="stretch",
-                        opacity=0.6,
-                        layer="above"
-                    )
-                )
+            # Handle single-band TIF
+            if img.shape[0] == 1:
+                img = np.repeat(img, 3, axis=0)
 
-                fig.update_layout(
-                    mapbox=dict(
-                        style="satellite",
-                        center=dict(lat=map_lat, lon=map_lon),
-                        zoom=map_zoom
-                    ),
-                    mapbox_layers=[],
-                    margin={"r":0,"t":0,"l":0,"b":0},
-                    dragmode="zoom"
-                )
+            img = reshape_as_image(img)
 
-                # Show figure
-                map_placeholder.plotly_chart(fig, use_container_width=True)
-                time.sleep(DELAY_SECONDS)
+            # Normalize to 0-255
+            if img.dtype != np.uint8:
+                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-        except Exception as e:
-            st.error(f"Failed to load {tif_path.name}: {e}")
+            # Overlay on map
+            folium.raster_layers.ImageOverlay(
+                name=fname,
+                image=img,
+                bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
+                opacity=0.6,
+                interactive=True,
+                cross_origin=False,
+                zindex=1
+            ).add_to(m)
+
+    except Exception as e:
+        st.error(f"Failed to load {fname}: {e}")
+
+# Add layer toggle and display map
+folium.LayerControl().add_to(m)
+st_folium(m, width=800, height=600)
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -624,6 +617,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
