@@ -192,57 +192,23 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-# ----------------------------------------
-# Wind arrows with real arrow heads
-# ----------------------------------------
-
-df_wind = df[
-    (df["wind_avg"] > 0.5) &
-    (df["wind_direction"].notna())
-].iloc[::4].copy()
-
-theta = np.deg2rad(270 - df_wind["wind_direction"])
-dy = np.sin(theta)
-
-arrow_dx = pd.Timedelta(minutes=30)
-arrow_dy = 1.5
-
 fig = go.Figure()
 
-for t, spd, dy_i, wd in zip(
-    df_wind["Hora"],
-    df_wind["wind_avg"],
-    dy,
-    df_wind["wind_direction"]
-):
-    fig.add_annotation(
-        x=t + arrow_dx,
-        y=spd + arrow_dy * dy_i,
-        ax=t,
-        ay=spd,
-        arrowhead=3,          # <-- arrow head
-        arrowsize=1,
-        arrowwidth=2,
-        arrowcolor="black",
-        showarrow=True
-    )
-
-fig.update_layout(
-    title="Viento: Velocidad (Y) y Dirección (flechas)",
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,
-        tickangle=90,
-        range=[start_date, end_date]
+fig.add_trace(go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_avg"],
+    mode="markers",
+    marker=dict(
+        symbol="triangle-up",
+        size=10,
+        angle=df_wind["wind_direction"],
+        color=df_wind["wind_avg"],
+        colorscale="Turbo",
+        showscale=True
     ),
-    yaxis=dict(
-        title="Velocidad del viento (kts)",
-        rangemode="tozero"
-    ),
-    height=450
-)
+    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{marker.angle:.0f}°<extra></extra>"
+))
 
-st.plotly_chart(fig, use_container_width=True)
 
 
 
@@ -526,6 +492,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
