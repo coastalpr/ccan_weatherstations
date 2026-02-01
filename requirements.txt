@@ -14,3 +14,4 @@ pydeck
 matplotlib
 netcdf4
 folium
+streamlit-folium
