@@ -189,10 +189,6 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
-import plotly.express as px
 
 df_wind = df[
     (df["wind_avg"] > 0.5) &
@@ -289,7 +285,7 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 
-#fig = go.Figure()
+#
 
 # Plot each arrow as a short line starting at (time, speed)
 #for t, y, deltax, deltay, c, spd, wd in zip(time, speed, dx, dy, colors, speed, direction):
@@ -568,6 +564,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
