@@ -147,29 +147,18 @@ from rasterio.warp import transform_bounds
 from pathlib import Path
 
 RADAR_FOLDER = Path("radar_images")
-DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 5.0, 1.0, step=0.5)
-TRAIL_LENGTH = st.sidebar.slider("Trail Length (frames)", 1, 10, 3)  # how many previous frames to keep
+#DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 3.0, 1.0, step=0.5)
 
-if not RADAR_FOLDER.exists():
-    st.error(f"Radar folder not found: {RADAR_FOLDER}")
-    st.stop()
-
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tif"))
-
+tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
-map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.0, format="%.6f")
-map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 8)
+#map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
+#map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+#map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
 
-# Placeholder to update map
-map_placeholder = st.empty()
-
-# -----------------------------
 # Loop through TIFs
-# -----------------------------
 for tif_path in tif_files:
     try:
         with rasterio.open(tif_path) as src:
@@ -181,14 +170,13 @@ for tif_path in tif_files:
             if img.shape[0] == 1:
                 img = np.repeat(img, 3, axis=0)
             img = reshape_as_image(img)
-
             if img.dtype != np.uint8:
                 img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
             # Create Folium map
-            m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+            m = folium.Map(location=[18.0, -65.0], zoom_start=8, tiles="Esri.WorldImagery")
 
-            # Overlay the current TIF
+            # Overlay current TIF
             folium.raster_layers.ImageOverlay(
                 name=tif_path.name,
                 image=img,
@@ -199,13 +187,11 @@ for tif_path in tif_files:
                 zindex=1
             ).add_to(m)
 
-            # Add layer control
             folium.LayerControl().add_to(m)
 
-            # Update the map in Streamlit
-            map_placeholder.st_folium(m, width=800, height=600)
+            # ✅ Correct usage: st_folium(map_object) directly
+            st_folium(m, width=800, height=600)
 
-            # Wait for a short delay
             time.sleep(DELAY_SECONDS)
 
     except Exception as e:
@@ -617,6 +603,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
