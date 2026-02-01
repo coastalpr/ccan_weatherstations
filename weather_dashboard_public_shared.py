@@ -155,8 +155,8 @@ from PIL import Image
 import numpy as np
 import time
 
-st.set_page_config(layout="wide")
-st.title("🌐 Radar Satelital Animado - Caribe (Plotly Mapbox)")
+#st.set_page_config(layout="wide")
+#st.title("🌐 Radar Satelital Animado - Caribe (Plotly Mapbox)")
 
 # -----------------------------
 # Radar folder
@@ -166,7 +166,7 @@ if not RADAR_FOLDER.exists():
     st.error(f"Radar folder not found: {RADAR_FOLDER}")
     st.stop()
 
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
@@ -176,7 +176,7 @@ st.markdown(f"Found {len(tif_files)} radar frames.")
 # -----------------------------
 # Map settings
 # -----------------------------
-map_lat, map_lon = 18.0, -66.5
+map_lat, map_lon = 18.0, -66.0
 map_zoom = 8
 DELAY_SECONDS = 0.8  # Animation speed in seconds
 
@@ -203,55 +203,45 @@ for tif_path in tif_files:
                 bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
             frames.append({"image": pil_img, "bounds": bounds, "name": tif_path.name})
-    except Exception as e:
-        st.error(f"Failed to load {tif_path.name}: {e}")
-
 if not frames:
-    st.warning("No radar frames loaded.")
     st.stop()
 
-# -----------------------------
-# Placeholder for map
-# -----------------------------
+# Single placeholder for the map
 map_placeholder = st.empty()
 
-# -----------------------------
-# Loop through frames (animation)
-# -----------------------------
-while True:
-    for frame in frames:
-        fig = go.Figure()
-
-        # Overlay radar TIF as image
-        fig.add_layout_image(
-            dict(
-                source=frame["image"],
-                xref="x",
-                yref="y",
-                x=frame["bounds"].left,
-                y=frame["bounds"].top,
-                sizex=frame["bounds"].right - frame["bounds"].left,
-                sizey=frame["bounds"].top - frame["bounds"].bottom,
-                sizing="stretch",
-                opacity=0.6,
-                layer="above"
-            )
+# Loop through frames
+for frame in frames:
+    fig = go.Figure()
+    fig.add_layout_image(
+        dict(
+            source=frame["image"],
+            xref="x",
+            yref="y",
+            x=frame["bounds"].left,
+            y=frame["bounds"].top,
+            sizex=frame["bounds"].right - frame["bounds"].left,
+            sizey=frame["bounds"].top - frame["bounds"].bottom,
+            sizing="stretch",
+            opacity=0.6,
+            layer="above"
         )
+    )
 
-        fig.update_layout(
-            mapbox=dict(
-                style="open-street-map",  # <- no token needed
-                center=dict(lat=map_lat, lon=map_lon),
-                zoom=map_zoom
-            ),
-            margin={"r":0,"t":0,"l":0,"b":0},
-            showlegend=False
-        )
+    # OpenStreetMap background (no API key needed)
+    fig.update_layout(
+        mapbox=dict(
+            style="open-street-map",
+            center=dict(lat=map_lat, lon=map_lon),
+            zoom=map_zoom
+        ),
+        margin={"r":0,"t":0,"l":0,"b":0},
+        showlegend=False
+    )
 
-        # Display in the same placeholder
-        map_placeholder.plotly_chart(fig, use_container_width=True)
+    # **Update the same placeholder**
+    map_placeholder.plotly_chart(fig, use_container_width=True)
 
-        time.sleep(DELAY_SECONDS)
+    time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -658,6 +648,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
