@@ -206,6 +206,12 @@ norm = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
     df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
 )
 
+# During iteration:
+for idx, row in df_wind.iterrows():
+    # Use positional index
+    pos = df_wind.index.get_loc(idx)  # get integer position
+    color = colorscale[int(norm.iloc[pos] * (len(colorscale) - 1))]
+
 # ----------------------------------------
 # Build figure
 # ----------------------------------------
@@ -466,6 +472,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
