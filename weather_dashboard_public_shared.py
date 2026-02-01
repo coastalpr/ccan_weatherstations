@@ -258,7 +258,7 @@ fig.update_layout(
 )
 
 # Streamlit
-st.plotly_chart(fig, width="content")
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Air Temperature
@@ -453,6 +453,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
