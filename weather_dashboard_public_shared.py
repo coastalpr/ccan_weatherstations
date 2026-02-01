@@ -178,37 +178,27 @@ df_wind = df[
     (df["wind_avg"] > 0.5) &
     (df["wind_direction"].notna())
 ].iloc[::4].copy()  # downsample for clarity
+arrow_len = 3  # fixed length in y-axis units
 
-# Convert meteorological → mathematical angle (radians)
 theta = np.deg2rad(270 - df_wind["wind_direction"])
-
-# Unit vectors
 ux = np.cos(theta)
 uy = np.sin(theta)
 
-# Arrow length proportional to wind magnitude
-max_arrow_len = 5  # max arrow length in y-axis units (kts)
-dx = ux * df_wind["wind_avg"] / df_wind["wind_avg"].max() * max_arrow_len
-dy = uy * df_wind["wind_avg"] / df_wind["wind_avg"].max() * max_arrow_len
+dx = ux * arrow_len
+dy = uy * arrow_len
 
-# Color mapping
-colorscale = px.colors.sequential.Turbo
-norm = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
-    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-)
-
-# ----------------------------------------
-# Build figure
-# ----------------------------------------
-fig = go.Figure()
+# Scale dx to time axis
+x_span = (df_wind["Hora"].max() - df_wind["Hora"].min()).total_seconds()
+dx_plot = dx / arrow_len * 0.03 * x_span  # 3% of x-axis
+dy_plot = dy
 
 for i, row in df_wind.iterrows():
     color = colorscale[int(norm.loc[i] * (len(colorscale) - 1))]
     
     # Arrow shaft
     fig.add_trace(go.Scatter(
-        x=[row["Hora"], row["Hora"] + pd.to_timedelta(dx.loc[i], unit="s")],
-        y=[row["wind_avg"], row["wind_avg"] + dy.loc[i]],
+        x=[row["Hora"], row["Hora"] + pd.to_timedelta(dx_plot.loc[i], unit="s")],
+        y=[row["wind_avg"], row["wind_avg"] + dy_plot.loc[i]],
         mode="lines",
         line=dict(color=color, width=2),
         showlegend=False,
@@ -222,8 +212,8 @@ for i, row in df_wind.iterrows():
     # Arrowhead
     arrow_angle = (270 - row["wind_direction"]) % 360
     fig.add_trace(go.Scatter(
-        x=[row["Hora"] + pd.to_timedelta(dx.loc[i], unit="s")],
-        y=[row["wind_avg"] + dy.loc[i]],
+        x=[row["Hora"] + pd.to_timedelta(dx_plot.loc[i], unit="s")],
+        y=[row["wind_avg"] + dy_plot.loc[i]],
         mode="markers",
         marker=dict(
             symbol="triangle-up",
@@ -245,7 +235,7 @@ fig.add_trace(go.Scatter(
         cmin=df_wind["wind_avg"].min(),
         cmax=df_wind["wind_avg"].max(),
         color=df_wind["wind_avg"],
-        showscale=True,
+        showscale=False,
         colorbar=dict(title="Wind speed (kts)")
     ),
     hoverinfo="none"
@@ -261,7 +251,7 @@ fig.update_layout(
 )
 
 # Streamlit
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="content")
 
 
 ## ----------------------------------------
@@ -457,6 +447,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
