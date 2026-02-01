@@ -24,8 +24,8 @@ import rasterio
 from rasterio.plot import reshape_as_image
 import folium
 from streamlit_folium import st_folium
-MAPBOX_API_KEY = st.secrets["MAPBOX_API_KEY"]
-px.set_mapbox_access_token(MAPBOX_API_KEY)
+#MAPBOX_API_KEY = st.secrets["MAPBOX_API_KEY"]
+#px.set_mapbox_access_token(MAPBOX_API_KEY)
 
 # -----------------------------
 # PAGE CONFIG
@@ -238,10 +238,9 @@ while True:
             )
         )
 
-        # Mapbox / OpenStreetMap background
         fig.update_layout(
             mapbox=dict(
-                style="open-street-map",  # Public map, no token needed
+                style="open-street-map",  # <- no token needed
                 center=dict(lat=map_lat, lon=map_lon),
                 zoom=map_zoom
             ),
@@ -659,6 +658,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
