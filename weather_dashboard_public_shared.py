@@ -17,7 +17,6 @@ import re
 import os
 import itertools
 import rasterio
-import itertools
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import plotly.graph_objects as go
@@ -27,6 +26,9 @@ import numpy as np
 import os
 import itertools
 import time
+from rasterio.plot import reshape_as_image
+import folium
+from streamlit_folium import st_folium
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
@@ -156,7 +158,56 @@ RADAR_FOLDER = "radar_images"
 MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
 ANIMATION_DELAY = 0
 
+uploaded_files = st.file_uploader(
+    "Upload georeferenced TIF images",
+    type=["tif", "tiff"],
+    accept_multiple_files=True
+)
 
+# ------------------------------
+# 2. User inputs for map center
+# ------------------------------
+lat = st.number_input("Center Latitude", value=0.0, format="%.6f")
+lon = st.number_input("Center Longitude", value=0.0, format="%.6f")
+zoom_level = st.slider("Zoom Level", min_value=1, max_value=20, value=15)
+
+# ------------------------------
+# 3. Initialize folium map
+# ------------------------------
+m = folium.Map(location=[lat, lon], zoom_start=zoom_level, tiles="OpenStreetMap")
+
+# ------------------------------
+# 4. Process each TIF
+# ------------------------------
+if uploaded_files:
+    for uploaded_file in uploaded_files:
+        # Read TIF with rasterio
+        with rasterio.open(uploaded_file) as src:
+            img = src.read()
+            bounds = src.bounds  # (left, bottom, right, top)
+            crs = src.crs
+
+            # Convert to H x W x C for folium
+            img = reshape_as_image(img)
+
+            # Normalize image for folium if needed (0-255)
+            if img.dtype != np.uint8:
+                img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+
+            # Overlay on map
+            folium.raster_layers.ImageOverlay(
+                image=img,
+                bounds=[[bounds.bottom, bounds.left], [bounds.top, bounds.right]],
+                opacity=0.6,
+                interactive=True,
+                cross_origin=False,
+                zindex=1
+            ).add_to(m)
+
+# ------------------------------
+# 5. Display map
+# ------------------------------
+st_folium(m, width=800, height=600)
     
 # -----------------------------
 # PLOTS
@@ -564,6 +615,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
