@@ -147,35 +147,30 @@ from rasterio.warp import transform_bounds
 from pathlib import Path
 
 RADAR_FOLDER = Path("radar_images")
+DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 5.0, 1.0, step=0.5)
+TRAIL_LENGTH = st.sidebar.slider("Trail Length (frames)", 1, 10, 3)  # how many previous frames to keep
 
-# Check folder exists
 if not RADAR_FOLDER.exists():
     st.error(f"Radar folder not found: {RADAR_FOLDER}")
     st.stop()
 
-# Get all TIF files
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 
 if not tif_files:
-    st.warning("No TIF files found in the radar_images folder.")
+    st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
-st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
-
-# -----------------------------
-# Map settings
-# -----------------------------
 map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.00, format="%.6f")
-map_zoom = st.sidebar.slider("Zoom Level", 1, 12, 8)
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.0, format="%.6f")
+map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 8)
 
-m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+# Placeholder to update map
+map_placeholder = st.empty()
 
-# -----------------------------
-# Loop over TIFs and overlay
-# -----------------------------
+# Store previous frames for trail effect
+prev_frames = []
+
 for tif_path in tif_files:
-    fname = tif_path.name
     try:
         with rasterio.open(tif_path) as src:
             bounds = src.bounds
@@ -183,34 +178,46 @@ for tif_path in tif_files:
                 bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
 
             img = src.read()
-
-            # Handle single-band TIF
             if img.shape[0] == 1:
                 img = np.repeat(img, 3, axis=0)
-
             img = reshape_as_image(img)
 
-            # Normalize to 0-255
             if img.dtype != np.uint8:
                 img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-            # Overlay on map
-            folium.raster_layers.ImageOverlay(
-                name=fname,
-                image=img,
-                bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
-                opacity=0.6,
-                interactive=True,
-                cross_origin=False,
-                zindex=1
-            ).add_to(m)
+            # Add current frame to list
+            prev_frames.append((img, bounds, tif_path.name))
+
+            # Keep only last TRAIL_LENGTH frames
+            if len(prev_frames) > TRAIL_LENGTH:
+                prev_frames.pop(0)
+
+            # Create new Folium map
+            m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+
+            # Overlay all frames in trail
+            for i, (frame_img, frame_bounds, frame_name) in enumerate(prev_frames):
+                # Calculate opacity for trail: older frames more transparent
+                opacity = 0.3 + 0.7 * ((i + 1) / len(prev_frames))
+                folium.raster_layers.ImageOverlay(
+                    name=frame_name,
+                    image=frame_img,
+                    bounds=[[frame_bounds[1], frame_bounds[0]], [frame_bounds[3], frame_bounds[2]]],
+                    opacity=opacity,
+                    interactive=True,
+                    cross_origin=False,
+                    zindex=1
+                ).add_to(m)
+
+            folium.LayerControl().add_to(m)
+
+            # Update map in Streamlit
+            map_placeholder.folium_static(m, width=800, height=600)
+
+            time.sleep(DELAY_SECONDS)
 
     except Exception as e:
-        st.error(f"Failed to load {fname}: {e}")
-
-# Add layer toggle and display map
-folium.LayerControl().add_to(m)
-st_folium(m, width=800, height=600)
+        st.error(f"Failed to load {tif_path.name}: {e}")
 
 # -----------------------------
 # PLOTS
@@ -618,6 +625,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
