@@ -134,10 +134,6 @@ c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.w
 # Display the metric using c5
 c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 
-# Display the UV index with background color using markdown (custom styling)
-# In the last column (c5), display UV index and description on the same line
-# In the last column (c5), display UV index and description on the same line with matching font size
-
 with c5:
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
 
@@ -170,7 +166,7 @@ st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
 # Map settings
 # -----------------------------
 map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.25, format="%.6f")
 map_zoom = st.sidebar.slider("Zoom Level", 1, 12, 8)
 
 m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
@@ -622,6 +618,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
