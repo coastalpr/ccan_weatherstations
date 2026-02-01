@@ -243,7 +243,7 @@ for frame in frames:
         showlegend=False
     )
 
-    map_placeholder.plotly_chart(fig, use_container_width=True)
+    map_placeholder.plotly_chart(fig, width="stretch")
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -565,6 +565,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
