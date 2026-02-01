@@ -256,7 +256,8 @@ fig.update_layout(
     title="Wind Quiver Plot",
     xaxis_title="Hora",
     yaxis_title="Wind speed (kts)",
-    template="plotly_white"
+    template="plotly_white",
+    range=[start_date, end_date]
 )
 
 # Streamlit
@@ -456,6 +457,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
