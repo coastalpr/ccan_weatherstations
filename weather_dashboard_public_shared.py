@@ -217,7 +217,7 @@ for i, frame in enumerate(frames):
     img_base64 = pil_to_base64(frame["image"])
     minx, miny, maxx, maxy = frame["bounds"]
 
-    # Use Scattermap instead of deprecated Scattermapbox
+    # Scattermap instead of deprecated Scattermapbox
     fig = go.Figure(go.Scattermap())
 
     fig.update_layout(
@@ -243,10 +243,9 @@ for i, frame in enumerate(frames):
         showlegend=False
     )
 
-    # Update the placeholder — ensures no duplicate IDs
-    map_placeholder.plotly_chart(fig, use_container_width=True)
+    # ✅ Give a unique key to avoid duplicate ID errors
+    map_placeholder.plotly_chart(fig, use_container_width=True, key=f"radar_frame_{i}")
 
-    # Optional delay between frames
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -568,6 +567,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
