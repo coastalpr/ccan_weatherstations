@@ -146,21 +146,26 @@ with c5:
 st.subheader("🌐 Radar Satelital - Caribe")
 st.caption("Animación de radar usando imágenes locales desde radar_images/")
 
+import streamlit as st
+import plotly.graph_objects as go
+import rasterio
+from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
 from pathlib import Path
+from PIL import Image
+import numpy as np
+import time
 
+st.set_page_config(layout="wide")
+st.title("🌐 Radar Satelital Animado - Caribe (Plotly Mapbox)")
 
 # -----------------------------
 # Radar folder
 # -----------------------------
 RADAR_FOLDER = Path("radar_images")
-if not RADAR_FOLDER.exists():
-    st.error(f"Radar folder not found: {RADAR_FOLDER}")
-    st.stop()
-
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
-    st.warning("No TIF files found in radar_images folder.")
+    st.warning("No TIF files found.")
     st.stop()
 
 # -----------------------------
@@ -168,70 +173,72 @@ if not tif_files:
 # -----------------------------
 map_lat, map_lon = 18.0, -66.5
 map_zoom = 8
-DELAY_SECONDS = 1.0
+DELAY_SECONDS = 0.8
 
-# -----------------------------
-# Placeholder for the Plotly map
-# -----------------------------
+# Preload all TIFs as PIL images + bounds
+frames = []
+for tif_path in tif_files:
+    try:
+        with rasterio.open(tif_path) as src:
+            img = src.read()
+            if img.shape[0] == 1:
+                img = np.repeat(img, 3, axis=0)
+            img = reshape_as_image(img)
+            if img.dtype != np.uint8:
+                img = ((img - img.min())/(img.max()-img.min())*255).astype(np.uint8)
+            pil_img = Image.fromarray(img)
+
+            bounds = src.bounds
+            if src.crs.to_string() != "EPSG:4326":
+                bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+
+            frames.append({"image": pil_img, "bounds": bounds, "name": tif_path.name})
+    except Exception as e:
+        st.error(f"Failed to load {tif_path.name}: {e}")
+
+if not frames:
+    st.warning("No radar frames loaded.")
+    st.stop()
+
+# Placeholder for the map
 map_placeholder = st.empty()
 
 # -----------------------------
-# Loop through TIFs and animate
+# Loop through frames
 # -----------------------------
 while True:
-    for tif_path in tif_files:
-        try:
-            with rasterio.open(tif_path) as src:
-                # Read TIF and convert to RGB image
-                img = src.read()
-                img = reshape_as_image(img)
-                if img.shape[0] == 1:
-                    img = np.repeat(img, 3, axis=0)
-                if img.dtype != np.uint8:
-                    img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
-                pil_img = Image.fromarray(img)
+    for frame in frames:
+        fig = go.Figure()
 
-                # Get bounds in lat/lon
-                bounds = src.bounds
-                if src.crs.to_string() != "EPSG:4326":
-                    bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+        # Overlay radar TIF as image
+        fig.add_layout_image(
+            dict(
+                source=frame["image"],
+                xref="x",
+                yref="y",
+                x=frame["bounds"].left,
+                y=frame["bounds"].top,
+                sizex=frame["bounds"].right - frame["bounds"].left,
+                sizey=frame["bounds"].top - frame["bounds"].bottom,
+                sizing="stretch",
+                opacity=0.6,
+                layer="above"
+            )
+        )
 
-                # Create Plotly figure
-                fig = go.Figure()
+        # Mapbox background
+        fig.update_layout(
+            mapbox=dict(
+                style="open-street-map",  # public map, no token needed
+                center=dict(lat=map_lat, lon=map_lon),
+                zoom=map_zoom
+            ),
+            margin={"r":0,"t":0,"l":0,"b":0}
+        )
 
-                # Overlay radar image
-                fig.add_layout_image(
-                    dict(
-                        source=pil_img,
-                        xref="x",
-                        yref="y",
-                        x=bounds.left,
-                        y=bounds.top,
-                        sizex=bounds.right - bounds.left,
-                        sizey=bounds.top - bounds.bottom,
-                        sizing="stretch",
-                        opacity=0.6,
-                        layer="above"
-                    )
-                )
-
-                # Mapbox background
-                fig.update_layout(
-                    mapbox=dict(
-                        style="satellite",
-                        center=dict(lat=map_lat, lon=map_lon),
-                        zoom=map_zoom
-                    ),
-                    margin={"r":0,"t":0,"l":0,"b":0}
-                )
-
-                # Display map in placeholder
-                map_placeholder.plotly_chart(fig, width="content")
-
-                time.sleep(DELAY_SECONDS)
-
-        except Exception as e:
-            st.error(f"Failed to load {tif_path.name}: {e}")
+        # Display in placeholder (single panel)
+        map_placeholder.plotly_chart(fig, use_container_width=True)
+        time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
 # -----------------------------
@@ -638,6 +645,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
