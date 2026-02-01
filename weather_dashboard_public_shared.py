@@ -163,7 +163,7 @@ st.title("🌐 Radar Satelital Animado - Caribe (Mapbox Raster)")
 # Radar folder
 # -----------------------------
 RADAR_FOLDER = Path("radar_images")
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
@@ -253,7 +253,7 @@ for frame in frames:
         showlegend=False
     )
 
-    map_placeholder.plotly_chart(fig, use_container_width=True)
+    map_placeholder.plotly_chart(fig, width="content")
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -661,6 +661,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
