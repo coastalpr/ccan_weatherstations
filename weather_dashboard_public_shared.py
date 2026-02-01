@@ -166,7 +166,7 @@ st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
 # Map settings
 # -----------------------------
 map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-map_lon = st.sidebar.number_input("Center Longitude", value=-66.25, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.00, format="%.6f")
 map_zoom = st.sidebar.slider("Zoom Level", 1, 12, 8)
 
 m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
@@ -618,6 +618,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
