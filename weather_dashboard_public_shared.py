@@ -193,14 +193,12 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 # ----------------------------------------
-# FAST quiver-style wind plot (single trace)
+# Wind quiver (filtered + decimated + fast)
 # ----------------------------------------
 
-df_q = df.iloc[::3]   # ↓ decimate (VERY important)
-
-time = df_q["Hora"]
-speed = df_q["wind_avg"]
-direction = df_q["wind_direction"]
+time = df_wind["Hora"]
+speed = df_wind["wind_avg"]
+direction = df_wind["wind_direction"]
 
 theta = np.deg2rad(270 - direction)
 
@@ -210,7 +208,6 @@ arrow_len_x = pd.Timedelta(minutes=20)
 dx = np.cos(theta)
 dy = np.sin(theta)
 
-# Build line segments with None separators
 x_vals = []
 y_vals = []
 
@@ -225,11 +222,11 @@ fig.add_trace(go.Scatter(
     y=y_vals,
     mode="lines",
     line=dict(width=2),
-    hoverinfo="skip"   # 🔥 massive speed boost
+    hoverinfo="skip"
 ))
 
 fig.update_layout(
-    title="Viento: Velocidad (Y) y Dirección (flechas)",
+    title="Viento: Velocidad (Y) y Dirección",
     hovermode=False,
     xaxis=dict(
         tickvals=ticks,
@@ -237,11 +234,15 @@ fig.update_layout(
         tickangle=90,
         range=[start_date, end_date],
     ),
-    yaxis=dict(title="Velocidad del viento (kts)"),
+    yaxis=dict(
+        title="Velocidad del viento (kts)",
+        rangemode="tozero"
+    ),
     height=450
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 
 
 
@@ -524,6 +525,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
