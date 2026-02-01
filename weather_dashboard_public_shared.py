@@ -123,7 +123,6 @@ else:
     description = "Riesgo: Extremo"
 
 
-
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
 c1, c2, c3, c4, c5 = st.columns(5)
@@ -172,7 +171,7 @@ st.sidebar.write(f"Found {len(tif_files)} local TIF files.")
 # -----------------------------
 map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
 map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
-map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
+map_zoom = st.sidebar.slider("Zoom Level", 1, 12, 12)
 
 m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
 
@@ -623,6 +622,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
