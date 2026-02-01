@@ -148,29 +148,74 @@ from pathlib import Path
 
 RADAR_FOLDER = Path("radar_images")
 DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.1, 3.0, 0.8, step=0.1)
+map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 10)
 
-# Load TIF files
-tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+# Load TIFs
+tif_files = sorted(RADAR_FOLDER.glob("*.tif"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
-# Placeholder to show radar frames
-radar_placeholder = st.empty()
+# Placeholder for the Plotly map
+map_placeholder = st.empty()
 
 # -----------------------------
-# Loop through radar frames
+# Loop through TIFs
 # -----------------------------
-while True:  # Loop indefinitely
+while True:
     for tif_path in tif_files:
         try:
-            img = Image.open(tif_path)
-            radar_placeholder.image(
-                img,
-                caption=tif_path.name,
-                use_column_width=True
-            )
-            time.sleep(DELAY_SECONDS)
+            with rasterio.open(tif_path) as src:
+                img = src.read()
+                img = reshape_as_image(img)
+                if img.shape[0] == 1:
+                    img = np.repeat(img, 3, axis=0)
+                if img.dtype != np.uint8:
+                    img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
+
+                bounds = src.bounds
+                if src.crs.to_string() != "EPSG:4326":
+                    from rasterio.warp import transform_bounds
+                    bounds = transform_bounds(src.crs, "EPSG:4326", *bounds)
+
+                # Convert image to 0-1 float for Plotly
+                img_float = img.astype(np.float32)/255.0
+
+                # Create Plotly figure
+                fig = go.Figure()
+
+                fig.add_layout_image(
+                    dict(
+                        source=img_float,
+                        xref="x",
+                        yref="y",
+                        x=bounds.left,
+                        y=bounds.top,
+                        sizex=bounds.right - bounds.left,
+                        sizey=bounds.top - bounds.bottom,
+                        sizing="stretch",
+                        opacity=0.6,
+                        layer="above"
+                    )
+                )
+
+                fig.update_layout(
+                    mapbox=dict(
+                        style="satellite",
+                        center=dict(lat=map_lat, lon=map_lon),
+                        zoom=map_zoom
+                    ),
+                    mapbox_layers=[],
+                    margin={"r":0,"t":0,"l":0,"b":0},
+                    dragmode="zoom"
+                )
+
+                # Show figure
+                map_placeholder.plotly_chart(fig, use_container_width=True)
+                time.sleep(DELAY_SECONDS)
+
         except Exception as e:
             st.error(f"Failed to load {tif_path.name}: {e}")
 # -----------------------------
@@ -579,6 +624,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
