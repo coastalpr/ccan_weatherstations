@@ -160,27 +160,29 @@ import time
 import plotly.graph_objects as go
 
 # -----------------------------
-# Paths
+# Helper: Convert PIL image to base64
 # -----------------------------
-SAT_IMAGE = Path("satellite_image.png")  # Local high-res satellite PNG for your area
+def pil_to_base64(img):
+    buffered = BytesIO()
+    img.save(buffered, format="PNG")
+    return "data:image/png;base64," + base64.b64encode(buffered.getvalue()).decode()
+
+# -----------------------------
+# Radar folder and files
+# -----------------------------
 RADAR_FOLDER = Path("radar_images")
-
-# -----------------------------
-# Check files
-# -----------------------------
-if not SAT_IMAGE.exists():
-    st.error(f"Satellite image not found: {SAT_IMAGE}")
-    st.stop()
-
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
+
 if not tif_files:
-    st.warning("No TIF files found in radar_images folder.")
+    st.warning("No TIF files found in 'radar_images' folder.")
     st.stop()
 
 # -----------------------------
-# Load satellite image
+# Map settings
 # -----------------------------
-sat_img = Image.open(SAT_IMAGE)
+map_center_lat, map_center_lon = 18.0, -66.5
+map_zoom = 8
+DELAY_SECONDS = 0.8
 
 # -----------------------------
 # Preload radar frames
@@ -189,11 +191,11 @@ frames = []
 for tif_path in tif_files:
     with rasterio.open(tif_path) as src:
         img = src.read()
-        # Single-band TIF
+        # If grayscale, convert to RGB
         if img.shape[0] == 1:
             img = np.repeat(img, 3, axis=0)
         img = reshape_as_image(img)
-        # Normalize to 0-255
+        # Normalize to uint8 if needed
         if img.dtype != np.uint8:
             img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
         pil_img = Image.fromarray(img)
@@ -205,29 +207,43 @@ for tif_path in tif_files:
         frames.append({"image": pil_img, "bounds": bounds})
 
 # -----------------------------
-# Map display placeholder
+# Placeholder for Mapbox map
 # -----------------------------
-placeholder = st.empty()
-DELAY_SECONDS = 0.8  # animation speed
+map_placeholder = st.empty()
 
 # -----------------------------
-# Animate radar frames
+# Animate radar frames on Mapbox
 # -----------------------------
 for frame in frames:
-    fig, ax = plt.subplots(figsize=(8,6))
-    
-    # Show satellite background
-    ax.imshow(sat_img, extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]])
-    
-    # Overlay radar TIF
-    ax.imshow(frame["image"], extent=[frame["bounds"][0], frame["bounds"][2], frame["bounds"][1], frame["bounds"][3]], alpha=0.6)
-    
-    # Remove axes
-    ax.axis("off")
-    
-    # Display in Streamlit
-    placeholder.pyplot(fig)
-    plt.close(fig)
+    img_base64 = pil_to_base64(frame["image"])
+    minx, miny, maxx, maxy = frame["bounds"]
+
+    fig = go.Figure(go.Scattermapbox())
+
+    fig.update_layout(
+        mapbox=dict(
+            style="satellite",
+            center=dict(lat=map_center_lat, lon=map_center_lon),
+            zoom=map_zoom,
+            layers=[
+                dict(
+                    sourcetype="image",
+                    source=img_base64,
+                    coordinates=[
+                        [minx, maxy],  # top-left
+                        [maxx, maxy],  # top-right
+                        [maxx, miny],  # bottom-right
+                        [minx, miny]   # bottom-left
+                    ],
+                    opacity=0.6
+                )
+            ]
+        ),
+        margin={"r":0,"t":0,"l":0,"b":0},
+        showlegend=False
+    )
+
+    map_placeholder.plotly_chart(fig, use_container_width=True)
     time.sleep(DELAY_SECONDS)
 # -----------------------------
 # PLOTS
@@ -549,6 +565,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
