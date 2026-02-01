@@ -21,7 +21,12 @@ import itertools
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import plotly.graph_objects as go
-
+import rasterio
+from PIL import Image
+import numpy as np
+import os
+import itertools
+import time
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
@@ -146,14 +151,6 @@ with c5:
 #st.subheader("🌐 Radar Satelital Local - Caribe")
 #st.caption("Animación de radar usando imágenes locales descargadas de MRMS")
 
-import streamlit as st
-import pydeck as pdk
-import rasterio
-from PIL import Image
-import numpy as np
-import os
-import itertools
-import time
 
 RADAR_FOLDER = "radar_images"
 MAPBOX_TOKEN = st.secrets["MAPBOX_API_KEY"]
@@ -571,6 +568,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
