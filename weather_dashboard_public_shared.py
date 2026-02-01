@@ -181,7 +181,7 @@ if not tif_files:
 # Map settings
 # -----------------------------
 map_center_lat, map_center_lon = 18.0, -66.5
-map_zoom = 8
+map_zoom = 20
 DELAY_SECONDS = 0.8
 
 # -----------------------------
@@ -244,7 +244,7 @@ for i, frame in enumerate(frames):
     )
 
     # ✅ Give a unique key to avoid duplicate ID errors
-    map_placeholder.plotly_chart(fig, width="stretch", key=f"radar_frame_{i}")
+    map_placeholder.plotly_chart(fig, width="content", key=f"radar_frame_{i}")
 
     time.sleep(DELAY_SECONDS)
 # -----------------------------
@@ -567,6 +567,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
