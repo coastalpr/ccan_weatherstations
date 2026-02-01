@@ -193,56 +193,42 @@ st.markdown(
 # Wind Speed
 ## ----------------------------------------
 # ----------------------------------------
-# Wind quiver (FIXED: visible arrows)
+# Wind arrows with real arrow heads
 # ----------------------------------------
 
 df_wind = df[
     (df["wind_avg"] > 0.5) &
     (df["wind_direction"].notna())
-].iloc[::4]   # decimate
+].iloc[::4].copy()
 
-time = df_wind["Hora"]
-speed = df_wind["wind_avg"]
-direction = df_wind["wind_direction"]
-
-# meteorological → math
-theta = np.deg2rad(270 - direction)
-
-# VISUAL scaling
-arrow_minutes = 20     # horizontal arrow size
-arrow_speed = 0.6      # vertical arrow size
-
-dx = np.cos(theta)
+theta = np.deg2rad(270 - df_wind["wind_direction"])
 dy = np.sin(theta)
 
-x_vals = []
-y_vals = []
-
-for t, spd, dx_i, dy_i in zip(time, speed, dx, dy):
-    x_vals.extend([
-        t,
-        t + pd.Timedelta(minutes=arrow_minutes * dx_i),
-        None
-    ])
-    y_vals.extend([
-        spd,
-        spd + arrow_speed * dy_i,
-        None
-    ])
+arrow_dx = pd.Timedelta(minutes=30)
+arrow_dy = 1.5
 
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(
-    x=x_vals,
-    y=y_vals,
-    mode="lines",
-    line=dict(width=2),
-    hoverinfo="skip"
-))
+for t, spd, dy_i, wd in zip(
+    df_wind["Hora"],
+    df_wind["wind_avg"],
+    dy,
+    df_wind["wind_direction"]
+):
+    fig.add_annotation(
+        x=t + arrow_dx,
+        y=spd + arrow_dy * dy_i,
+        ax=t,
+        ay=spd,
+        arrowhead=3,          # <-- arrow head
+        arrowsize=1,
+        arrowwidth=2,
+        arrowcolor="black",
+        showarrow=True
+    )
 
 fig.update_layout(
     title="Viento: Velocidad (Y) y Dirección (flechas)",
-    hovermode=False,
     xaxis=dict(
         tickvals=ticks,
         ticktext=tick_labels,
@@ -257,6 +243,7 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 
 
 
@@ -539,6 +526,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
