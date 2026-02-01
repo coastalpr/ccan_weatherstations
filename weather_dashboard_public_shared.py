@@ -167,9 +167,6 @@ map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 8)
 # Placeholder to update map
 map_placeholder = st.empty()
 
-# Store previous frames for trail effect
-prev_frames = []
-
 for tif_path in tif_files:
     try:
         with rasterio.open(tif_path) as src:
@@ -185,19 +182,15 @@ for tif_path in tif_files:
             if img.dtype != np.uint8:
                 img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-            # Add current frame to list
             prev_frames.append((img, bounds, tif_path.name))
-
-            # Keep only last TRAIL_LENGTH frames
             if len(prev_frames) > TRAIL_LENGTH:
                 prev_frames.pop(0)
 
-            # Create new Folium map
+            # Create Folium map
             m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
 
             # Overlay all frames in trail
             for i, (frame_img, frame_bounds, frame_name) in enumerate(prev_frames):
-                # Calculate opacity for trail: older frames more transparent
                 opacity = 0.3 + 0.7 * ((i + 1) / len(prev_frames))
                 folium.raster_layers.ImageOverlay(
                     name=frame_name,
@@ -211,8 +204,8 @@ for tif_path in tif_files:
 
             folium.LayerControl().add_to(m)
 
-            # Update map in Streamlit
-            map_placeholder.folium_static(m, width=800, height=600)
+            # ✅ Correct function in modern streamlit_folium
+            map_placeholder.st_folium(m, width=800, height=600)
 
             time.sleep(DELAY_SECONDS)
 
@@ -625,6 +618,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
