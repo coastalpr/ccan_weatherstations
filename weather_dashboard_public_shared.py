@@ -146,19 +146,34 @@ st.caption("Animación de radar usando imágenes locales desde radar_images/")
 from rasterio.warp import transform_bounds
 from pathlib import Path
 
+
 RADAR_FOLDER = Path("radar_images")
-#DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 3.0, 1.0, step=0.5)
+DELAY_SECONDS = st.sidebar.slider("Animation delay (seconds)", 0.5, 3.0, 1.0, step=0.5)
 
 tif_files = sorted(RADAR_FOLDER.glob("*.tif")) + sorted(RADAR_FOLDER.glob("*.tiff"))
 if not tif_files:
     st.warning("No TIF files found in radar_images folder.")
     st.stop()
 
-#map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
-#map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
-#map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
+map_lat = st.sidebar.number_input("Center Latitude", value=18.0, format="%.6f")
+map_lon = st.sidebar.number_input("Center Longitude", value=-66.5, format="%.6f")
+map_zoom = st.sidebar.slider("Zoom Level", 1, 20, 12)
 
-# Loop through TIFs
+# -----------------------------
+# 1. Create a single map
+# -----------------------------
+m = folium.Map(location=[map_lat, map_lon], zoom_start=map_zoom, tiles="Esri.WorldImagery")
+folium.LayerControl().add_to(m)
+
+# Display the map once in a placeholder
+map_placeholder = st.empty()
+map_placeholder.st_folium(m, width=800, height=600)
+
+# -----------------------------
+# 2. Loop through TIFs and update overlay
+# -----------------------------
+overlay = None  # store the current ImageOverlay
+
 for tif_path in tif_files:
     try:
         with rasterio.open(tif_path) as src:
@@ -173,11 +188,12 @@ for tif_path in tif_files:
             if img.dtype != np.uint8:
                 img = ((img - img.min()) / (img.max() - img.min()) * 255).astype(np.uint8)
 
-            # Create Folium map
-            m = folium.Map(location=[18.0, -65.0], zoom_start=8, tiles="Esri.WorldImagery")
+            # Remove previous overlay if exists
+            if overlay:
+                m.remove_child(overlay)
 
-            # Overlay current TIF
-            folium.raster_layers.ImageOverlay(
+            # Add new overlay
+            overlay = folium.raster_layers.ImageOverlay(
                 name=tif_path.name,
                 image=img,
                 bounds=[[bounds[1], bounds[0]], [bounds[3], bounds[2]]],
@@ -185,12 +201,11 @@ for tif_path in tif_files:
                 interactive=True,
                 cross_origin=False,
                 zindex=1
-            ).add_to(m)
+            )
+            overlay.add_to(m)
 
-            folium.LayerControl().add_to(m)
-
-            # ✅ Correct usage: st_folium(map_object) directly
-            st_folium(m, width=800, height=600)
+            # Refresh map in the same placeholder
+            map_placeholder.st_folium(m, width=800, height=600)
 
             time.sleep(DELAY_SECONDS)
 
@@ -603,6 +618,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
