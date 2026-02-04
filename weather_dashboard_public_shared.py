@@ -198,7 +198,7 @@ max_speed = speeds.max()
 from datetime import timedelta
 
 annotations = []
-scale = 0.8
+scale = 0.4
 
 for _, row in df_wind.iterrows():
     u, v = wind_to_uv(row.wind_direction, 1)
@@ -251,13 +251,13 @@ scatter = go.Scatter(
     y=speeds,
     mode="markers",
     marker=dict(
-        size=12,
+        size=8,
         color=speeds,
         colorscale="RdYlGn",
         reversescale=True,
         opacity=0.7,
         colorbar=dict(
-            title="Wind Speed (km/h)"
+            title="(nudos)"
         ),
     ),
     hovertemplate=(
@@ -272,17 +272,13 @@ scatter = go.Scatter(
 fig = go.Figure(data=[scatter])
 
 fig.update_layout(
-    title=dict(
-        text="Wind Speed and Direction Over Time",
-        font=dict(size=18),
-    ),
     xaxis=dict(
         title="Time",
         type="date",
         tickformat="%H:%M",
     ),
     yaxis=dict(
-        title="Wind Speed (km/h)",
+        title="Velocidad de Viento (nudos)",
         range=[0, max_speed * 1.2],
     ),
     annotations=annotations,
@@ -457,6 +453,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
