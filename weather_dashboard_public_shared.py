@@ -216,13 +216,13 @@ scale = 0.8
 for _, row in df_wind.iterrows():
     u, v = wind_to_uv(row.wind_direction, 1)
     
-    # normalize speed for color
+    # Safe normalization
     if max_speed > min_speed:
         norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
     else:
-        norm_speed = 0.0
+        norm_speed = 0.0  # fallback if all wind speeds are equal
     
-    # Choose color based on norm_speed ranges
+    # Color by speed categories
     if norm_speed < 0.10:
         arrow_color = "#08306b"
     elif norm_speed < 0.25:
@@ -242,6 +242,7 @@ for _, row in df_wind.iterrows():
     arrow_end_time = row.Hora + timedelta(hours=u * scale * norm_speed)
     arrow_end_speed = row.wind_avg + v * scale * norm_speed * 10
     
+    # Append annotation safely
     annotations.append(dict(
         x=arrow_end_time,
         y=arrow_end_speed,
@@ -436,6 +437,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
