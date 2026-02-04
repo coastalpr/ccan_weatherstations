@@ -179,7 +179,7 @@ df_wind = df[
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 
-df = pd.DataFrame(windData)
+df = pd.DataFrame(df_wind)
 df["datetime"] = pd.to_datetime(df["datetime"])
 
 times =   df["Hora"] 
@@ -453,5 +453,6 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
