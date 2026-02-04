@@ -243,7 +243,7 @@ for _, row in df_wind.iterrows():
     arrow_end_speed = row.wind_avg + v * scale * norm_speed * 10
     
     # Append annotation safely
-        annotations.append(
+    annotations.append(
         dict(
             x=arrow_end_time,
             y=arrow_end_speed,
@@ -438,6 +438,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
