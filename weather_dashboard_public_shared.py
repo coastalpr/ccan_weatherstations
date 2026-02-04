@@ -243,27 +243,28 @@ for _, row in df_wind.iterrows():
     arrow_end_speed = row.wind_avg + v * scale * norm_speed * 10
     
     # Append annotation safely
-    annotations.append(dict(
-        x=arrow_end_time,
-        y=arrow_end_speed,
-        ax=row.Hora,
-        ay=row.wind_avg,
-        xref="x",
-        yref="y",
-        axref="x",
-        ayref="y",
-        arrowhead=2,
-        arrowsize=1,
-        arrowwidth=1,
-        arrowcolor=arrow_color,
-        showarrow=True,
-        hovertext=(
-            f"Time: {row.Hora}<br>"
-            f"Speed: {row.wind_avg:.1f} kts<br>"
-            f"Direction: {row.wind_direction:.0f}°"
-        ),
-    ))
-
+        annotations.append(
+        dict(
+            x=arrow_end_time,
+            y=arrow_end_speed,
+            ax=row.Hora,
+            ay=row.wind_avg,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            arrowhead=3,
+            arrowsize=0.5,
+            arrowwidth=2,
+            arrowcolor=arrow_color,
+            showarrow=True,
+            hovertext=(
+                f"Time: {row.Hora}<br>"
+                f"Speed: {row.wind_avg:.1f} kts<br>"
+                f"Direction: {row.wind_direction:.0f}°"
+            ),
+        )
+    )
 # ----------------------------
 # Scatter points (same color logic)
 # ----------------------------
@@ -437,6 +438,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
