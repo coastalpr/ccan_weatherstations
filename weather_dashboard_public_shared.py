@@ -234,8 +234,8 @@ for _, row in df_wind.iterrows():
             axref="x",
             ayref="y",
             arrowhead=2,
-            arrowsize=1.8,
-            arrowwidth=4,
+            arrowsize=1,
+            arrowwidth=1,
             arrowcolor=arrow_color,
             showarrow=True,
             hovertext=(
@@ -457,6 +457,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
