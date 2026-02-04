@@ -176,6 +176,13 @@ df_wind = df[
     (df["wind_direction"].notna())
 ].iloc[::2].copy()  # downsample
 
+def wind_to_uv(wd_deg, magnitude=1.0):
+    # Convert meteorological degrees to radians
+    rad = np.deg2rad(wd_deg)
+    u = np.cos(rad) * magnitude
+    v = np.sin(rad) * magnitude
+    return u, v
+    
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
@@ -449,6 +456,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
