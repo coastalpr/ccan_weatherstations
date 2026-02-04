@@ -195,39 +195,40 @@ max_speed = speeds.max()
 # -------------------------------
 # Arrow parameters
 # -------------------------------
-annotations = []
+from datetime import timedelta
 
+annotations = []
 scale = 0.8
 
-for _, row in df.iterrows():
-    u, v = wind_to_uv(row.wd, 1)
+for _, row in df_wind.iterrows():
+    u, v = wind_to_uv(row.wind_direction, 1)
 
-    speed_scale = row.ws / max_speed
+    speed_scale = row.wind_avg / max_speed
 
     # Horizontal (time) offset
-    arrow_end_time = row.datetime + timedelta(
+    arrow_end_time = row.Hora + timedelta(
         hours=u * scale * speed_scale
     )
 
     # Vertical (speed) offset
-    arrow_end_speed = row.ws + v * scale * speed_scale * 10
+    arrow_end_speed = row.wind_avg + v * scale * speed_scale * 10
 
     # RdYlGn color logic
-    norm_speed = (row.ws - min_speed) / (max_speed - min_speed)
+    norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
 
     if norm_speed < 0.33:
-        arrow_color = "#1a9850"   # green
+        arrow_color = "#1a9850"
     elif norm_speed < 0.66:
-        arrow_color = "#ffffbf"   # yellow
+        arrow_color = "#ffffbf"
     else:
-        arrow_color = "#d73027"   # red
+        arrow_color = "#d73027"
 
     annotations.append(
         dict(
             x=arrow_end_time,
             y=arrow_end_speed,
-            ax=row.datetime,
-            ay=row.ws,
+            ax=row.Hora,
+            ay=row.wind_avg,
             xref="x",
             yref="y",
             axref="x",
@@ -238,9 +239,9 @@ for _, row in df.iterrows():
             arrowcolor=arrow_color,
             showarrow=True,
             hovertext=(
-                f"Time: {row.datetime}<br>"
-                f"Speed: {row.ws} km/h<br>"
-                f"Direction: {row.wd}°"
+                f"Time: {row.Hora}<br>"
+                f"Speed: {row.wind_avg:.1f} kts<br>"
+                f"Direction: {row.wind_direction:.0f}°"
             ),
         )
     )
@@ -456,6 +457,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
