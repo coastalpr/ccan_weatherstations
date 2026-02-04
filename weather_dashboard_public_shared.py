@@ -178,85 +178,116 @@ df_wind = df[
 
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
+
+df = pd.DataFrame(windData)
+df["datetime"] = pd.to_datetime(df["datetime"])
+
+times =   df["Hora"] 
+speeds = df["wind_avg"] 
+directions = df["wind_direction"]
+
+min_speed = speeds.min()
+max_speed = speeds.max()
+
 # -------------------------------
 # Arrow parameters
 # -------------------------------
-arrow_len = 1  # same length for all arrows (y-axis units)
-colorscale = px.colors.sequential.Viridis  # green → yellow → red
-df_wind["norm"] = (df_wind["wind_avg"] - df_wind["wind_avg"].min()) / (
-    df_wind["wind_avg"].max() - df_wind["wind_avg"].min()
-)
+annotations = []
 
-# Compute vector components
-theta = np.deg2rad(df_wind["wind_direction"])  # meteorological to mathematical
-ux = np.cos(theta)
-uy = np.sin(theta)
+scale = 0.8
 
-dx = ux * arrow_len
-dy = uy * arrow_len
+for _, row in df.iterrows():
+    u, v = wind_to_uv(row.wd, 1)
 
-# Scale dx to datetime axis (seconds)
-x_span = (df_wind["Hora"].max() - df_wind["Hora"].min()).total_seconds()
-dx_plot = dx / arrow_len * 0.02 * x_span  # 2% of x-axis span
-dy_plot = dy
+    speed_scale = row.ws / max_speed
 
-# -------------------------------
-# Build figure
-# -------------------------------
-fig = go.Figure()
+    # Horizontal (time) offset
+    arrow_end_time = row.datetime + timedelta(
+        hours=u * scale * speed_scale
+    )
 
-for i, row in df_wind.iterrows():
-    norm_val = row["norm"]
-    color_idx = int(norm_val * (len(colorscale) - 1))
-    color = colorscale[color_idx]
+    # Vertical (speed) offset
+    arrow_end_speed = row.ws + v * scale * speed_scale * 10
 
-    # Arrow shaft
-    fig.add_trace(go.Scatter(
-        x=[row["Hora"], row["Hora"] + pd.to_timedelta(dx_plot[i], unit="s")],
-        y=[row["wind_avg"], row["wind_avg"] + dy_plot[i]],
-        mode="lines",
-        line=dict(color=color, width=2),
-        showlegend=False
-    ))
+    # RdYlGn color logic
+    norm_speed = (row.ws - min_speed) / (max_speed - min_speed)
 
-    # Arrowhead
-    arrow_angle = (270 - row["wind_direction"]) % 360
-    arrow_angle = df_wind["wind_direction"]
-    fig.add_trace(go.Scatter(
-        x=[row["Hora"] + pd.to_timedelta(dx_plot[i], unit="s")],
-        y=[row["wind_avg"] + dy_plot[i]],
-        mode="markers",
-        marker=dict(symbol="triangle-up", size=6, angle=arrow_angle, color=color),
-        showlegend=False,
-        hoverinfo="skip"
-    ))
+    if norm_speed < 0.33:
+        arrow_color = "#1a9850"   # green
+    elif norm_speed < 0.66:
+        arrow_color = "#ffffbf"   # yellow
+    else:
+        arrow_color = "#d73027"   # red
 
-# Dummy trace for colorbar
-fig.add_trace(go.Scatter(
-    x=[None], y=[None],
+    annotations.append(
+        dict(
+            x=arrow_end_time,
+            y=arrow_end_speed,
+            ax=row.datetime,
+            ay=row.ws,
+            xref="x",
+            yref="y",
+            axref="x",
+            ayref="y",
+            arrowhead=2,
+            arrowsize=1.8,
+            arrowwidth=4,
+            arrowcolor=arrow_color,
+            showarrow=True,
+            hovertext=(
+                f"Time: {row.datetime}<br>"
+                f"Speed: {row.ws} km/h<br>"
+                f"Direction: {row.wd}°"
+            ),
+        )
+    )
+
+scatter = go.Scatter(
+    x=times,
+    y=speeds,
     mode="markers",
     marker=dict(
-        colorscale=colorscale,
-        cmin=df_wind["wind_avg"].min(),
-        cmax=df_wind["wind_avg"].max(),
-        color=df_wind["wind_avg"],
-        showscale=False,
-        colorbar=dict(title="Wind speed")
+        size=12,
+        color=speeds,
+        colorscale="RdYlGn",
+        reversescale=True,
+        opacity=0.7,
+        colorbar=dict(
+            title="Wind Speed (km/h)"
+        ),
     ),
-    hoverinfo="none"
-))
-
-# Layout
-fig.update_layout(
-    title="Wind Quiver Plot",
-    xaxis_title="Hora",
-    yaxis_title="Wind speed [kts]",
-    xaxis=dict(range=[start_date, end_date]),
-    template="plotly_white"
+    hovertemplate=(
+        "Time: %{x}<br>"
+        "Speed: %{y} km/h<br>"
+        "Direction: %{text}°<extra></extra>"
+    ),
+    text=directions,
+    name="Wind Data",
 )
 
-# Streamlit
-st.plotly_chart(fig, width="stretch")
+fig = go.Figure(data=[scatter])
+
+fig.update_layout(
+    title=dict(
+        text="Wind Speed and Direction Over Time",
+        font=dict(size=18),
+    ),
+    xaxis=dict(
+        title="Time",
+        type="date",
+        tickformat="%H:%M",
+    ),
+    yaxis=dict(
+        title="Wind Speed (km/h)",
+        range=[0, max_speed * 1.2],
+    ),
+    annotations=annotations,
+    hovermode="closest",
+    showlegend=False,
+    plot_bgcolor="rgba(240,240,240,0.1)",
+)
+st.plotly_chart(fig, use_container_width=True)
+
 
 ## ----------------------------------------
 # Air Temperature
