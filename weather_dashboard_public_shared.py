@@ -214,14 +214,26 @@ for _, row in df_wind.iterrows():
     arrow_end_speed = row.wind_avg + v * scale * speed_scale * 10
 
     # RdYlGn color logic
-    norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
-
-    if norm_speed < 0.33:
-        arrow_color = "#1a9850"
-    elif norm_speed < 0.66:
-        arrow_color = "#ffffbf"
+    #norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
+    if max_speed > min_speed:
+        norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
     else:
-        arrow_color = "#d73027"
+        norm_speed = 0.0
+        
+    if norm_speed < 0.10:
+        arrow_color = "#08306b"   # Dark Blue – Calm
+    elif norm_speed < 0.25:
+        arrow_color = "#6baed6"   # Light Blue – Light breeze
+    elif norm_speed < 0.40:
+        arrow_color = "#1a9850"   # Green – Moderate
+    elif norm_speed < 0.55:
+        arrow_color = "#ffff33"   # Yellow – Fresh
+    elif norm_speed < 0.70:
+        arrow_color = "#fdae61"   # Orange – Strong
+    elif norm_speed < 0.90:
+        arrow_color = "#d73027"   # Red – Gale
+    else:
+        arrow_color = "#7b3294"   # Purple – Storm
 
     annotations.append(
         dict(
@@ -453,6 +465,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
