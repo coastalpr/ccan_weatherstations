@@ -178,8 +178,6 @@ df_wind = df[
 
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
-df["datetime"] = pd.to_datetime(df["datetime"])
-
 times =   df["Hora"] 
 speeds = df["wind_avg"] 
 directions = df["wind_direction"]
@@ -451,6 +449,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
