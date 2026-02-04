@@ -176,12 +176,26 @@ df_wind = df[
     (df["wind_direction"].notna())
 ].iloc[::2].copy()  # downsample
 
-def wind_to_uv(wd_deg, magnitude=5):
-    # Convert meteorological degrees to radians
+# ----------------------------
+def wind_to_uv(wd_deg, magnitude=1.0):
     rad = np.deg2rad(wd_deg)
     u = np.cos(rad) * magnitude
     v = np.sin(rad) * magnitude
     return u, v
+
+# ----------------------------
+# Wind categories and colors
+# ----------------------------
+wind_categories = [
+    {"label": "Calm", "color": "#08306b", "min": 0, "max": 3},
+    {"label": "Light Breeze", "color": "#6baed6", "min": 4, "max": 10},
+    {"label": "Moderate", "color": "#1a9850", "min": 11, "max": 16},
+    {"label": "Fresh", "color": "#ffff33", "min": 17, "max": 21},
+    {"label": "Strong", "color": "#fdae61", "min": 22, "max": 27},
+    {"label": "Gale", "color": "#d73027", "min": 28, "max": 38},
+    {"label": "Storm", "color": "#7b3294", "min": 39, "max": 50},
+]
+
     
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
@@ -196,189 +210,142 @@ max_speed = speeds.max()
 # Arrow parameters
 # -------------------------------
 from datetime import timedelta
-
-
-
-def norm_speed_to_color(norm_speed):
-    if norm_speed < 0.10:
-        return "#08306b"   # Dark Blue – Calm
-    elif norm_speed < 0.25:
-        return "#6baed6"   # Light Blue
-    elif norm_speed < 0.40:
-        return "#1a9850"   # Green
-    elif norm_speed < 0.55:
-        return "#ffff33"   # Yellow
-    elif norm_speed < 0.70:
-        return "#fdae61"   # Orange
-    elif norm_speed < 0.90:
-        return "#d73027"   # Red
-    else:
-        return "#7b3294"   # Purple
-
-annotations = []
-scale = 0.2
+nnotations = []
+scale = 0.8
 
 for _, row in df_wind.iterrows():
     u, v = wind_to_uv(row.wind_direction, 1)
-
-    speed_scale = row.wind_avg / max_speed if max_speed > 0 else 0
-
-    arrow_end_time = row.Hora + timedelta(
-        hours=u * scale * speed_scale
-    )
-
-    arrow_end_speed = row.wind_avg + v * scale * speed_scale * 10
-
-    # SAFE normalization
+    
+    # normalize speed for color
     if max_speed > min_speed:
         norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
     else:
         norm_speed = 0.0
+    
+    # Choose color based on norm_speed ranges
+    if norm_speed < 0.10:
+        arrow_color = "#08306b"
+    elif norm_speed < 0.25:
+        arrow_color = "#6baed6"
+    elif norm_speed < 0.40:
+        arrow_color = "#1a9850"
+    elif norm_speed < 0.55:
+        arrow_color = "#ffff33"
+    elif norm_speed < 0.70:
+        arrow_color = "#fdae61"
+    elif norm_speed < 0.90:
+        arrow_color = "#d73027"
+    else:
+        arrow_color = "#7b3294"
+    
+    # Arrow positions
+    arrow_end_time = row.Hora + timedelta(hours=u * scale * norm_speed)
+    arrow_end_speed = row.wind_avg + v * scale * norm_speed * 10
+    
+    annotations.append(dict(
+        x=arrow_end_time,
+        y=arrow_end_speed,
+        ax=row.Hora,
+        ay=row.wind_avg,
+        xref="x",
+        yref="y",
+        axref="x",
+        ayref="y",
+        arrowhead=2,
+        arrowsize=1,
+        arrowwidth=1,
+        arrowcolor=arrow_color,
+        showarrow=True,
+        hovertext=(
+            f"Time: {row.Hora}<br>"
+            f"Speed: {row.wind_avg:.1f} kts<br>"
+            f"Direction: {row.wind_direction:.0f}°"
+        ),
+    ))
 
-    arrow_color = norm_speed_to_color(norm_speed)
-
-    annotations.append(
-        dict(
-            x=arrow_end_time,
-            y=arrow_end_speed,
-            ax=row.Hora,
-            ay=row.wind_avg,
-            xref="x",
-            yref="y",
-            axref="x",
-            ayref="y",
-            arrowhead=3,
-            arrowsize=0.5,
-            arrowwidth=2,
-            arrowcolor=arrow_color,
-            showarrow=True,
-            hovertext=(
-                f"Time: {row.Hora}<br>"
-                f"Speed: {row.wind_avg:.1f} kts<br>"
-                f"Direction: {row.wind_direction:.0f}°"
-            ),
-        )
-    )
-if max_speed > min_speed:
-    norm_speeds = (speeds - min_speed) / (max_speed - min_speed)
-else:
-    norm_speeds = np.zeros(len(speeds))
-
-marker_colors = [norm_speed_to_color(ns) for ns in norm_speeds]
-
+# ----------------------------
+# Scatter points (same color logic)
+# ----------------------------
+scatter_colors = []
+for speed in df_wind["wind_avg"]:
+    norm_speed = (speed - min_speed) / (max_speed - min_speed)
+    if norm_speed < 0.10:
+        c = "#08306b"
+    elif norm_speed < 0.25:
+        c = "#6baed6"
+    elif norm_speed < 0.40:
+        c = "#1a9850"
+    elif norm_speed < 0.55:
+        c = "#ffff33"
+    elif norm_speed < 0.70:
+        c = "#fdae61"
+    elif norm_speed < 0.90:
+        c = "#d73027"
+    else:
+        c = "#7b3294"
+    scatter_colors.append(c)
 
 scatter = go.Scatter(
-    x=times,
-    y=speeds,
+    x=df_wind["Hora"],
+    y=df_wind["wind_avg"],
     mode="markers",
     marker=dict(
         size=8,
-        color=marker_colors,
-        opacity=0.7,
+        color=scatter_colors,
+        opacity=0.8,
+        line=dict(width=0.5, color="black"),
     ),
-    hovertemplate=(
-        "Time: %{x}<br>"
-        "Speed: %{y:.1f} kts<br>"
-        "Direction: %{text}°<extra></extra>"
-    ),
-    text=directions,
+    text=df_wind["wind_direction"],
+    hovertemplate="Time: %{x}<br>Speed: %{y} kts<br>Direction: %{text}°<extra></extra>",
     name="Wind Data",
 )
 
+# ----------------------------
+# Figure
+# ----------------------------
 fig = go.Figure(data=[scatter])
-
 fig.update_layout(
-    xaxis=dict(
-        title="Time",
-        type="date",
-        tickformat="%H:%M",
-    ),
-    yaxis=dict(
-        title="Velocidad del Viento (nudos)",
-        range=[0, max_speed * 1.2],
-    ),
+    xaxis=dict(title="Time", type="date", tickformat="%H:%M"),
+    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.2]),
     annotations=annotations,
     hovermode="closest",
     showlegend=False,
     plot_bgcolor="rgba(240,240,240,0.1)",
 )
 
-st.plotly_chart(fig, use_container_width=True)
-
-## ----------------------------------------
-# Air Temperature
-## ----------------------------------------
-
-fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
-
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
-
-# Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickmode='array',
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom',
-        #fixedrange=True,  # Disable zoom on the x-axis
+# ----------------------------
+# Discrete colorbar as dummy scatter
+# ----------------------------
+colorbar_trace = go.Scatter(
+    x=[None]*len(wind_categories),
+    y=[None]*len(wind_categories),
+    mode="markers",
+    marker=dict(
+        size=20,
+        color=[cat["color"] for cat in wind_categories],
+        symbol="square",
+        line=dict(width=1, color="black"),
+        showscale=True,
+        cmin=0,
+        cmax=len(wind_categories),
+        colorbar=dict(
+            tickvals=[i + 0.5 for i in range(len(wind_categories))],
+            ticktext=[f"{cat['label']} ({cat['min']}-{cat['max']} kts)" for cat in wind_categories],
+            title="Wind Category",
+            lenmode="pixels",
+            len=300,
+            thickness=20,
+            tickfont=dict(size=12),
+        ),
     ),
-    #yaxis=dict(
-        #fixedrange=True  # Disable zoom on the y-axis
-    #),
-    yaxis_title="Temperatura (°F)",
-    showlegend=True,
-    #showlegend=False,
-    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
-    autosize=True,  # Let Plotly automatically adjust size
-    height=500,  # Fixed height for clarity
-)
-
-# Allow horizontal scrolling by not fixing x-axis range
-fig.update_layout(
-    dragmode=False,  # Disable panning (dragging)
-    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
-    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
-    showlegend=True  # Optional: You can disable if not needed
-)
-st.plotly_chart(fig, width="stretch")
-
-## ----------------------------------------
-# Humidity
-## ----------------------------------------
-fig = px.line(df, x="Hora", y="relative_humidity", title="Humedad Relativa",labels={"relative_humidity": "Humedad Relativa (%)"})
-
-# Hover: only y-value, no colored box
-fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
-)
-
-# Layout
-fig.update_layout(
-    hovermode="x unified",
-    xaxis=dict(
-        tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
-        tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date],
-        side='bottom'
-    ),
-    yaxis_title="Humedad Relative (%)",
     showlegend=False
 )
+fig.add_trace(colorbar_trace)
 
-st.plotly_chart(fig, width="stretch")
+# ----------------------------
+# Render in Streamlit
+# ----------------------------
+st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # Rain Accumulation
@@ -469,6 +436,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
