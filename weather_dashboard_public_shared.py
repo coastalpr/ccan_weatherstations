@@ -216,7 +216,7 @@ def norm_speed_to_color(norm_speed):
         return "#7b3294"   # Purple
 
 annotations = []
-scale = 0.4
+scale = 0.2
 
 for _, row in df_wind.iterrows():
     u, v = wind_to_uv(row.wind_direction, 1)
@@ -247,9 +247,9 @@ for _, row in df_wind.iterrows():
             yref="y",
             axref="x",
             ayref="y",
-            arrowhead=2,
-            arrowsize=1,
-            arrowwidth=1,
+            arrowhead=3,
+            arrowsize=0.5,
+            arrowwidth=2,
             arrowcolor=arrow_color,
             showarrow=True,
             hovertext=(
@@ -469,6 +469,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
