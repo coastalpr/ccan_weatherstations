@@ -197,43 +197,45 @@ max_speed = speeds.max()
 # -------------------------------
 from datetime import timedelta
 
+
+
+def norm_speed_to_color(norm_speed):
+    if norm_speed < 0.10:
+        return "#08306b"   # Dark Blue – Calm
+    elif norm_speed < 0.25:
+        return "#6baed6"   # Light Blue
+    elif norm_speed < 0.40:
+        return "#1a9850"   # Green
+    elif norm_speed < 0.55:
+        return "#ffff33"   # Yellow
+    elif norm_speed < 0.70:
+        return "#fdae61"   # Orange
+    elif norm_speed < 0.90:
+        return "#d73027"   # Red
+    else:
+        return "#7b3294"   # Purple
+
 annotations = []
 scale = 0.4
 
 for _, row in df_wind.iterrows():
     u, v = wind_to_uv(row.wind_direction, 1)
 
-    speed_scale = row.wind_avg / max_speed
+    speed_scale = row.wind_avg / max_speed if max_speed > 0 else 0
 
-    # Horizontal (time) offset
     arrow_end_time = row.Hora + timedelta(
         hours=u * scale * speed_scale
     )
 
-    # Vertical (speed) offset
     arrow_end_speed = row.wind_avg + v * scale * speed_scale * 10
 
-    # RdYlGn color logic
-    #norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
+    # SAFE normalization
     if max_speed > min_speed:
         norm_speed = (row.wind_avg - min_speed) / (max_speed - min_speed)
     else:
         norm_speed = 0.0
-        
-    if norm_speed < 0.10:
-        arrow_color = "#08306b"   # Dark Blue – Calm
-    elif norm_speed < 0.25:
-        arrow_color = "#6baed6"   # Light Blue – Light breeze
-    elif norm_speed < 0.40:
-        arrow_color = "#1a9850"   # Green – Moderate
-    elif norm_speed < 0.55:
-        arrow_color = "#ffff33"   # Yellow – Fresh
-    elif norm_speed < 0.70:
-        arrow_color = "#fdae61"   # Orange – Strong
-    elif norm_speed < 0.90:
-        arrow_color = "#d73027"   # Red – Gale
-    else:
-        arrow_color = "#7b3294"   # Purple – Storm
+
+    arrow_color = norm_speed_to_color(norm_speed)
 
     annotations.append(
         dict(
@@ -257,6 +259,13 @@ for _, row in df_wind.iterrows():
             ),
         )
     )
+if max_speed > min_speed:
+    norm_speeds = (speeds - min_speed) / (max_speed - min_speed)
+else:
+    norm_speeds = np.zeros(len(speeds))
+
+marker_colors = [norm_speed_to_color(ns) for ns in norm_speeds]
+
 
 scatter = go.Scatter(
     x=times,
@@ -264,17 +273,12 @@ scatter = go.Scatter(
     mode="markers",
     marker=dict(
         size=8,
-        color=speeds,
-        colorscale="RdYlGn",
-        reversescale=True,
+        color=marker_colors,
         opacity=0.7,
-        colorbar=dict(
-            title="(nudos)"
-        ),
     ),
     hovertemplate=(
         "Time: %{x}<br>"
-        "Speed: %{y} km/h<br>"
+        "Speed: %{y:.1f} kts<br>"
         "Direction: %{text}°<extra></extra>"
     ),
     text=directions,
@@ -290,7 +294,7 @@ fig.update_layout(
         tickformat="%H:%M",
     ),
     yaxis=dict(
-        title="Velocidad de Viento (nudos)",
+        title="Velocidad del Viento (nudos)",
         range=[0, max_speed * 1.2],
     ),
     annotations=annotations,
@@ -298,8 +302,8 @@ fig.update_layout(
     showlegend=False,
     plot_bgcolor="rgba(240,240,240,0.1)",
 )
-st.plotly_chart(fig, use_container_width=True)
 
+st.plotly_chart(fig, use_container_width=True)
 
 ## ----------------------------------------
 # Air Temperature
@@ -465,6 +469,7 @@ st.plotly_chart(fig, width="stretch")
 # -----------------------------
 st.markdown("---")
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
