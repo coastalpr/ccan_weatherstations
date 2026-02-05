@@ -200,7 +200,7 @@ if "play" not in st.session_state:
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2, col3,col4,col5,col6 = st.columns(3)
+col1, col2, col3,col4,col5,col6 = st.columns(6)
 with col3:
     if st.button("Play"):
         st.session_state.play = True
