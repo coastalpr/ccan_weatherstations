@@ -437,6 +437,19 @@ st.plotly_chart(fig, width="stretch")
 # FOOTER
 # -----------------------------
 st.markdown("---")
+st.markdown(
+    """
+    <style>
+    img {
+        height: 90px;
+        object-fit: contain;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("---")
 cols = st.columns(5)
 
 images = [
@@ -449,8 +462,10 @@ images = [
 
 for col, img in zip(cols, images):
     col.image(img, use_container_width=True)
+
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
