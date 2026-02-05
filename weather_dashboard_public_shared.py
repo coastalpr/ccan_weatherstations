@@ -309,12 +309,13 @@ slider_index = st.slider(
 
 current_file = tif_files[slider_index]
 img = tif_to_image(current_file)
+st.image(img, width=900)
 
-st.image(
-    img,
-    caption=f"{current_file.name} | Frame {slider_index+1}/{len(tif_files)}",
-    width="stretch",
-)
+#st.image(
+#    img,
+#    caption=f"{current_file.name} | Frame {slider_index+1}/{len(tif_files)}",
+#    width="stretch",
+#)
 #################################################################################
 # -----------------------------
 # PLOTS
