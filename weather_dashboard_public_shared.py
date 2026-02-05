@@ -233,12 +233,12 @@ def wind_to_uv(wd_deg, magnitude=1.0):
 # ----------------------------
 wind_categories = [
     {"label": "Calm", "color": "#08306b", "min": 0, "max": 3},
-    {"label": "Light Breeze", "color": "#6baed6", "min": 4, "max": 10},
-    {"label": "Moderate", "color": "#1a9850", "min": 11, "max": 16},
-    {"label": "Fresh", "color": "#ffff33", "min": 17, "max": 21},
-    {"label": "Strong", "color": "#fdae61", "min": 22, "max": 27},
-    {"label": "Gale", "color": "#d73027", "min": 28, "max": 38},
-    {"label": "Storm", "color": "#7b3294", "min": 39, "max": 50},
+    {"label": "Light Breeze", "color": "#6baed6", "min": 3.01, "max": 10},
+    {"label": "Moderate", "color": "#1a9850", "min": 10.01, "max": 16},
+    {"label": "Fresh", "color": "#ffff33", "min": 16.01, "max": 21},
+    {"label": "Strong", "color": "#fdae61", "min": 21.01, "max": 27},
+    {"label": "Gale", "color": "#d73027", "min": 27.01, "max": 38},
+    {"label": "Storm", "color": "#7b3294", "min": 38.01, "max": 50},
 ]
 
 colorscale = [
