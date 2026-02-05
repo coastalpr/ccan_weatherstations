@@ -146,7 +146,7 @@ with c5:
 
 # Determine last 2 days
 end_date = df['Hora'].max()
-start_date = end_date - pd.Timedelta(days=1)
+start_date = end_date - pd.Timedelta(days=2)
 
 # Generate hourly ticks (optional: every 1 hour)
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6h')
@@ -464,6 +464,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
