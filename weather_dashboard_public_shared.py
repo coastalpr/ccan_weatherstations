@@ -528,17 +528,18 @@ fig.update_layout(
     hovermode="x unified",
     xaxis=dict(
         tickvals=ticks,
-        ticktext=tick_labels,   # date + hour for all ticks
+        ticktext=tick_labels,      # pre-formatted labels
         tickangle=90,
-        showline=False,         # no black line
-        showspikes=True,       # no vertical blue line
-        ymin=0,
-        ymax = 4,
+        showline=False,
+        showspikes=True,
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=1)],
-        side='bottom'
+        side='bottom',
+        range=[start_date, end_date + timedelta(hours=1)]
     ),
-    yaxis_title="Distancia del Rayo (mi)",
+    yaxis=dict(
+        title="Distancia del Rayo (mi)",
+        range=[0, 4]   # y-axis min/max
+    ),
     showlegend=False
 )
 
