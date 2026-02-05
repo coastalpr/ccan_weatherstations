@@ -325,14 +325,40 @@ def run_animation():
 #    current_file = radar_files[st.session_state.index]
 #    img = radar_to_image(current_file)
 #    st.image(combined, width="content")
-slider_index = st.slider("Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
-selected_file = tif_files[slider_index]
-combined_img = radar_to_image(
-    selected_file, sat_img,
-    sat_bounds.left, sat_bounds.bottom,
-    sat_bounds.right, sat_bounds.top
-)
-st.image(combined_img, use_column_width=True)
+
+#)
+# ----------------------------
+# Run animation if Play
+# ----------------------------
+placeholder = st.empty()
+
+if st.session_state.play:
+    # Loop through radar frames automatically
+    while st.session_state.play:
+        current_file = tif_files[st.session_state.index]
+        combined_img = radar_to_image(
+            current_file,
+            sat_img,
+            sat_bounds.left, sat_bounds.bottom,
+            sat_bounds.right, sat_bounds.top
+        )
+        placeholder.image(combined_img, use_column_width=True)
+
+        st.session_state.index += 1
+        if st.session_state.index >= len(tif_files):
+            st.session_state.index = 0
+
+        time.sleep(0.2)  # animation speed
+
+else:
+    # Show last selected frame
+    current_file = tif_files[st.session_state.index]
+    combined_img = radar_to_image(
+        current_file,
+        sat_img,
+        sat_bounds.left, sat_bounds.bottom,
+        sat_bounds.right, sat_bounds.top
+    )
 #################################################################################
 # -----------------------------
 # PLOTS
