@@ -197,17 +197,23 @@ if not radar_files:
 @st.cache_data
 def load_satellite_image(path):
     with rasterio.open(path) as src:
-        data = src.read([1, 2, 3])  # RGB bands
+        # Read RGB bands (assuming bands 1,2,3 are RGB)
+        bands = src.read([1, 2, 3]).astype(np.float32)  # shape: (3, H, W)
         bounds = src.bounds
         width, height = src.width, src.height
-    img = np.dstack(data)
-    img = Image.fromarray(img.transpose(1, 2, 0)).convert("RGBA")
+
+    # Normalize each band to 0-255
+    bands_min = bands.min(axis=(1,2), keepdims=True)
+    bands_max = bands.max(axis=(1,2), keepdims=True)
+    bands_norm = (bands - bands_min) / (bands_max - bands_min + 1e-6)  # avoid division by zero
+    bands_255 = (bands_norm * 255).astype(np.uint8)
+
+    # Convert to H x W x 3 for PIL
+    img = np.dstack([bands_255[0], bands_255[1], bands_255[2]])
+    img = Image.fromarray(img).convert("RGBA")
+
     return img, bounds, width, height
 
-sat_img, sat_bounds, sat_width, sat_height = load_satellite_image(satellite_path)
-
-lon_min, lon_max = sat_bounds.left, sat_bounds.right
-lat_min, lat_max = sat_bounds.bottom, sat_bounds.top
 
 # -----------------------------
 # FUNCTION: CONVERT RADAR TIF TO RGBA IMAGE MATCHING SATELLITE
