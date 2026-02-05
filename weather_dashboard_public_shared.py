@@ -191,7 +191,7 @@ tick_labels = [f"{t.day}/{meses[t.month-1]}<br>{t.strftime('%I:%M %p')}" for t i
 
 st.subheader("")
 st.markdown(
-    "<h3 style='color:#1f77b4;font-size: 2rem; margin-top: -30px; padding: 0;'>Datos Adicionales</h3>",
+    "<h3 style='color:#1f77b4;font-size: 2rem; margin-top: -40px; padding: 0;'>Datos Adicionales</h3>",
     unsafe_allow_html=True
 )
 
