@@ -169,39 +169,22 @@ st.markdown(
 
 
 radar_folder = Path("radar_images")
-tif_files = sorted(radar_folder.glob("*.tif"))
+radar_files = sorted(radar_folder.glob("*.tif"))
+radar_names = [f.name for f in radar_files]
 
-if not tif_files:
-    st.warning("No radar .tif files found")
-else:
-    # pick the latest file
-    latest_tif = tif_files[-1]
+selected_name = st.select_slider("Select Radar Time:", options=radar_names, value=radar_names[-1])
+selected_file = radar_folder / selected_name
 
-with rasterio.open(latest_tif) as src:
-    radar_data = src.read(1)  # single band
-    bounds = src.bounds       # geographic bounding box
-    transform = src.transform
+with rasterio.open(selected_file) as src:
+    radar_data = src.read(1)
+    nodata = src.nodata
 
-# Mask nodata values
-radar_data_masked = np.ma.masked_where(radar_data == src.nodata, radar_data)
-fig = px.imshow(
-    radar_data_masked,
-    origin='upper',
-    color_continuous_scale="turbo",
-    labels={"color": "dBZ"},
-    aspect="auto"
-)
+radar_masked = np.ma.masked_where(radar_data == nodata, radar_data)
+radar_norm = (radar_masked - radar_masked.min()) / (radar_masked.max() - radar_masked.min())
+radar_rgb = (cmap(radar_norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
+radar_image = Image.fromarray(radar_rgb)
 
-fig.update_layout(
-    title=f"MRMS Caribbean Radar ({latest_tif.name})",
-    xaxis_title="Longitude",
-    yaxis_title="Latitude",
-    xaxis=dict(range=[bounds.left, bounds.right]),
-    yaxis=dict(range=[bounds.bottom, bounds.top])
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
+st.image(radar_image, use_column_width=True)
 # -----------------------------
 # PLOTS
 # -----------------------------
