@@ -227,9 +227,9 @@ sat_img, sat_width, sat_height = load_satellite_image(satellite_path)
 # -----------------------------
 # RADAR IMAGE -> PIL with alpha overlay
 # -----------------------------
-def radar_to_image(tif_path, sat_img, lon_min, lat_min, lon_max, lat_max):
+def radar_to_image(radar_path, sat_img, lon_min, lat_min, lon_max, lat_max):
     # Load radar data
-    with rasterio.open(tif_path) as src:
+    with rasterio.open(radar_path) as src:
         window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
         data = src.read(1, window=window)
         nodata = src.nodata
