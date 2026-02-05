@@ -167,15 +167,23 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-local_tif = Path("radar_images")
-with rasterio.open(local_tif) as src:
+
+radar_folder = Path("radar_images")
+tif_files = sorted(radar_folder.glob("*.tif"))
+
+if not tif_files:
+    st.warning("No radar .tif files found")
+else:
+    # pick the latest file
+    latest_tif = tif_files[-1]
+
+with rasterio.open(latest_tif) as src:
     radar_data = src.read(1)  # single band
     bounds = src.bounds       # geographic bounding box
     transform = src.transform
 
-# Convert raster to image
+# Mask nodata values
 radar_data_masked = np.ma.masked_where(radar_data == src.nodata, radar_data)
-
 fig = px.imshow(
     radar_data_masked,
     origin='upper',
@@ -185,7 +193,7 @@ fig = px.imshow(
 )
 
 fig.update_layout(
-    title="MRMS Caribbean Radar",
+    title=f"MRMS Caribbean Radar ({latest_tif.name})",
     xaxis_title="Longitude",
     yaxis_title="Latitude",
     xaxis=dict(range=[bounds.left, bounds.right]),
@@ -193,6 +201,7 @@ fig.update_layout(
 )
 
 st.plotly_chart(fig, use_container_width=True)
+
 # -----------------------------
 # PLOTS
 # -----------------------------
