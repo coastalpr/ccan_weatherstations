@@ -30,7 +30,8 @@ from rasterio.warp import transform_bounds
 from pathlib import Path
 from rasterio.windows import from_bounds
 import tempfile
-import io, base64
+import io, base64, time, re
+
 
 # -----------------------------
 # PAGE CONFIG
@@ -182,25 +183,68 @@ radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.error("No radar TIFF files found in radar_images/")
+    st.error("No radar TIFF files found.")
     st.stop()
 
 mapbox_token = st.secrets["mapbox"]["token"]
 
-# -----------------------------
-# TIF → BASE64 IMAGE
-# -----------------------------
-def tif_to_base64(tif_path):
-    cmap = plt.get_cmap("turbo")
+# Puerto Rico bounding box
+zoom_bbox = dict(
+    lon_min=-68,
+    lon_max=-64,
+    lat_min=17,
+    lat_max=20
+)
+
+# -------------------------
+# NWS REFLECTIVITY COLORS
+# -------------------------
+reflectivity_colors = [
+    "#646464","#04e9e7","#019ff4","#0300f4","#02fd02",
+    "#01c501","#008e00","#fdf802","#e5bc00","#fd9500",
+    "#fd0000","#d40000","#bc0000","#f800fd","#9854c6"
+]
+
+def radar_colormap():
+    return plt.matplotlib.colors.LinearSegmentedColormap.from_list(
+        "radar", reflectivity_colors, N=256
+    )
+
+# -------------------------
+# TIMESTAMP FROM FILENAME
+# -------------------------
+def extract_time(name):
+    m = re.search(r'(\d{8})-(\d{4})', name)
+    if m:
+        return f"{m.group(1)} {m.group(2)} UTC"
+    return name
+
+# -------------------------
+# TIF → BASE64 OVERLAY
+# -------------------------
+def tif_to_overlay(tif_path):
+    cmap = radar_colormap()
 
     with rasterio.open(tif_path) as src:
-        data = src.read(1)
+        from rasterio.windows import from_bounds
+
+        window = from_bounds(
+            zoom_bbox["lon_min"], zoom_bbox["lat_min"],
+            zoom_bbox["lon_max"], zoom_bbox["lat_max"],
+            src.transform
+        )
+
+        data = src.read(1, window=window)
         bounds = src.bounds
         nodata = src.nodata
 
     masked = np.ma.masked_where(data == nodata, data)
 
-    norm = (masked - masked.min()) / (masked.max() - masked.min())
+    if masked.max() > masked.min():
+        norm = (masked - masked.min()) / (masked.max() - masked.min())
+    else:
+        norm = masked * 0
+
     rgb = (cmap(norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
 
     img = Image.fromarray(rgb).convert("RGBA")
@@ -209,50 +253,92 @@ def tif_to_base64(tif_path):
     img.save(buf, format="PNG")
     encoded = base64.b64encode(buf.getvalue()).decode()
 
-    return f"data:image/png;base64,{encoded}", bounds
+    return f"data:image/png;base64,{encoded}"
 
-# -----------------------------
-# FRAME SELECTOR
-# -----------------------------
-frame = st.slider("Radar frame", 0, len(tif_files)-1, len(tif_files)-1)
+# -------------------------
+# SESSION STATE
+# -------------------------
+if "play" not in st.session_state:
+    st.session_state.play = False
+if "frame" not in st.session_state:
+    st.session_state.frame = len(tif_files) - 1
 
-img_uri, bounds = tif_to_base64(tif_files[frame])
+# -------------------------
+# CONTROLS
+# -------------------------
+c1, c2 = st.columns(2)
 
-center_lat = (bounds.top + bounds.bottom) / 2
-center_lon = (bounds.left + bounds.right) / 2
+with c1:
+    if st.button("▶ Play"):
+        st.session_state.play = True
 
-# -----------------------------
-# PLOTLY MAPBOX
-# -----------------------------
-fig = go.Figure()
+with c2:
+    if st.button("■ Stop"):
+        st.session_state.play = False
 
-fig.update_layout(
-    mapbox=dict(
-        accesstoken=mapbox_token,
-        style="satellite",
-        center=dict(lat=center_lat, lon=center_lon),
-        zoom=6,
-        layers=[
-            dict(
-                sourcetype="image",
-                source=img_uri,
-                coordinates=[
-                    [bounds.left, bounds.top],
-                    [bounds.right, bounds.top],
-                    [bounds.right, bounds.bottom],
-                    [bounds.left, bounds.bottom],
-                ],
-                opacity=0.6,
-            )
-        ],
-    ),
-    margin=dict(r=0, t=0, l=0, b=0),
+frame = st.slider(
+    "Radar frame",
+    0,
+    len(tif_files)-1,
+    st.session_state.frame
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.session_state.frame = frame
 
-st.caption(f"Frame {frame+1} / {len(tif_files)}")
-st.caption(tif_files[frame].name)
+placeholder = st.empty()
+
+# -------------------------
+# DRAW MAP
+# -------------------------
+def draw(frame_index):
+    tif_path = tif_files[frame_index]
+    overlay = tif_to_overlay(tif_path)
+
+    center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
+    center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
+
+    fig = go.Figure()
+
+    fig.update_layout(
+        mapbox=dict(
+            accesstoken=mapbox_token,
+            style="satellite",
+            center=dict(lat=center_lat, lon=center_lon),
+            zoom=6,
+            layers=[
+                dict(
+                    sourcetype="image",
+                    source=overlay,
+                    coordinates=[
+                        [zoom_bbox["lon_min"], zoom_bbox["lat_max"]],
+                        [zoom_bbox["lon_max"], zoom_bbox["lat_max"]],
+                        [zoom_bbox["lon_max"], zoom_bbox["lat_min"]],
+                        [zoom_bbox["lon_min"], zoom_bbox["lat_min"]],
+                    ],
+                    opacity=0.55,
+                )
+            ],
+        ),
+        margin=dict(r=0, t=40, l=0, b=0),
+        title=f"Radar — {extract_time(tif_path.name)}"
+    )
+
+    placeholder.plotly_chart(fig, use_container_width=True)
+
+# -------------------------
+# ANIMATION LOOP
+# -------------------------
+if st.session_state.play:
+    for i in range(frame, len(tif_files)):
+        if not st.session_state.play:
+            break
+        st.session_state.frame = i
+        draw(i)
+        time.sleep(0.6)
+else:
+    draw(frame)
+
+st.caption(f"Frame {st.session_state.frame+1} / {len(tif_files)}")
 #################################################################################
 # -----------------------------
 # PLOTS
