@@ -227,7 +227,7 @@ df_wind = df_wind.sort_values("Hora").reset_index(drop=True)
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 #arrow_angles = (270 - df_wind["wind_direction"]) % 360
-arrow_angles = (270 - df_wind["wind_direction"]+180) % 360
+arrow_angles = (df_wind["wind_direction"]+180) % 360
 
 #arrow_angles = (df_wind["wind_direction"]) % 360
 
