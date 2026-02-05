@@ -28,6 +28,7 @@ from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
 from pathlib import Path
 from rasterio.windows import from_bounds
+import tempfile
 
 # -----------------------------
 # PAGE CONFIG
@@ -234,30 +235,32 @@ def display_radar(index):
     tif_path = tif_files[index]
     radar_img = tif_to_png(tif_path)
 
+    # Save PIL image to temporary PNG file
+    tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    radar_img.save(tmp_file.name)
+
     # Map center
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
 
-    # Folium map with satellite tiles
+    # Folium map
     m = folium.Map(
         location=[center_lat, center_lon],
         zoom_start=6,
-        tiles="Esri.WorldImagery"  # Satellite imagery
+        tiles="Esri.WorldImagery"
     )
 
-    # Overlay radar image
+    # Overlay radar image using file path
     ImageOverlay(
-        image=radar_img,
+        image=tmp_file.name,  # pass file path, not PIL Image
         bounds=[[zoom_bbox["lat_min"], zoom_bbox["lon_min"]],
                 [zoom_bbox["lat_max"], zoom_bbox["lon_max"]]],
         opacity=0.6
     ).add_to(m)
 
-    # Optional: Layer control
     folium.LayerControl().add_to(m)
 
-    # Render in Streamlit
-    st_folium(m, width=900, height=600)  # Use proper height
+    st_folium(m, width=900, height=600)
 # -----------------------------
 # RADAR ANIMATION LOOP
 # -----------------------------
