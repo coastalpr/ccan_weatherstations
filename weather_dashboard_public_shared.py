@@ -166,6 +166,56 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# ----------------------------
+# Radar image URL (NWS)
+# ----------------------------
+radar_url = "https://radar.weather.gov/ridge/Conus/RadarImg/latest_radaronly.gif"
+response = requests.get(radar_url)
+
+if response.status_code == 200:
+    radar_img = Image.open(BytesIO(response.content))
+else:
+    radar_img = None
+    st.warning("Could not load radar image")
+
+# ----------------------------
+# Display radar over a satellite map
+# ----------------------------
+if radar_img:
+    # Example bounding box (CONUS)
+    lon_min, lon_max = -130, -65
+    lat_min, lat_max = 20, 55
+
+    fig_radar = go.Figure()
+
+    fig_radar.add_layout_image(
+        dict(
+            source=radar_img,
+            xref="x",
+            yref="y",
+            x=lon_min,
+            y=lat_max,
+            sizex=(lon_max-lon_min),
+            sizey=(lat_max-lat_min),
+            xanchor="left",
+            yanchor="top",
+            sizing="stretch",
+            layer="below",
+        )
+    )
+
+    # Add satellite basemap
+    fig_radar.update_layout(
+        xaxis=dict(range=[lon_min, lon_max], visible=False),
+        yaxis=dict(range=[lat_min, lat_max], visible=False),
+        template="plotly_white",
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=400
+    )
+
+    st.subheader("NWS Radar (Over Satellite Map)")
+    st.plotly_chart(fig_radar, use_container_width=True)
 # -----------------------------
 # PLOTS
 # -----------------------------
