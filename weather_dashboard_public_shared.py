@@ -180,12 +180,16 @@ st.markdown(
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
+if not tif_files:
+    st.error("No radar .tif files found.")
+    st.stop()
+
 mapbox_token = st.secrets["mapbox"]["token"]
 
-# --------------------------
-# TIF → RGBA
-# --------------------------
-def tif_to_rgba(tif_path, alpha=0.6):
+# -------------------
+# TIF → PNG
+# -------------------
+def tif_to_png(tif_path):
     cmap = plt.get_cmap("turbo")
 
     with rasterio.open(tif_path) as src:
@@ -198,65 +202,51 @@ def tif_to_rgba(tif_path, alpha=0.6):
     norm = (masked - masked.min()) / (masked.max() - masked.min())
     rgb = (cmap(norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
 
-    img = Image.fromarray(rgb)
-    img.putalpha(int(alpha * 255))
+    img = Image.fromarray(rgb).convert("RGBA")
 
     return img, bounds
 
-# --------------------------
+# -------------------
 # FRAME SELECTOR
-# --------------------------
-frame_index = st.slider(
-    "Radar frame",
-    0,
-    len(tif_files) - 1,
-    len(tif_files) - 1
-)
+# -------------------
+frame = st.slider("Radar frame", 0, len(tif_files)-1, len(tif_files)-1)
 
-tif_path = tif_files[frame_index]
-radar_img, bounds = tif_to_rgba(tif_path)
+img, bounds = tif_to_png(tif_files[frame])
 
 center_lat = (bounds.top + bounds.bottom) / 2
 center_lon = (bounds.left + bounds.right) / 2
 
-# --------------------------
-# MAPBOX FIGURE
-# --------------------------
+# -------------------
+# FIGURE
+# -------------------
 fig = go.Figure()
-
-fig.add_layout_image(
-    dict(
-        source=radar_img,
-        xref="x",
-        yref="y",
-        x=bounds.left,
-        y=bounds.top,
-        sizex=bounds.right - bounds.left,
-        sizey=bounds.top - bounds.bottom,
-        sizing="stretch",
-        opacity=0.65,
-        layer="above"
-    )
-)
 
 fig.update_layout(
     mapbox=dict(
         accesstoken=mapbox_token,
         style="satellite",
         center=dict(lat=center_lat, lon=center_lon),
-        zoom=6
+        zoom=6,
+        layers=[
+            dict(
+                sourcetype="image",
+                source=img,
+                coordinates=[
+                    [bounds.left, bounds.top],
+                    [bounds.right, bounds.top],
+                    [bounds.right, bounds.bottom],
+                    [bounds.left, bounds.bottom],
+                ],
+                opacity=0.65,
+            )
+        ],
     ),
-    margin=dict(r=0, t=0, l=0, b=0)
+    margin=dict(r=0, t=0, l=0, b=0),
 )
-
-# IMPORTANT: hide XY axes
-fig.update_xaxes(visible=False)
-fig.update_yaxes(visible=False)
 
 st.plotly_chart(fig, use_container_width=True)
 
-st.caption(f"Frame: {frame_index+1} / {len(tif_files)}")
-st.caption(tif_path.name)
+st.caption(tif_files[frame].name)
 #################################################################################
 # -----------------------------
 # PLOTS
