@@ -167,28 +167,64 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Apply colormap (turbo or any)
-cmap = plt.get_cmap("turbo")
+#################################################################################
+## ----------------------------------------
+# Radar
+## ----------------------------------------
+#################################################################################
+
+# Folder with multiple radar tif files
 radar_folder = Path("radar_images")
-radar_files = sorted(radar_folder.glob("*.tif"))
-radar_names = [f.name for f in radar_files]
+tif_files = sorted(radar_folder.glob("*.tif"))
 
-selected_name = st.select_slider("Select Radar Time:", options=radar_names, value=radar_names[-1])
-selected_file = radar_folder / selected_name
+if not tif_files:
+    st.warning("No radar .tif files found")
 
-with rasterio.open(selected_file) as src:
-    radar_data = src.read(1)
-    nodata = src.nodata
+def tif_to_image(tif_path):
+    cmap = plt.get_cmap("turbo")
+    with rasterio.open(tif_path) as src:
+        data = src.read(1)
+        nodata = src.nodata
 
-radar_masked = np.ma.masked_where(radar_data == nodata, radar_data)
-radar_norm = (radar_masked - radar_masked.min()) / (radar_masked.max() - radar_masked.min())
-radar_rgb = (cmap(radar_norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
-radar_image = Image.fromarray(radar_rgb)
+    data_masked = np.ma.masked_where(data == nodata, data)
+    norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
+    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+    return Image.fromarray(rgb)
 
-st.image(radar_image, use_column_width=True)
+if "play" not in st.session_state:
+    st.session_state.play = False
+if "index" not in st.session_state:
+    st.session_state.index = 0
+
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Play"):
+        st.session_state.play = True
+with col2:
+    if st.button("Stop"):
+        st.session_state.play = False
+
+placeholder = st.empty()  # container to update images
+
+while st.session_state.play:
+    # show current radar frame
+    current_file = tif_files[st.session_state.index]
+    img = tif_to_image(current_file)
+    placeholder.image(img, caption=current_file.name, use_column_width=True)
+
+    # advance index
+    st.session_state.index += 1
+    if st.session_state.index >= len(tif_files):
+        st.session_state.index = 0  # loop
+
+    time.sleep(1)  # 1-second delay between frames
+
+
+#################################################################################
 # -----------------------------
 # PLOTS
 # -----------------------------
+#################################################################################
 
 # Determine last 2 days
 end_date = df['Hora'].max()
