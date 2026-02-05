@@ -375,7 +375,7 @@ hover_only = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="markers",
-    marker=dict(size=1, color="rgba(0,0,0,0)"),  # invisible marker
+    marker=dict(size=0, color="rgba(0,0,0,0)"),  # invisible marker
     text=df_wind["wind_direction"],
     hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     showlegend=False
