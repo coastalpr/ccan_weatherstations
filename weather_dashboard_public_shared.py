@@ -207,7 +207,7 @@ df_wind = df[
 df_wind = df[
     (df["wind_avg"] > 0.1) & 
     (df["wind_direction"].notna())
-].iloc[::5].copy()  # downsample
+].iloc[::1].copy()  # downsample
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 arrow_angles = (270 - df_wind["wind_direction"]) % 360
