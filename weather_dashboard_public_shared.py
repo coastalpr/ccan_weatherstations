@@ -248,7 +248,7 @@ df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
 speeds = df_wind["wind_avg"] 
-directions = df_wind["wind_direction"]
+directions = 270-df_wind["wind_direction"]
 
 min_speed = speeds.min()
 max_speed = speeds.max()
