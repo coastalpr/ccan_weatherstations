@@ -366,9 +366,9 @@ scatter = go.Scatter(
             len=1.0
         ),
     ),
-    text=df_wind["wind_direction"],
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
-    name="Viento",
+    #text=df_wind["wind_direction"],
+    #hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
+    #name="Viento",
 )
 
 hover_only = go.Scatter(
