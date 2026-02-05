@@ -175,6 +175,7 @@ df_wind = df[
     (df["wind_avg"] > 0.1) & 
     (df["wind_direction"].notna())
 ].iloc[::5].copy()  # downsample
+df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 arrow_angles = (270 - df_wind["wind_direction"]) % 360
 
@@ -206,8 +207,8 @@ colorscale = [
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
-speeds = df["wind_avg"] 
-directions = df["wind_direction"]
+speeds = df_wind["wind_avg"] 
+directions = df_wind["wind_direction"]
 
 min_speed = speeds.min()
 max_speed = speeds.max()
@@ -464,6 +465,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
