@@ -199,18 +199,23 @@ st.markdown(
 df["Hora"] = pd.to_datetime(df["Hora"])
 df = df.sort_values("Hora")
 
-df_wind = df[
-    (df["wind_avg"].notna()) &
-    (df["wind_direction"].notna())
-].copy()
+#df_wind = df[
+#    (df["wind_avg"] > 0.1) & 
+#    (df["wind_direction"].notna())
+#].iloc[::1].copy()  # downsample
 
-df_wind = df[
-    (df["wind_avg"] > 0.1) & 
-    (df["wind_direction"].notna())
-].iloc[::1].copy()  # downsample
+df_wind = (
+    df.set_index("Hora")
+      .resample("10T")   # 10-minute intervals
+      .mean()            # averages wind speed, direction
+      .dropna(subset=["wind_avg", "wind_direction"])
+      .reset_index()
+)
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
-arrow_angles = (270 - df_wind["wind_direction"]) % 360
+#arrow_angles = (270 - df_wind["wind_direction"]) % 360
+arrow_angles = (270 - df_wind["wind_direction"] + 180) % 360
+
 #arrow_angles = (df_wind["wind_direction"]) % 360
 
 
