@@ -180,119 +180,83 @@ st.markdown(
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
-if not tif_files:
-    st.error("No radar files found in radar_images folder.")
-    st.stop()
+mapbox_token = st.secrets["mapbox"]["token"]
 
-# Bounding box of area of interest
-zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}
-
-# -----------------------------
-# SESSION STATE
-# -----------------------------
-if "index" not in st.session_state:
-    st.session_state.index = 0
-if "play" not in st.session_state:
-    st.session_state.play = False
-
-# -----------------------------
-# HELPER: Convert TIF to RGBA
-# -----------------------------
+# --------------------------
+# TIF → RGBA
+# --------------------------
 def tif_to_rgba(tif_path, alpha=0.6):
     cmap = plt.get_cmap("turbo")
+
     with rasterio.open(tif_path) as src:
-        from rasterio.windows import from_bounds
-        window = from_bounds(
-            zoom_bbox["lon_min"], zoom_bbox["lat_min"],
-            zoom_bbox["lon_max"], zoom_bbox["lat_max"],
-            transform=src.transform
-        )
-        data = src.read(1, window=window)
+        data = src.read(1)
+        bounds = src.bounds
         nodata = src.nodata
-        data_masked = np.ma.masked_where(data == nodata, data)
-        norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
-        rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-        img = Image.fromarray(rgb)
-        img.putalpha(int(255 * alpha))
-    return img
 
-# -----------------------------
-# FUNCTION: Create Plotly Mapbox figure
-# -----------------------------
-def create_radar_fig(index):
-    tif_path = tif_files[index]
-    radar_img = tif_to_rgba(tif_path)
+    masked = np.ma.masked_where(data == nodata, data)
 
-    # Map center
-    center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
-    center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
+    norm = (masked - masked.min()) / (masked.max() - masked.min())
+    rgb = (cmap(norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
 
-    fig = go.Figure()
+    img = Image.fromarray(rgb)
+    img.putalpha(int(alpha * 255))
 
-    # Add static satellite map
-    fig.update_layout(
-        mapbox=dict(
-            style="satellite",
-            center={"lat": center_lat, "lon": center_lon},
-            zoom=6,
-        ),
-        margin={"l":0, "r":0, "t":0, "b":0},
+    return img, bounds
+
+# --------------------------
+# FRAME SELECTOR
+# --------------------------
+frame_index = st.slider(
+    "Radar frame",
+    0,
+    len(tif_files) - 1,
+    len(tif_files) - 1
+)
+
+tif_path = tif_files[frame_index]
+radar_img, bounds = tif_to_rgba(tif_path)
+
+center_lat = (bounds.top + bounds.bottom) / 2
+center_lon = (bounds.left + bounds.right) / 2
+
+# --------------------------
+# MAPBOX FIGURE
+# --------------------------
+fig = go.Figure()
+
+fig.add_layout_image(
+    dict(
+        source=radar_img,
+        xref="x",
+        yref="y",
+        x=bounds.left,
+        y=bounds.top,
+        sizex=bounds.right - bounds.left,
+        sizey=bounds.top - bounds.bottom,
+        sizing="stretch",
+        opacity=0.65,
+        layer="above"
     )
+)
 
-    # Overlay radar image as layout image
-    fig.add_layout_image(
-        dict(
-            source=radar_img,
-            xref="x",
-            yref="y",
-            x=zoom_bbox["lon_min"],
-            y=zoom_bbox["lat_max"],  # origin upper-left
-            sizex=zoom_bbox["lon_max"] - zoom_bbox["lon_min"],
-            sizey=zoom_bbox["lat_max"] - zoom_bbox["lat_min"],
-            sizing="stretch",
-            opacity=0.6,
-            layer="above"
-        )
-    )
+fig.update_layout(
+    mapbox=dict(
+        accesstoken=mapbox_token,
+        style="satellite",
+        center=dict(lat=center_lat, lon=center_lon),
+        zoom=6
+    ),
+    margin=dict(r=0, t=0, l=0, b=0)
+)
 
-    # Add timestamp / frame label
-    fig.add_annotation(
-        text=f"Frame: {index} | {tif_path.name}",
-        xref="paper",
-        yref="paper",
-        x=0.01,
-        y=0.99,
-        showarrow=False,
-        font=dict(color="white", size=16),
-        bgcolor="black",
-        borderpad=2
-    )
+# IMPORTANT: hide XY axes
+fig.update_xaxes(visible=False)
+fig.update_yaxes(visible=False)
 
-    return fig
+st.plotly_chart(fig, use_container_width=True)
 
-# -----------------------------
-# PLAY / STOP BUTTONS
-# -----------------------------
-col1, col2 = st.columns([1,1])
-with col1:
-    if st.button("Play"):
-        st.session_state.play = True
-with col2:
-    if st.button("Stop"):
-        st.session_state.play = False
-
-# -----------------------------
-# SLIDER
-# -----------------------------
-frame = st.slider("Radar Frame", 0, len(tif_files)-1, st.session_state.index)
-st.session_state.index = frame
-
-# -----------------------------
-# PLACEHOLDER
-# -----------------------------
-placeholder = st.empty()
-placeholder.plotly_chart(create_radar_fig(st.session_state.index), use_container_width=True)
-
+st.caption(f"Frame: {frame_index+1} / {len(tif_files)}")
+st.caption(tif_path.name)
 #################################################################################
 # -----------------------------
 # PLOTS
