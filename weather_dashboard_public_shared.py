@@ -205,13 +205,23 @@ def get_satellite_background():
 
     url = (
         "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},8/1920x1280"
+        f"{center_lon},{center_lat},8/1920x1080"
         f"?access_token={token}"
     )
 
     r = requests.get(url)
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
-
+    
+    if r.status_code != 200:
+        st.error(f"Mapbox request failed! Status code: {r.status_code}")
+        st.stop()
+    
+    try:
+        img = Image.open(io.BytesIO(r.content)).convert("RGBA")
+    except Exception as e:
+        st.error(f"Failed to open Mapbox image: {e}")
+        st.stop()
+    
+    return img
 # -------------------------
 # Radar rendering
 # -------------------------
