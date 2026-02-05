@@ -109,8 +109,8 @@ if latest.uv <= 2:
     background_color = "#d4edda"  # Light green background
     description = "Riesgo: Bajo"
 elif 3 <= latest.uv <= 5:
-    color = "yellow"
-    background_color = "#fff3cd"  # Light yellow background
+    color = "#b58900"   # darker yellow / amber
+    background_color = "#fff3cd"
     description = "Riesgo: Moderado"
 elif 6 <= latest.uv <= 7:
     color = "orange"
@@ -527,6 +527,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
