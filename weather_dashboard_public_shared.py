@@ -219,7 +219,7 @@ df_wind = (
 latest = df[["Hora", "wind_avg", "wind_direction"]].sort_values("Hora").iloc[-1:]
 
 # Append it to the resampled dataframe if it's not already included
-if latest["Hora"].iloc[-1] not in df_wind["Hora"].values:
+if latest["Hora"].iloc[0] not in df_wind["Hora"].values:
     df_wind = pd.concat([df_wind, latest], ignore_index=True)
 
 # Sort again by time
