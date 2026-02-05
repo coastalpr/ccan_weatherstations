@@ -183,57 +183,138 @@ st.markdown(
 lon_min, lon_max = -68, -64.0
 lat_min, lat_max = 17.5, 19.0
 
-# Folder with multiple radar tif files
+# -------------------------
+# Radar files
+# -------------------------
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
     st.warning("No radar .tif files found")
+    st.stop()
 
+# -------------------------
+# Satellite background
+# -------------------------
+@st.cache_data
+def get_satellite_background():
+    token = st.secrets["mapbox"]["token"]
+
+    center_lon = (lon_min + lon_max) / 2
+    center_lat = (lat_min + lat_max) / 2
+
+    url = (
+        "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
+        f"{center_lon},{center_lat},6/800x800"
+        f"?access_token={token}"
+    )
+
+    r = requests.get(url)
+    return Image.open(io.BytesIO(r.content)).convert("RGBA")
+
+# -------------------------
+# Radar rendering
+# -------------------------
 def tif_to_image(tif_path):
     cmap = plt.get_cmap("turbo")
+    sat = get_satellite_background().copy()
+
     with rasterio.open(tif_path) as src:
-        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        window = from_bounds(
+            lon_min, lat_min, lon_max, lat_max,
+            transform=src.transform
+        )
         data = src.read(1, window=window)
         nodata = src.nodata
 
     data_masked = np.ma.masked_where(data == nodata, data)
-    norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
-    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-    return Image.fromarray(rgb)
 
+    if data_masked.max() > data_masked.min():
+        norm_data = (data_masked - data_masked.min()) / (
+            data_masked.max() - data_masked.min()
+        )
+    else:
+        norm_data = data_masked * 0
+
+    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+
+    radar = Image.fromarray(rgb).convert("RGBA")
+
+    # Match satellite size to radar grid
+    sat = sat.resize((rgb.shape[1], rgb.shape[0]))
+
+    # Transparency mask
+    alpha = (norm_data.filled(0) > 0.05) * 150
+    radar.putalpha(Image.fromarray(alpha.astype(np.uint8)))
+
+    sat.paste(radar, (0, 0), radar)
+
+    return sat
+
+# -------------------------
+# Session state
+# -------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
+
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2, col3,col4,col5,col6 = st.columns(6)
+# -------------------------
+# Controls
+# -------------------------
+col1, col2, col3, col4, col5, col6 = st.columns(6)
+
 with col3:
     if st.button("Play"):
         st.session_state.play = True
+
 with col4:
     if st.button("Stop"):
         st.session_state.play = False
 
-placeholder = st.empty()  # container to update images
+# -------------------------
+# Animation container
+# -------------------------
+placeholder = st.empty()
 
+# -------------------------
+# Animation loop
+# -------------------------
 while st.session_state.play:
-    # show current radar frame
     current_file = tif_files[st.session_state.index]
     img = tif_to_image(current_file)
-    placeholder.image(img, caption=current_file.name, use_column_width=True)
 
-    # advance index
+    placeholder.image(
+        img,
+        caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
+        use_column_width=True,
+    )
+
     st.session_state.index += 1
     if st.session_state.index >= len(tif_files):
-        st.session_state.index = 0  # loop
+        st.session_state.index = 0
 
-    time.sleep(1)  # 1-second delay between frames
+    time.sleep(1)
 
-slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
+# -------------------------
+# Slider control
+# -------------------------
+slider_index = st.slider(
+    "Select Radar Frame:",
+    0,
+    len(tif_files) - 1,
+    st.session_state.index
+)
+
 current_file = tif_files[slider_index]
 img = tif_to_image(current_file)
-st.image(img, caption=current_file.name, width="stretch")
+
+st.image(
+    img,
+    caption=f"{current_file.name} | Frame {slider_index+1}/{len(tif_files)}",
+    width="stretch",
+)
 #################################################################################
 # -----------------------------
 # PLOTS
