@@ -108,7 +108,7 @@ if latest.uv <= 2:
     color = "green"
     background_color = "#d4edda"  # Light green background
     description = "Riesgo: Bajo"
-elif 3 <= latest.uv <= 5:
+elif 3 <= latest.uv <= 6:
     color = "#b58900"   # darker yellow / amber
     background_color = "#fff3cd"
     description = "Riesgo: Moderado"
@@ -116,7 +116,7 @@ elif 6 <= latest.uv <= 7:
     color = "orange"
     background_color = "#ffeeba"  # Light orange background
     description = "Riesgo: Alto"
-elif 8 <= latest.uv <= 10:
+elif 7 <= latest.uv <= 10:
     color = "red"
     background_color = "#f8d7da"  # Light red background
     description = "Riesgo: Muy Alto"
