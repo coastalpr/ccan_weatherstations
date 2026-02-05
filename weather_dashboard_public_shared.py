@@ -456,7 +456,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
-    hovertemplate='%{y} °F<extra></extra>',
+    hovertemplate='%{y:.4f}"<extra></extra>',
 )
 
 ymax = df["rain_accumulated"].max()
