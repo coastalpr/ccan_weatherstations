@@ -292,13 +292,13 @@ scatter = go.Scatter(
     y=df_wind["wind_avg"],
     mode="markers",
     marker=dict(
-        size=8,
+        size=2,
         color=scatter_colors,
-        opacity=0.8,
-        line=dict(width=0.5, color="black"),
+        opacity=0.7,
+        line=dict(width=0.15, color="black"),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Time: %{x}<br>Speed: %{y} kts<br>Direction: %{text}°<extra></extra>",
+    hovertemplate="Hora: %{x}<br>Speed: %{y} kts<br>Direction: %{text}°<extra></extra>",
     name="Wind Data",
 )
 
@@ -441,6 +441,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
