@@ -214,7 +214,11 @@ sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height = load_satell
 # Radar overlay function (georeferenced)
 # -------------------------
 def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height):
+    import matplotlib.pyplot as plt
+    from PIL import Image, ImageDraw, ImageFont
     cmap = plt.get_cmap("turbo")
+
+    # --- Read radar TIF ---
     with rasterio.open(radar_path) as src:
         radar_data = src.read(1)
         radar_nodata = src.nodata
@@ -224,20 +228,22 @@ def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_
     # Mask nodata
     radar_data = np.ma.masked_where(radar_data == radar_nodata, radar_data)
 
-    # Reproject radar to satellite grid
+    # --- REPROJECT RADAR TO SATELLITE GRID ---
     reprojected = np.zeros((sat_height, sat_width), dtype=np.float32)
     reproject(
         source=radar_data,
         destination=reprojected,
         src_transform=radar_transform,
-        src_crs=radar_crs,
+        src_crs=radar_crs if radar_crs else "EPSG:4326",
         dst_transform=sat_transform,
-        dst_crs=sat_crs,
+        dst_crs=sat_crs if sat_crs else "EPSG:4326",
         resampling=Resampling.bilinear
     )
 
-    # Normalize
+    # Now reprojected has the same pixel grid as satellite
     data_masked = np.ma.masked_where(reprojected == 0, reprojected)
+
+    # --- NORMALIZE AND MAKE IMAGE ---
     if data_masked.max() > data_masked.min():
         norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
@@ -254,7 +260,7 @@ def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
-    # Add timestamp / frame overlay
+    # Add timestamp / frame info
     draw = ImageDraw.Draw(combined)
     font_size = max(16, sat_height // 40)
     try:
