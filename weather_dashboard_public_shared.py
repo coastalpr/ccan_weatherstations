@@ -174,7 +174,7 @@ st.markdown(
 df_wind = df[
     (df["wind_avg"] > 0.1) & 
     (df["wind_direction"].notna())
-].iloc[::2].copy()  # downsample
+].iloc[::5].copy()  # downsample
 
 arrow_angles = (270 - df_wind["wind_direction"]) % 360
 
@@ -464,6 +464,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
