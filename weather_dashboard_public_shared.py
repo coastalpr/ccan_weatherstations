@@ -34,6 +34,8 @@ import tempfile
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
+st.set_page_config(layout="wide", page_title="Radar Dashboard")
+
 # Add logo at the top
 redirect_url = "https://ccan-upr.org"
 #st.image("radar_images/logo.png", caption=f"({redirect_url})", use_column_width=True)  # You can adjust width as needed
@@ -175,68 +177,61 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-radar_folder = Path("radar_images")   # Folder containing .tif radar images
-zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}  # Zoomed area
-
-# -----------------------------
-# LOAD RADAR FILES
-# -----------------------------
+radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
+
 if not tif_files:
     st.error("No radar files found in radar_images folder.")
     st.stop()
 
+# Zoom bounding box for your area of interest
+zoom_bbox = {
+    "lon_min": -80.5,
+    "lon_max": -75.0,
+    "lat_min": 17.5,
+    "lat_max": 21.0
+}
+
 # -----------------------------
-# SESSION STATE FOR ANIMATION
+# SESSION STATE
 # -----------------------------
-if "play" not in st.session_state:
-    st.session_state.play = False
 if "index" not in st.session_state:
     st.session_state.index = 0
+if "play" not in st.session_state:
+    st.session_state.play = False
 
 # -----------------------------
-# PLAY / STOP BUTTONS
-# -----------------------------
-col1, col2 = st.columns([1,1])
-with col1:
-    if st.button("Play"):
-        st.session_state.play = True
-with col2:
-    if st.button("Stop"):
-        st.session_state.play = False
-
-# -----------------------------
-# FUNCTION: Convert TIF → PNG for overlay
+# HELPER: Convert GeoTIFF to PIL image
 # -----------------------------
 def tif_to_png(tif_path, alpha=0.6):
-    """Convert a GeoTIFF radar file to a semi-transparent PNG"""
+    """Convert GeoTIFF to PIL Image with alpha for overlay."""
+    cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        data = src.read(1)
+        from rasterio.windows import from_bounds
+        # crop to zoom_bbox
+        window = from_bounds(
+            zoom_bbox["lon_min"], zoom_bbox["lat_min"],
+            zoom_bbox["lon_max"], zoom_bbox["lat_max"],
+            transform=src.transform
+        )
+        data = src.read(1, window=window)
         nodata = src.nodata
-
-    # Mask nodata
-    data_masked = np.ma.masked_where(data == nodata, data)
-
-    # Normalize to 0-255
-    norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
-    img_array = (norm_data.filled(0) * 255).astype(np.uint8)
-
-    # Convert to RGBA with alpha
-    img = Image.fromarray(img_array)
-    img = img.convert("RGBA")
-    alpha_channel = Image.new("L", img.size, int(255*alpha))
-    img.putalpha(alpha_channel)
-
+        data_masked = np.ma.masked_where(data == nodata, data)
+        # normalize
+        norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
+        rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+        img = Image.fromarray(rgb)
+        img.putalpha(int(255 * alpha))
     return img
 
 # -----------------------------
-# FUNCTION: DISPLAY RADAR OVER MAP
+# FUNCTION: Display radar overlay on Folium map
 # -----------------------------
 def display_radar(index):
     tif_path = tif_files[index]
     radar_img = tif_to_png(tif_path)
 
-    # Save PIL image to temporary PNG file
+    # Save PIL image to temp file (Folium requires a path)
     tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
     radar_img.save(tmp_file.name)
 
@@ -244,16 +239,16 @@ def display_radar(index):
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
 
-    # Folium map
+    # Folium map with satellite tiles
     m = folium.Map(
         location=[center_lat, center_lon],
         zoom_start=6,
         tiles="Esri.WorldImagery"
     )
 
-    # Overlay radar image using file path
+    # Overlay radar image
     ImageOverlay(
-        image=tmp_file.name,  # pass file path, not PIL Image
+        image=tmp_file.name,
         bounds=[[zoom_bbox["lat_min"], zoom_bbox["lon_min"]],
                 [zoom_bbox["lat_max"], zoom_bbox["lon_max"]]],
         opacity=0.6
@@ -262,21 +257,48 @@ def display_radar(index):
     folium.LayerControl().add_to(m)
 
     st_folium(m, width=900, height=600)
+
 # -----------------------------
-# RADAR ANIMATION LOOP
+# PLAY / STOP BUTTONS
+# -----------------------------
+col1, col2 = st.columns([1, 1])
+with col1:
+    if st.button("Play"):
+        st.session_state.play = True
+with col2:
+    if st.button("Stop"):
+        st.session_state.play = False
+
+# -----------------------------
+# RADAR FRAME SLIDER
+# -----------------------------
+frame = st.slider(
+    "Radar Frame",
+    0, len(tif_files) - 1,
+    st.session_state.index
+)
+st.session_state.index = frame
+
+# -----------------------------
+# RADAR DISPLAY
 # -----------------------------
 placeholder = st.empty()
+
+# Display current frame
+with placeholder:
+    display_radar(st.session_state.index)
+
+# -----------------------------
+# ANIMATION LOOP
+# -----------------------------
 if st.session_state.play:
     for i in range(st.session_state.index, len(tif_files)):
         if not st.session_state.play:
             break
         st.session_state.index = i
-        display_radar(i)  # <-- this recreates the whole map
-        time.sleep(60)
-    st.session_state.index = 0
-else:
-    with placeholder:
-        display_radar(st.session_state.index)
+        with placeholder:
+            display_radar(i)
+        time.sleep(0.5)  # animation speed
 
 #################################################################################
 # -----------------------------
