@@ -134,7 +134,6 @@ c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts")
 c2.metric("🧭 Dirección del Viento",f"Del {wind_direction_cardinal(latest.wind_direction)}")
 c3.metric("🌡️ Temperatura", f"{latest.air_temperature:.1f} °F")
 c4.metric("💧 Humedad", f"{latest.relative_humidity:.0f}%")
-#c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color=color)
 # Display the metric using c5
 c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 
@@ -184,10 +183,6 @@ meses = ["enero","febrero","marzo","abril","mayo","junio",
 tick_labels = [f"{t.day}-{meses[t.month-1]}-{t.year}<br>{t.strftime('%I:%M %p')}" for t in ticks]
 tick_labels = [f"{t.day}/{meses[t.month-1]}<br>{t.strftime('%I:%M %p')}" for t in ticks]
 
-#tick_labels = [t.strftime("%m-%d\n%I:%M %p") for t in ticks]
-#tick_labels[0] = ticks[0].strftime("%Y-%m-%d")
-#tick_labels[-1] = ticks[-1].strftime("%Y-%m-%d")
-
 
 st.subheader("")
 st.markdown(
@@ -195,18 +190,15 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+#################################################################################
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
-# ----------------------------
-# Ensure datetime
-# ----------------------------
+#################################################################################
+
 df["Hora"] = pd.to_datetime(df["Hora"])
 df = df.sort_values("Hora")
 
-# ----------------------------
-# Wind dataframe
-# ----------------------------
 df_wind = df[
     (df["wind_avg"].notna()) &
     (df["wind_direction"].notna())
@@ -221,16 +213,15 @@ df_wind = df[
 arrow_angles = (270 - df_wind["wind_direction"]) % 360
 #arrow_angles = (df_wind["wind_direction"]) % 360
 
-# ----------------------------
+
 def wind_to_uv(wd_deg, magnitude=1.0):
     rad = np.deg2rad(wd_deg)
     u = np.cos(rad) * magnitude
     v = np.sin(rad) * magnitude
     return u, v
 
-# ----------------------------
 # Wind categories and colors
-# ----------------------------
+
 wind_categories = [
     {"label": "Calm", "color": "#08306b", "min": 0, "max": 3},
     {"label": "Light Breeze", "color": "#6baed6", "min": 3.01, "max": 10},
@@ -262,9 +253,8 @@ directions = df_wind["wind_direction"]
 min_speed = speeds.min()
 max_speed = speeds.max()
 
-# -------------------------------
 # Arrow parameters
-# -------------------------------
+
 from datetime import timedelta
 annotations = []
 scale = 0.8
@@ -333,11 +323,8 @@ def speed_to_id(speed):
 
 df_wind["cat_id"] = df_wind["wind_avg"].apply(speed_to_id)
 
-# Build Plotly discrete colorscale
 colorscale = [[i/(len(category_colors)-1), color] for i, color in enumerate(category_colors)]
-# ----------------------------
-# Scatter points (same color logic)
-# ----------------------------
+
 scatter_colors = []
 for speed in df_wind["wind_avg"]:
     norm_speed = (speed - min_speed) / (max_speed - min_speed)
@@ -384,18 +371,9 @@ scatter = go.Scatter(
     name="Viento",
 )
 
-# ----------------------------
-# Figure
-# ----------------------------
+
 fig = go.Figure(data=[scatter])
-#fig.update_layout(
-#    xaxis=dict(title="Time", type="date", tickformat="%H:%M"),
-#    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.2]),
-#    annotations=annotations,
-#    hovermode="closest",
-#    showlegend=False,
-#    plot_bgcolor="rgba(240,240,240,0.1)",
-#)
+
 # Layout
 fig.update_layout(
     hovermode="x unified",
@@ -419,15 +397,13 @@ fig.update_layout(
 )
 
 
-# ----------------------------
-# Render in Streamlit
-# ----------------------------
 st.plotly_chart(fig, width="stretch")
 
-
+#################################################################################
 ## ----------------------------------------
 # Air Temperature
 ## ----------------------------------------
+#################################################################################
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
@@ -471,9 +447,12 @@ fig.update_layout(
 )
 st.plotly_chart(fig, width="stretch")
 
+#################################################################################
 ## ----------------------------------------
 # Rain Accumulation
 ## ----------------------------------------
+#################################################################################
+
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
@@ -502,10 +481,12 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
-
+#################################################################################
 ## ----------------------------------------
 # UV
 ## ----------------------------------------
+#################################################################################
+
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
@@ -530,9 +511,12 @@ fig.update_layout(
 )
 st.plotly_chart(fig, width="stretch")
 
+#################################################################################
 ## ----------------------------------------
 # Lightning Strike
 ## ----------------------------------------
+#################################################################################
+
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
@@ -558,9 +542,12 @@ fig.update_layout(
 
 st.plotly_chart(fig, width="stretch")
 
+#################################################################################
 # -----------------------------
 # FOOTER
 # -----------------------------
+#################################################################################
+
 st.markdown("---")
 st.markdown(
     """
