@@ -175,7 +175,7 @@ end_date = df['Hora'].max()
 start_date = end_date - pd.Timedelta(days=1)
 
 # Generate hourly ticks (optional: every 1 hour)
-ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3h')
+ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='6h')
 # Tick labels: first and last tick show date, others show hour
 meses = ["enero","febrero","marzo","abril","mayo","junio",
          "julio","agosto","septiembre","octubre","noviembre","diciembre"]
