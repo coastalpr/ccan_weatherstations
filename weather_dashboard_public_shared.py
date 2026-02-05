@@ -230,9 +230,12 @@ sat_img, sat_width, sat_height = load_satellite_image(satellite_path)
 def radar_to_image(radar_path, sat_img, lon_min, lat_min, lon_max, lat_max):
     # Load radar data
     with rasterio.open(radar_path) as src:
-        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
-        data = src.read(1, window=window)
+        data = src.read(1)  # full array
         nodata = src.nodata
+        data_masked = np.ma.masked_equal(data, nodata)
+        #window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        #data = src.read(1, window=window)
+        #nodata = src.nodata
 
     # Mask nodata
     data_masked = np.ma.masked_equal(data, nodata)
@@ -250,10 +253,11 @@ def radar_to_image(radar_path, sat_img, lon_min, lat_min, lon_max, lat_max):
 
     # Transparency
     alpha = (norm_data.filled(0) > 0.01) * 180
-    radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
+    radar_img = Image.fromarray((data_masked.filled(0)/data_masked.max()*255).astype(np.uint8)).convert("RGBA")
 
     # Resize radar to match satellite
-    radar_img = radar_img.resize(sat_img.size, resample=Image.BILINEAR)
+    radar_img = radar_img.resize((sat_width, sat_height), Image.BILINEAR)
+
 
     # Overlay radar on satellite
     combined = sat_img.copy()
