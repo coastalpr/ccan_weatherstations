@@ -371,7 +371,13 @@ scatter = go.Scatter(
     name="Viento",
 )
 
-
+# Make trace invisible but hover still works
+fig.update_traces(
+    mode="lines+markers",
+    line=dict(width=0),       # hide line
+    marker=dict(size=0),      # hide markers
+    hovertemplate='Distancia: %{y:.1f} mi<extra></extra>'
+)
 fig = go.Figure(data=[scatter])
 
 # Layout
