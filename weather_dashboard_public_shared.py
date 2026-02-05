@@ -214,16 +214,17 @@ sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height = load_satell
 # RADAR TO IMAGE FUNCTION
 # -------------------------
 def radar_to_image(radar_path):
+    # Open radar TIF
     with rasterio.open(radar_path) as src:
         radar_data = src.read(1)
         radar_nodata = src.nodata
-        radar_transform = src.transform
         radar_crs = src.crs
+        radar_transform = src.transform
 
     # Mask nodata
     radar_data = np.ma.masked_where(radar_data == radar_nodata, radar_data)
 
-    # Reproject to satellite grid
+    # Reproject radar to match satellite
     reprojected = np.zeros((sat_height, sat_width), dtype=np.float32)
     reproject(
         source=radar_data,
@@ -235,7 +236,7 @@ def radar_to_image(radar_path):
         resampling=Resampling.bilinear
     )
 
-    # Normalize for colormap
+    # Normalize and apply colormap
     valid = reprojected > 0
     if np.any(valid):
         norm_data = (reprojected - reprojected[valid].min()) / (reprojected[valid].max() - reprojected[valid].min() + 1e-6)
@@ -246,30 +247,26 @@ def radar_to_image(radar_path):
     rgb = (cmap(norm_data)[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
-    # Transparency mask
+    # Transparency
     alpha = (norm_data > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
     # Overlay on satellite
     combined = sat_img.copy()
-    combined.paste(radar_img, (0,0), radar_img)
+    combined.paste(radar_img, (0, 0), radar_img)
 
-    # Add timestamp and frame counter
+    # Timestamp + frame counter
     draw = ImageDraw.Draw(combined)
     font_size = max(16, sat_height // 40)
     try:
         font = ImageFont.truetype("arial.ttf", font_size)
     except:
         font = ImageFont.load_default()
-
     timestamp = radar_path.stem
     frame_info = f"Frame {tif_files.index(radar_path)+1}/{len(tif_files)}"
-    text = f"{timestamp}   {frame_info}"
-
-    margin = 10
-    draw.rectangle([(margin, sat_height - font_size - margin),
-                    (sat_width - margin, sat_height - margin)], fill=(0,0,0,120))
-    draw.text((margin + 5, sat_height - font_size - margin + 2), text, fill=(255,255,255,255), font=font)
+    draw.rectangle([(10, sat_height - font_size - 10),
+                    (sat_width - 10, sat_height - 10)], fill=(0,0,0,120))
+    draw.text((15, sat_height - font_size - 8), f"{timestamp}   {frame_info}", fill=(255,255,255,255), font=font)
 
     return combined
 
