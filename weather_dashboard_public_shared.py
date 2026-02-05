@@ -179,182 +179,61 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-@st.cache_data
-def get_satellite_background():
-    token = st.secrets["mapbox"]["token"]
+# Bounding box in coordinates (longitude, latitude)
+lon_min, lon_max = -68, -64.0
+lat_min, lat_max = 17.5, 19.0
 
-    center_lon = (lon_min + lon_max) / 2
-    center_lat = (lat_min + lat_max) / 2
-
-    url = (
-        "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},6/800x800"
-        f"?access_token={token}"
-    )
-
-    r = requests.get(url)
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
-
+# Folder with multiple radar tif files
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.error("No radar TIFF files found.")
-    st.stop()
+    st.warning("No radar .tif files found")
 
-mapbox_token = st.secrets["mapbox"]["token"]
-
-# Puerto Rico bounding box
-zoom_bbox = dict(
-    lon_min=-68,
-    lon_max=-64,
-    lat_min=17,
-    lat_max=20
-)
-
-# -------------------------
-# NWS REFLECTIVITY COLORS
-# -------------------------
-reflectivity_colors = [
-    "#646464","#04e9e7","#019ff4","#0300f4","#02fd02",
-    "#01c501","#008e00","#fdf802","#e5bc00","#fd9500",
-    "#fd0000","#d40000","#bc0000","#f800fd","#9854c6"
-]
-
-def radar_colormap():
-    return plt.matplotlib.colors.LinearSegmentedColormap.from_list(
-        "radar", reflectivity_colors, N=256
-    )
-
-# -------------------------
-# TIMESTAMP FROM FILENAME
-# -------------------------
-def extract_time(name):
-    m = re.search(r'(\d{8})-(\d{4})', name)
-    if m:
-        return f"{m.group(1)} {m.group(2)} UTC"
-    return name
-
-# -------------------------
-# TIF → BASE64 OVERLAY
-# -------------------------
-def tif_to_overlay(tif_path):
-    cmap = radar_colormap()
-
+def tif_to_image(tif_path):
+    cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        from rasterio.windows import from_bounds
-
-        window = from_bounds(
-            zoom_bbox["lon_min"], zoom_bbox["lat_min"],
-            zoom_bbox["lon_max"], zoom_bbox["lat_max"],
-            src.transform
-        )
-
+        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
         data = src.read(1, window=window)
-        bounds = src.bounds
         nodata = src.nodata
 
-    masked = np.ma.masked_where(data == nodata, data)
+    data_masked = np.ma.masked_where(data == nodata, data)
+    norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
+    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+    return Image.fromarray(rgb)
 
-    if masked.max() > masked.min():
-        norm = (masked - masked.min()) / (masked.max() - masked.min())
-    else:
-        norm = masked * 0
-
-    rgb = (cmap(norm.filled(0))[:, :, :3] * 255).astype(np.uint8)
-
-    img = Image.fromarray(rgb).convert("RGBA")
-
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    encoded = base64.b64encode(buf.getvalue()).decode()
-
-    return f"data:image/png;base64,{encoded}"
-
-# -------------------------
-# SESSION STATE
-# -------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
-if "frame" not in st.session_state:
-    st.session_state.frame = len(tif_files) - 1
+if "index" not in st.session_state:
+    st.session_state.index = 0
 
-# -------------------------
-# CONTROLS
-# -------------------------
-c1, c2 = st.columns(2)
-
-with c1:
-    if st.button("▶ Play"):
+col1, col2, col3,col4,col5,col6 = st.columns(6)
+with col3:
+    if st.button("Play"):
         st.session_state.play = True
-
-with c2:
-    if st.button("■ Stop"):
+with col4:
+    if st.button("Stop"):
         st.session_state.play = False
 
-frame = st.slider(
-    "Radar frame",
-    0,
-    len(tif_files)-1,
-    st.session_state.frame
-)
+placeholder = st.empty()  # container to update images
 
-st.session_state.frame = frame
+while st.session_state.play:
+    # show current radar frame
+    current_file = tif_files[st.session_state.index]
+    img = tif_to_image(current_file)
+    placeholder.image(img, caption=current_file.name, use_column_width=True)
 
-placeholder = st.empty()
+    # advance index
+    st.session_state.index += 1
+    if st.session_state.index >= len(tif_files):
+        st.session_state.index = 0  # loop
 
-# -------------------------
-# DRAW MAP
-# -------------------------
-def draw(frame_index):
-    tif_path = tif_files[frame_index]
-    overlay = tif_to_overlay(tif_path)
+    time.sleep(1)  # 1-second delay between frames
 
-    center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
-    center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
-
-    fig = go.Figure()
-
-    fig.update_layout(
-        mapbox=dict(
-            accesstoken=mapbox_token,
-            style="satellite",
-            center=dict(lat=center_lat, lon=center_lon),
-            zoom=6,
-            layers=[
-                dict(
-                    sourcetype="image",
-                    source=overlay,
-                    coordinates=[
-                        [zoom_bbox["lon_min"], zoom_bbox["lat_max"]],
-                        [zoom_bbox["lon_max"], zoom_bbox["lat_max"]],
-                        [zoom_bbox["lon_max"], zoom_bbox["lat_min"]],
-                        [zoom_bbox["lon_min"], zoom_bbox["lat_min"]],
-                    ],
-                    opacity=0.55,
-                )
-            ],
-        ),
-        margin=dict(r=0, t=40, l=0, b=0),
-        title=f"Radar — {extract_time(tif_path.name)}"
-    )
-
-    placeholder.plotly_chart(fig, use_container_width=True)
-
-# -------------------------
-# ANIMATION LOOP
-# -------------------------
-if st.session_state.play:
-    for i in range(frame, len(tif_files)):
-        if not st.session_state.play:
-            break
-        st.session_state.frame = i
-        draw(i)
-        time.sleep(0.6)
-else:
-    draw(frame)
-
-st.caption(f"Frame {st.session_state.frame+1} / {len(tif_files)}")
+slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
+current_file = tif_files[slider_index]
+img = tif_to_image(current_file)
+st.image(img, caption=current_file.name, use_column_width=True)
 #################################################################################
 # -----------------------------
 # PLOTS
