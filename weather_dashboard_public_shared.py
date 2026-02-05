@@ -196,7 +196,7 @@ if "play" not in st.session_state:
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns(5)
 with col1:
     if st.button("Play"):
         st.session_state.play = True
@@ -219,6 +219,10 @@ while st.session_state.play:
 
     time.sleep(1)  # 1-second delay between frames
 
+slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
+current_file = tif_files[slider_index]
+img = tif_to_image(current_file)
+st.image(img, caption=current_file.name, use_column_width=True)
 
 #################################################################################
 # -----------------------------
