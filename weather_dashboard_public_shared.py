@@ -167,7 +167,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
+# Apply colormap (turbo or any)
+cmap = plt.get_cmap("turbo")
 radar_folder = Path("radar_images")
 radar_files = sorted(radar_folder.glob("*.tif"))
 radar_names = [f.name for f in radar_files]
