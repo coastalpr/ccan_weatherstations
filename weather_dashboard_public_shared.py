@@ -289,14 +289,27 @@ placeholder = st.empty()
 # -----------------------------
 def run_animation():
     while st.session_state.play:
-        current_file = radar_files[st.session_state.index]
-        img = radar_to_image(current_file)
-        st.image(combined, width=900)
+        current_file = tif_files[st.session_state.index]
+
+        # Combine satellite + radar overlay
+        img = radar_to_image(
+            current_file,
+            sat_img,            # the loaded satellite image
+            lon_min, lat_min,
+            lon_max, lat_max
+        )
+
+        placeholder.image(
+            img,
+            caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
+            use_column_width=True
+        )
 
         st.session_state.index += 1
-        if st.session_state.index >= len(radar_files):
+        if st.session_state.index >= len(tif_files):
             st.session_state.index = 0
-        time.sleep(0.2)  # adjust speed
+
+        time.sleep(0.15)
 
 # Run animation if Play
 if st.session_state.play:
