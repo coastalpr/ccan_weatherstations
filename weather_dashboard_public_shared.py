@@ -129,7 +129,7 @@ else:
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("🌬️ Velocidad del Viento (kts)",, f"{latest.wind_avg:.1f}")
+c1.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
 c2.metric("🧭 Dirección del Viento (º)", f"Del {wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
 c3.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c4.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
@@ -140,6 +140,18 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 with c5:
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
 
+st.markdown(
+    f"""
+    <div style="display:flex; justify-content: space-between;">
+        <div style="font-size:0.75rem; font-weight:bold;">🌬️ Velocidad del Viento (kts): {latest.wind_avg:.1f}</div>
+        <div style="font-size:0.75rem; font-weight:bold;">🧭 Dirección del Viento (º): Del {wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)</div>
+        <div style="font-size:0.75rem; font-weight:bold;">🌡️ Temperatura (°F): {latest.air_temperature:.1f}</div>
+        <div style="font-size:0.75rem; font-weight:bold;">💧 Humedad (%): {latest.relative_humidity:.0f}</div>
+        <div style="font-size:0.75rem; font-weight:bold;">☀️ Índice UV: {latest.uv:.1f} <span style="color:{color}; font-size:0.7rem;">{description}</span></div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # -----------------------------
 # PLOTS
 # -----------------------------
