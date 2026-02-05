@@ -380,8 +380,9 @@ hover_only = go.Scatter(
     hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     showlegend=False
 )
-fig = go.Figure(data=[scatter])
 fig = go.Figure()
+fig = go.Figure(data=[scatter])
+
 #fig.add_trace(scatter)      # your visible arrow trace
 fig.add_trace(hover_only)   # invisible hover-only trace
 
