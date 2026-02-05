@@ -30,6 +30,7 @@ from rasterio.warp import transform_bounds
 from pathlib import Path
 from rasterio.windows import from_bounds
 import tempfile
+import io, base64
 
 # -----------------------------
 # PAGE CONFIG
