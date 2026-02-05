@@ -370,14 +370,18 @@ scatter = go.Scatter(
     hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     name="Viento",
 )
-
-# Make trace invisible but hover still works
-fig.update_traces(
+hover_only = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_avg"],
     mode="lines+markers",
-    line=dict(width=0),       # hide line
-    marker=dict(size=0),      # hide markers
-    hovertemplate='Distancia: %{y:.1f} mi<extra></extra>'
+    line=dict(width=0),       # no visible line
+    marker=dict(size=0),      # no visible marker
+    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
+    text=df_wind["wind_direction"],
+    showlegend=False,         # hide from legend
+    name="HoverOnly"
 )
+
 fig = go.Figure(data=[scatter])
 
 # Layout
