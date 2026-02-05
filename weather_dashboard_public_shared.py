@@ -291,7 +291,7 @@ while st.session_state.play:
     placeholder.image(
         img,
         caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-        width="content"
+        width=1200
     )
 
     st.session_state.index += 1
