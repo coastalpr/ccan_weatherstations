@@ -234,23 +234,16 @@ def display_radar(index):
     tif_path = tif_files[index]
     radar_img = tif_to_png(tif_path)
 
-    # Folium map
+    # Map center
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
-    #m = folium.Map(
-    #location=[center_lat, center_lon],
-    #zoom_start=6,
-    #tiles="Stamen Terrain",
-    #attr="Map tiles by Stamen Design, CC BY 3.0 — Map data © OpenStreetMap contributors"
-    #)
+
+    # Folium map with satellite tiles
     m = folium.Map(
-    location=[center_lat, center_lon],
-    zoom_start=6,
-    tiles="Esri.WorldImagery"  # Satellite imagery
+        location=[center_lat, center_lon],
+        zoom_start=6,
+        tiles="Esri.WorldImagery"  # Satellite imagery
     )
-    # Add satellite tiles as base
-    #folium.TileLayer("Stamen Toner").add_to(m)
-    #folium.TileLayer("Esri.WorldImagery").add_to(m)  # satellite layer
 
     # Overlay radar image
     ImageOverlay(
@@ -260,11 +253,11 @@ def display_radar(index):
         opacity=0.6
     ).add_to(m)
 
-    # Add layer control
+    # Optional: Layer control
     folium.LayerControl().add_to(m)
 
-    st_folium(m, width=900, height=600)
-
+    # Render in Streamlit
+    st_folium(m, width=900, height=600)  # Use proper height
 # -----------------------------
 # RADAR ANIMATION LOOP
 # -----------------------------
