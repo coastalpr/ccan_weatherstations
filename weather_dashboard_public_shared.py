@@ -218,10 +218,9 @@ sat_img, sat_width, sat_height = load_satellite_image(satellite_path)
 # -----------------------------
 # RADAR IMAGE -> PIL with alpha overlay
 # -----------------------------
-def radar_to_image(tif_path):
+def radar_to_image(tif_path, sat_img, lon_min, lat_min, lon_max, lat_max):
     # Load radar data
     with rasterio.open(tif_path) as src:
-        # Compute window for our bounding box
         window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
         data = src.read(1, window=window)
         nodata = src.nodata
@@ -229,13 +228,13 @@ def radar_to_image(tif_path):
     # Mask nodata
     data_masked = np.ma.masked_equal(data, nodata)
 
-    # Normalize to 0-1
+    # Normalize 0-1
     if data_masked.max() > data_masked.min():
         norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
         norm_data = data_masked * 0
 
-    # Apply colormap
+    # Convert to RGBA
     cmap = plt.get_cmap("turbo")
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
@@ -244,31 +243,21 @@ def radar_to_image(tif_path):
     alpha = (norm_data.filled(0) > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Resize radar to match satellite image
-    radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
+    # Resize radar to match satellite
+    radar_img = radar_img.resize(sat_img.size, resample=Image.BILINEAR)
 
-    # Overlay
+    # Overlay radar on satellite
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
-    # Draw timestamp and frame counter
+    # Draw timestamp / frame
     draw = ImageDraw.Draw(combined)
     font_size = max(16, combined.height // 40)
     try:
         font = ImageFont.truetype("arial.ttf", font_size)
     except:
         font = ImageFont.load_default()
-
-    timestamp = tif_path.stem
-    frame_info = f"Frame {radar_files.index(tif_path)+1}/{len(radar_files)}"
-
-    # Draw a semi-transparent rectangle
-    draw.rectangle([(10, combined.height - font_size - 12),
-                    (combined.width - 10, combined.height - 5)], fill=(0,0,0,150))
-    draw.text((15, combined.height - font_size - 10),
-              f"{timestamp}   {frame_info}",
-              fill=(255,255,255,255), font=font)
-
+    draw.text((10, 10), tif_path.stem, fill=(255,255,255,255), font=font)
     return combined
 
 # -----------------------------
