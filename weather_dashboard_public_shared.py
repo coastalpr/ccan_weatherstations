@@ -520,7 +520,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
-    hovertemplate='Distancia: %{y:.1f} °F<extra></extra>',
+    hovertemplate='Distancia: %{y:.1f} mi<extra></extra>',
 )
 
 # Layout
@@ -538,7 +538,7 @@ fig.update_layout(
     ),
     yaxis=dict(
         title="Distancia del Rayo (mi)",
-        range=[0, 4]   # y-axis min/max
+        range=[0, 6]   # y-axis min/max
     ),
     showlegend=False
 )
