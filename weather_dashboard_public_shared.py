@@ -381,8 +381,7 @@ fig.update_layout(
         side='bottom'
     ),
     yaxis_title="Precipitación Acumulada (\")",
-    range=[0, ymax * 1.1],  # add 10% headroom
-
+   # range=[0, ymax * 1.1],  # add 10% headroom
     showlegend=False
 )
 
@@ -476,6 +475,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
