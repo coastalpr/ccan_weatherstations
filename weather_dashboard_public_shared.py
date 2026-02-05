@@ -332,7 +332,7 @@ combined_img = radar_to_image(
     sat_bounds.left, sat_bounds.bottom,
     sat_bounds.right, sat_bounds.top
 )
-st.image(combined_img, use_column_width=True 
+st.image(combined_img, use_column_width=True)
 #################################################################################
 # -----------------------------
 # PLOTS
