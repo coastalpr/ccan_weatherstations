@@ -179,62 +179,44 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-# Bounding box in coordinates (longitude, latitude)
-lon_min, lon_max = -68, -64
-lat_min, lat_max = 17.5, 18.5
+sat_file = Path("satelliteimage1.tif")
+if not sat_file.exists():
+    st.error("Satellite image not found!")
+    st.stop()
 
-# -------------------------
-# Radar files
-# -------------------------
+with rasterio.open(sat_file) as src:
+    bounds = src.bounds  # left, bottom, right, top
+    sat_width, sat_height = src.width, src.height
+    sat_data = src.read([1, 2, 3])  # RGB bands
+    sat_data = np.transpose(sat_data, (1, 2, 0))  # H x W x 3
+    sat_img = Image.fromarray(sat_data.astype(np.uint8)).convert("RGBA")
+
+lon_min, lon_max = bounds.left, bounds.right
+lat_min, lat_max = bounds.bottom, bounds.top
+
+# -----------------------------
+# Load radar files
+# -----------------------------
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.warning("No radar .tif files found")
+    st.warning("No radar .tif files found in radar_images folder")
     st.stop()
 
 # -----------------------------
-# Get Mapbox satellite background
+# Convert radar tif → transparent overlay on satellite
 # -----------------------------
-@st.cache_data
-def get_satellite_background():
-    token = st.secrets["mapbox"]["token"]
+def radar_to_image(tif_path):
+    cmap = plt.get_cmap("turbo")
 
-    center_lon = (lon_min + lon_max) / 2
-    center_lat = (lat_min + lat_max) / 2
-
-    # Mapbox Static Image URL
-    zoom = 8
-    width, height = 1024, 1024  # <=1280 max
-    url = (
-        f"https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},{zoom}/{width}x{height}"
-        f"?access_token={token}"
-    )
-
-    r = requests.get(url)
-    if r.status_code != 200:
-        st.error(f"Mapbox request failed! Status code: {r.status_code}")
-        st.stop()
-
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
-
-sat_background = get_satellite_background()
-sat_width, sat_height = sat_background.size
-
-# -----------------------------
-# Convert a radar .tif to RGBA image
-# -----------------------------
-def tif_to_image(tif_path, sat_bg):
-    cmap = cm.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        data = src.read(1)
+        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        data = src.read(1, window=window)
         nodata = src.nodata
 
-    # Mask nodata
     data_masked = np.ma.masked_where(data == nodata, data)
 
-    # Normalize
     if data_masked.max() > data_masked.min():
         norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
@@ -243,15 +225,12 @@ def tif_to_image(tif_path, sat_bg):
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
-    # Transparency based on data
     alpha = (norm_data.filled(0) > 0.05) * 150
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Resize radar to match satellite size
-    radar_img = radar_img.resize(sat_bg.size, resample=Image.BILINEAR)
+    radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
 
-    # Overlay radar on satellite
-    combined = sat_bg.copy()
+    combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
     return combined
@@ -267,11 +246,11 @@ if "index" not in st.session_state:
 # -----------------------------
 # Controls
 # -----------------------------
-col1, col2, col3, col4, col5, col6 = st.columns(6)
-with col3:
+col1, col2 = st.columns(2)
+with col1:
     if st.button("Play"):
         st.session_state.play = True
-with col4:
+with col2:
     if st.button("Stop"):
         st.session_state.play = False
 
@@ -283,22 +262,25 @@ placeholder = st.empty()
 # -----------------------------
 # Animation loop
 # -----------------------------
-while st.session_state.play:
-    current_file = tif_files[st.session_state.index]
-    img = tif_to_image(current_file, sat_background)
+if st.session_state.play:
+    for i in range(len(tif_files)):
+        st.session_state.index = i
+        img = radar_to_image(tif_files[i])
+        placeholder.image(
+            img,
+            caption=f"{tif_files[i].name} | Frame {i+1}/{len(tif_files)}",
+            use_column_width=True,
+        )
+        time.sleep(0.2)  # adjust animation speed
 
-    placeholder.image(
-        img,
-        caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-        use_column_width=True
-    )
-
-    st.session_state.index += 1
-    if st.session_state.index >= len(tif_files):
-        st.session_state.index = 0
-
-    time.sleep(0.2)  # adjust speed
-
+# Show latest frame at the end
+latest_file = tif_files[st.session_state.index]
+latest_img = radar_to_image(latest_file)
+st.image(
+    latest_img,
+    caption=f"{latest_file.name} | Latest Frame",
+    use_column_width=True
+)
 
 #################################################################################
 # -----------------------------
