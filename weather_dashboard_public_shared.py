@@ -346,7 +346,20 @@ fig = go.Figure(data=[scatter])
 #    showlegend=False,
 #    plot_bgcolor="rgba(240,240,240,0.1)",
 #)
-
+# Layout
+fig.update_layout(
+    hovermode="x unified",
+    xaxis=dict(
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom',
+    ),
+)
 fig.update_layout(
     title="Velocidad y Dirección del Viento",
     xaxis=dict(title="Hora"),
