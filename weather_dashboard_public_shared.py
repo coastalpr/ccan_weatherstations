@@ -195,6 +195,13 @@ if not radar_files:
     st.warning("No radar .tif files found")
     st.stop()
 
+# Get all .tif files sorted
+tif_files = sorted(radar_folder.glob("*.tif"))
+
+if not tif_files:
+    import streamlit as st
+    st.warning("No radar .tif files found in radar_images folder")
+    st.stop()
 # -----------------------------
 # LOAD SATELLITE IMAGE
 # -----------------------------
