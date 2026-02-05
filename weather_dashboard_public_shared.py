@@ -181,7 +181,7 @@ st.markdown(
 #################################################################################
 # Bounding box in coordinates (longitude, latitude)
 lon_min, lon_max = -67.5, -64.5
-lat_min, lat_max = 17.5, 19.0
+lat_min, lat_max = 17.75, 18.5
 
 # -------------------------
 # Radar files
