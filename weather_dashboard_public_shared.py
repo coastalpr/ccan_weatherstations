@@ -177,7 +177,7 @@ radar_folder = Path("radar_images")   # folder containing .tif radar images
 mapbox_token = st.secrets["mapbox"]["token"]
 
 satellite_path = "satellite_image.png"  # static satellite base image
-zoom_bbox = { "lon_min": -68.5, "lon_max": -64.0, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
+zoom_bbox = { "lon_min": -68.5, "lon_max": -64.5, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
 
 # -----------------------------
 # LOAD RADAR FILES
