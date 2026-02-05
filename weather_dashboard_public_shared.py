@@ -368,7 +368,7 @@ scatter = go.Scatter(
     mode="markers",
     marker=dict(
         symbol="arrow",
-        size=15,
+        size=20,
         angle=arrow_angles,              # important: rotate arrows
         #color=df_wind["wind_avg"],       # numeric for colorbar
         color=df_wind["cat_id"],       # numeric for colorbar
@@ -380,7 +380,7 @@ scatter = go.Scatter(
         line=dict(width=0.25, color="white"),
         colorbar=dict(
             title="(nudos)",
-            thickness=12,
+            thickness=14,
             len=1.0
         ),
     ),
