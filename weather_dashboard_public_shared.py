@@ -209,7 +209,7 @@ df["wind_direction"] = pd.to_numeric(df["wind_direction"], errors="coerce")
 
 df_wind = (
     df.set_index("Hora")[["wind_avg","wind_direction"]]
-      .resample("10T")
+      .resample("15T")
       .mean()
       .dropna()
       .reset_index()
