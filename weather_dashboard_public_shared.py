@@ -334,7 +334,6 @@ fig = go.Figure(data=[scatter])
 fig.update_layout(
     title="Wind Speed & Direction",
     xaxis=dict(title="Hora"),
-    range=[start_date, end_date],
     yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.1]),
     hovermode="x unified",
     showlegend=False
@@ -465,6 +464,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
