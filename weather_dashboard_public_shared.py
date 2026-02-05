@@ -176,6 +176,8 @@ df_wind = df[
     (df["wind_direction"].notna())
 ].iloc[::2].copy()  # downsample
 
+arrow_angles = (270 - df_wind["wind_direction"]) % 360
+
 # ----------------------------
 def wind_to_uv(wd_deg, magnitude=1.0):
     rad = np.deg2rad(wd_deg)
@@ -292,10 +294,20 @@ scatter = go.Scatter(
     y=df_wind["wind_avg"],
     mode="markers",
     marker=dict(
-        size=2,
-        color=scatter_colors,
-        opacity=0.7,
-        line=dict(width=0.15, color="black"),
+        symbol="arrow",
+        size=12,
+        angle=arrow_angles,              # important: rotate arrows
+        color=df_wind["wind_avg"],       # numeric for colorbar
+        colorscale=colorscale,
+        cmin=min_speed,
+        cmax=max_speed,
+        opacity=0.9,
+        line=dict(width=0.5, color="black"),
+        colorbar=dict(
+            title="Wind Speed (kts)",
+            thickness=15,
+            len=0.8
+        ),
     ),
     text=df_wind["wind_direction"],
     hovertemplate="Hora: %{x}<br>Speed: %{y} kts<br>Direction: %{text}°<extra></extra>",
@@ -306,15 +318,22 @@ scatter = go.Scatter(
 # Figure
 # ----------------------------
 fig = go.Figure(data=[scatter])
-fig.update_layout(
-    xaxis=dict(title="Time", type="date", tickformat="%H:%M"),
-    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.2]),
-    annotations=annotations,
-    hovermode="closest",
-    showlegend=False,
-    plot_bgcolor="rgba(240,240,240,0.1)",
-)
+#fig.update_layout(
+#    xaxis=dict(title="Time", type="date", tickformat="%H:%M"),
+#    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.2]),
+#    annotations=annotations,
+#    hovermode="closest",
+#    showlegend=False,
+#    plot_bgcolor="rgba(240,240,240,0.1)",
+#)
 
+fig.update_layout(
+    title="Wind Speed & Direction",
+    xaxis=dict(title="Hora", tickangle=45),
+    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.1]),
+    hovermode="x unified",
+    showlegend=False
+)
 
 
 # ----------------------------
@@ -441,6 +460,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
