@@ -181,40 +181,37 @@ st.markdown(
 ## ----------------------------------------
 #################################################################################
 satellite_path = Path("satelliteimage1.tif")
-radar_folder = Path("radar_images")    # folder with radar TIFs
+radar_folder = Path("radar_images")     # Folder with georeferenced radar TIFs
 tif_files = sorted(radar_folder.glob("*.tif"))
 
-if not satellite_path.exists():
-    st.error("Satellite TIF not found!")
-    st.stop()
-
 if not tif_files:
-    st.error("No radar TIFs found in radar_images folder!")
+    st.warning("No radar files found")
     st.stop()
 
 # -------------------------
-# LOAD SATELLITE IMAGE AND BOUNDS
+# Load satellite image and metadata
 # -------------------------
 @st.cache_data
 def load_satellite_image(path):
     with rasterio.open(path) as src:
-        img = src.read()  # shape: bands, rows, cols
-        bounds = src.bounds
+        img = src.read()  # shape (bands, height, width)
         crs = src.crs
-        # convert to PIL image
-        img = img.transpose(1,2,0)  # rows, cols, bands
-        img = Image.fromarray(img).convert("RGBA")
-        width, height = img.size
-    transform = from_bounds(bounds.left, bounds.bottom, bounds.right, bounds.top, width, height)
-    return img, bounds, transform, crs, width, height
+        transform = src.transform
+        height, width = src.height, src.width
+    # Convert to RGBA PIL Image
+    if img.shape[0] >= 3:
+        rgb = np.stack([img[0], img[1], img[2]], axis=2)
+    else:
+        rgb = np.stack([img[0]]*3, axis=2)
+    pil_img = Image.fromarray(rgb).convert("RGBA")
+    return pil_img, crs, transform, width, height
 
-sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height = load_satellite_image(satellite_path)
+sat_img, sat_crs, sat_transform, sat_width, sat_height = load_satellite_image(satellite_path)
 
 # -------------------------
-# RADAR TO IMAGE FUNCTION
+# Convert radar TIF to RGBA overlay
 # -------------------------
 def radar_to_image(radar_path):
-    # Open radar
     with rasterio.open(radar_path) as src:
         radar_data = src.read(1)
         radar_nodata = src.nodata
@@ -223,10 +220,8 @@ def radar_to_image(radar_path):
 
     radar_data = np.ma.masked_where(radar_data == radar_nodata, radar_data)
 
-    # Destination array matches satellite image size
+    # Reproject radar onto satellite image grid
     reprojected = np.zeros((sat_height, sat_width), dtype=np.float32)
-
-    # Reproject radar onto satellite CRS/grid
     reproject(
         source=radar_data,
         destination=reprojected,
@@ -237,26 +232,91 @@ def radar_to_image(radar_path):
         resampling=Resampling.bilinear
     )
 
-    # Normalize and apply colormap
+    # Normalize
     valid = reprojected > 0
     if np.any(valid):
-        norm = (reprojected - reprojected[valid].min()) / (reprojected[valid].max() - reprojected[valid].min() + 1e-6)
+        norm_data = (reprojected - reprojected[valid].min()) / (
+            reprojected[valid].max() - reprojected[valid].min() + 1e-6
+        )
     else:
-        norm = reprojected * 0
+        norm_data = reprojected * 0
 
     cmap = plt.get_cmap("turbo")
-    rgb = (cmap(norm)[:, :, :3] * 255).astype(np.uint8)
+    rgb = (cmap(norm_data)[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
-
-    # Transparency
-    alpha = (norm > 0.01) * 180
+    alpha = (norm_data > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Overlay on satellite
+    # Overlay
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
+    # Timestamp + frame
+    draw = ImageDraw.Draw(combined)
+    font_size = max(16, sat_height // 40)
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except:
+        font = ImageFont.load_default()
+
+    timestamp = radar_path.stem
+    frame_info = f"Frame {tif_files.index(radar_path)+1}/{len(tif_files)}"
+    draw.rectangle([(10, sat_height - font_size - 12),
+                    (sat_width - 10, sat_height - 5)], fill=(0,0,0,150))
+    draw.text((15, sat_height - font_size - 10),
+              f"{timestamp}   {frame_info}", fill=(255,255,255,255), font=font)
+
     return combined
+
+# -------------------------
+# Streamlit controls
+# -------------------------
+if "play" not in st.session_state:
+    st.session_state.play = False
+if "index" not in st.session_state:
+    st.session_state.index = 0
+
+col1, col2 = st.columns([1,1])
+with col1:
+    if st.button("Play"):
+        st.session_state.play = True
+with col2:
+    if st.button("Stop"):
+        st.session_state.play = False
+
+placeholder = st.empty()
+
+# -------------------------
+# Animation loop
+# -------------------------
+def run_animation():
+    while st.session_state.play:
+        i = st.session_state.index
+        img = radar_to_image(tif_files[i])
+        placeholder.image(img, width="stretch")
+        st.session_state.index += 1
+        if st.session_state.index >= len(tif_files):
+            st.session_state.index = 0
+        time.sleep(0.2)  # adjust speed
+
+# Start animation if play
+if st.session_state.play:
+    run_animation()
+else:
+    # Show latest frame
+    img = radar_to_image(tif_files[st.session_state.index])
+    placeholder.image(img, width="stretch")
+
+# Slider to manually select frame
+slider_index = st.slider(
+    "Select Radar Frame:",
+    0,
+    len(tif_files)-1,
+    st.session_state.index
+)
+st.session_state.index = slider_index
+img = radar_to_image(tif_files[slider_index])
+st.image(img, width="stretch")
 
 # -------------------------
 # SESSION STATE
