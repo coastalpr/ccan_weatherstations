@@ -372,11 +372,11 @@ scatter = go.Scatter(
         #cmax=len(category_colors)-1,
         cmax=50,
         opacity=0.9,
-        line=dict(width=0.5, color="black"),
+        line=dict(width=0.25, color="black"),
         colorbar=dict(
             title="(nudos)",
-            thickness=10,
-            len=0.8
+            thickness=12,
+            len=1.0
         ),
     ),
     text=df_wind["wind_direction"],
