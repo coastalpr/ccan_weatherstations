@@ -219,8 +219,14 @@ def load_satellite_image(path):
 # FUNCTION: CONVERT RADAR TIF TO RGBA IMAGE MATCHING SATELLITE
 # -----------------------------
 # Correct radar_to_image with proper bounds
-def radar_to_image(tif_path):
+def radar_to_image(tif_path, sat_img, sat_width, sat_height, lon_min, lon_max, lat_min, lat_max):
+    import matplotlib.pyplot as plt
+    from rasterio.windows import from_bounds
+    from PIL import Image
+    import numpy as np
+
     cmap = plt.get_cmap("turbo")
+    
     with rasterio.open(tif_path) as src:
         # Clip radar to satellite bounds
         window = from_bounds(
@@ -234,18 +240,15 @@ def radar_to_image(tif_path):
         nodata = src.nodata
 
     if data.size == 0:
-        return sat_img.copy()  # return just satellite if no radar data
+        return sat_img.copy()  # return satellite if no radar data
 
-    # Mask nodata
     data_masked = np.ma.masked_where(data == nodata, data)
 
-    # Normalize
     if data_masked.max() > data_masked.min():
         norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
         norm_data = data_masked * 0
 
-    # Colormap to RGBA
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
@@ -256,11 +259,26 @@ def radar_to_image(tif_path):
     # Resize radar to match satellite
     radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
 
-    # Overlay radar on satellite
+    # Overlay
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
     return combined
+sat_img, sat_bounds, sat_width, sat_height = load_satellite_image(satellite_path)
+
+lon_min, lon_max = sat_bounds.left, sat_bounds.right
+lat_min, lat_max = sat_bounds.bottom, sat_bounds.top
+
+img = radar_to_image(
+    tif_files[i],
+    sat_img,
+    sat_width,
+    sat_height,
+    lon_min,
+    lon_max,
+    lat_min,
+    lat_max
+)
 
 # -----------------------------
 # SESSION STATE
