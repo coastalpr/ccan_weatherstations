@@ -190,7 +190,7 @@ satellite_path = Path("satelliteimage1.tif")
 radar_folder = Path("radar_images")      # Folder with multiple radar GeoTIFFs
 
 radar_files = sorted(radar_folder.glob("*.tif"))
-if not radar_files.exists():
+if not radar_files:
     st.warning("No radar .tif files found")
     st.stop()
 
