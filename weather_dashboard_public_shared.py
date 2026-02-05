@@ -132,7 +132,7 @@ c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c2.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
 c3.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
-c4.metric("🧭 Dirección del Viento (º)", f"{wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
+c4.metric("🧭 Dirección del Viento (º)", f"Del {wind_direction_cardinal(latest.wind_direction)} ({latest.wind_direction:.0f}°)")
 #c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color=color)
 # Display the metric using c5
 c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
@@ -527,6 +527,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
