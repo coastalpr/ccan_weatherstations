@@ -367,7 +367,7 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Hora: %{x}<br>Speed: %{y:.1f} kts<br>Direction: %{text}°<extra></extra>",
+    hovertemplate="Hora: %{x}<br>Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     name="Viento",
 )
 
@@ -409,7 +409,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 
 # Hover: only y-value, no colored box
 fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
+    hovertemplate="Hora: %{x}<br>Temperature: %{y:.1f}°F<extra></extra>",
 )
 
 # Layout
