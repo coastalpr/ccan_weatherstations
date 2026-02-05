@@ -361,7 +361,7 @@ fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada
 # Thicker bar borders
 fig.update_traces(
     marker=dict(
-        line=dict(width=3))  # thickness here
+        line=dict(width=3)  # thickness here
     ),
     hovertemplate='%{y:.1f}"<extra></extra>',
 )
@@ -475,6 +475,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
