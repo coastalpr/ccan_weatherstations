@@ -198,7 +198,11 @@ wind_categories = [
     {"label": "Storm", "color": "#7b3294", "min": 39, "max": 50},
 ]
 
-    
+colorscale = [
+    [i / (len(wind_categories) - 1), cat["color"]]
+    for i, cat in enumerate(wind_categories)
+]
+
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
@@ -460,6 +464,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
