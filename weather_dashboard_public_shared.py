@@ -298,7 +298,7 @@ while st.session_state.play:
     if st.session_state.index >= len(tif_files):
         st.session_state.index = 0
 
-    time.sleep(0.5)  # speed of animation
+    time.sleep(0.15)  # speed of animation
 
 # -----------------------------
 # Slider control
