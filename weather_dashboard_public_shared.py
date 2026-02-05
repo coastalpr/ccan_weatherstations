@@ -190,133 +190,143 @@ radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.warning("No radar .tif files found")
+    st.error("No radar .tif files found in radar_images folder")
     st.stop()
 
-# -------------------------
-# Satellite background
-# -------------------------
-@st.cache_data
-def get_satellite_background():
-    token = st.secrets["mapbox"]["token"]
-
-    center_lon = -65.0
-    center_lat = 18.25
-
-    url = (
-        "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},6/1280x1280"
-        f"?access_token={token}"
-    )
-
-    r = requests.get(url)
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
-
-# -------------------------
-# Radar rendering
-# -------------------------
-def tif_to_image(tif_path):
-    cmap = plt.get_cmap("turbo")
-    sat = get_satellite_background().copy()
-
-    with rasterio.open(tif_path) as src:
-        window = from_bounds(
-            lon_min, lat_min, lon_max, lat_max,
-            transform=src.transform
-        )
-        data = src.read(1, window=window)
-        nodata = src.nodata
-
-    data_masked = np.ma.masked_where(data == nodata, data)
-
-    if data_masked.max() > data_masked.min():
-        norm_data = (data_masked - data_masked.min()) / (
-            data_masked.max() - data_masked.min()
-        )
-    else:
-        norm_data = data_masked * 0
-
-    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-
-    radar = Image.fromarray(rgb).convert("RGBA")
-
-    # Match satellite size to radar grid
-    sat = sat.resize((rgb.shape[1], rgb.shape[0]))
-
-    # Transparency mask
-    alpha = (norm_data.filled(0) > 0.05) * 150
-    radar.putalpha(Image.fromarray(alpha.astype(np.uint8)))
-
-    sat.paste(radar, (0, 0), radar)
-
-    return sat
-
-# -------------------------
-# Session state
-# -------------------------
+# -----------------------------
+# SESSION STATE
+# -----------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
 
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-# -------------------------
-# Controls
-# -------------------------
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+# -----------------------------
+# MAPBOX TOKEN
+# -----------------------------
+mapbox_token = None
+try:
+    mapbox_token = st.secrets["mapbox"]["token"]
+except:
+    st.warning("Mapbox token not found — satellite background disabled")
 
-with col3:
+# -----------------------------
+# READ RADAR TIF
+# -----------------------------
+def tif_to_image(tif_path):
+    cmap = plt.get_cmap("turbo")
+
+    with rasterio.open(tif_path) as src:
+        data = src.read(1)
+        nodata = src.nodata
+        bounds = src.bounds
+
+    data_masked = np.ma.masked_where(data == nodata, data)
+
+    norm_data = (data_masked - data_masked.min()) / (
+        data_masked.max() - data_masked.min()
+    )
+
+    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+    radar_img = Image.fromarray(rgb)
+
+    return radar_img, bounds
+
+# -----------------------------
+# DOWNLOAD SATELLITE IMAGE
+# -----------------------------
+@st.cache_data(ttl=3600)
+def download_satellite(bounds):
+    if not mapbox_token:
+        return None
+
+    center_lon = (bounds.left + bounds.right) / 2
+    center_lat = (bounds.top + bounds.bottom) / 2
+
+    url = (
+        "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
+        f"{center_lon},{center_lat},6/1280x1280"
+        f"?access_token={mapbox_token}"
+    )
+
+    response = requests.get(url)
+    return Image.open(BytesIO(response.content)).convert("RGB")
+
+# -----------------------------
+# MERGE RADAR + SATELLITE
+# -----------------------------
+def merge_images(radar_img, satellite_img, opacity=0.55):
+    radar_rgba = radar_img.convert("RGBA")
+    satellite_rgba = satellite_img.convert("RGBA")
+
+    radar_rgba.putalpha(int(255 * opacity))
+    satellite_rgba.paste(radar_rgba, (0, 0), radar_rgba)
+
+    return satellite_rgba
+
+# -----------------------------
+# CONTROLS
+# -----------------------------
+c1, c2, c3 = st.columns([1,1,4])
+
+with c1:
     if st.button("Play"):
         st.session_state.play = True
 
-with col4:
+with c2:
     if st.button("Stop"):
         st.session_state.play = False
 
-# -------------------------
-# Animation container
-# -------------------------
-placeholder = st.empty()
-
-# -------------------------
-# Animation loop
-# -------------------------
-while st.session_state.play:
-    current_file = tif_files[st.session_state.index]
-    img = tif_to_image(current_file)
-
-    placeholder.image(
-        img,
-        caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-        use_column_width=True,
-    )
-
-    st.session_state.index += 1
-    if st.session_state.index >= len(tif_files):
-        st.session_state.index = 0
-
-    time.sleep(0.1)
-
-# -------------------------
-# Slider control
-# -------------------------
 slider_index = st.slider(
-    "Select Radar Frame:",
+    "Radar Frame",
     0,
     len(tif_files) - 1,
     st.session_state.index
 )
 
-current_file = tif_files[slider_index]
-img = tif_to_image(current_file)
-st.image(img, use_container_width=True)
-#st.image("satellite.png", use_container_width=True)
+st.session_state.index = slider_index
 
-#st.image(
-#    img,
-#    caption=f"{current_file.name} | Frame {slider_index+1}/{len(tif_files)}",
-#    width="stretch",
-#)
+placeholder = st.empty()
+
+# -----------------------------
+# DISPLAY FRAME
+# -----------------------------
+def show_frame(index):
+    tif_path = tif_files[index]
+
+    radar_img, bounds = tif_to_image(tif_path)
+
+    satellite_img = download_satellite(bounds)
+
+    if satellite_img:
+        combined_img = merge_images(radar_img, satellite_img)
+    else:
+        combined_img = radar_img
+
+    timestamp = tif_path.stem
+
+    placeholder.image(
+        combined_img,
+        caption=f"{timestamp}  |  Frame {index+1}/{len(tif_files)}",
+        use_container_width=True
+    )
+
+# -----------------------------
+# ANIMATION
+# -----------------------------
+if st.session_state.play:
+    for i in range(st.session_state.index, len(tif_files)):
+        if not st.session_state.play:
+            break
+
+        st.session_state.index = i
+        show_frame(i)
+        time.sleep(0.7)
+
+    st.session_state.index = 0
+else:
+    show_frame(st.session_state.index)
 #################################################################################
 # -----------------------------
 # PLOTS
