@@ -145,7 +145,7 @@ st.markdown(
     <style>
     /* Metric value */
     div[data-testid="stMetricValue"] {
-        font-size: 1.0rem !important;
+        font-size: 1.5rem !important;
         font-weight: bold;
     }
     /* Metric label */
