@@ -299,17 +299,14 @@ placeholder = st.empty()
 def run_animation():
     while st.session_state.play:
         current_file = tif_files[st.session_state.index]
-
-        # Combine satellite + radar overlay
-        img = radar_to_image(
-            current_file,
-            sat_img,            # the loaded satellite image
-            lon_min, lat_min,
-            lon_max, lat_max
+        combined_img = radar_to_image(
+            current_file, sat_img,
+            sat_bounds.left, sat_bounds.bottom,
+            sat_bounds.right, sat_bounds.top
         )
 
         placeholder.image(
-            img,
+            combined_img,
             caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
             width="content"
         )
