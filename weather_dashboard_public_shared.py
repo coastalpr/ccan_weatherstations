@@ -184,6 +184,7 @@ if not tif_files:
     st.error("No radar files found in radar_images folder.")
     st.stop()
 
+# Area of interest (lat/lon bounding box)
 zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}
 
 # -----------------------------
@@ -195,7 +196,7 @@ if "play" not in st.session_state:
     st.session_state.play = False
 
 # -----------------------------
-# HELPER: Convert TIF to RGBA
+# HELPER: Convert TIF to RGBA with alpha
 # -----------------------------
 def tif_to_png(tif_path, alpha=0.6):
     cmap = plt.get_cmap("turbo")
@@ -216,19 +217,21 @@ def tif_to_png(tif_path, alpha=0.6):
     return img
 
 # -----------------------------
-# FUNCTION: Display radar
+# FUNCTION: Display radar overlay on static satellite map
 # -----------------------------
 def display_radar(index):
     tif_path = tif_files[index]
     radar_img = tif_to_png(tif_path)
-    
+
+    # Save temporary PNG
     tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
     radar_img.save(tmp_file.name)
-    
+
+    # Center of map
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
 
-    # Folium map with satellite imagery
+    # Create Folium map with static satellite image
     m = folium.Map(location=[center_lat, center_lon],
                    zoom_start=6,
                    tiles="Esri.WorldImagery")
@@ -241,19 +244,21 @@ def display_radar(index):
         opacity=0.6
     ).add_to(m)
 
-    # Timestamp label
+    # Timestamp / radar frame label
     folium.map.Marker(
         [zoom_bbox["lat_max"], zoom_bbox["lon_min"]],
         icon=folium.DivIcon(
-            html=f'<div style="font-size:16px;color:white;background-color:black;padding:4px;">Radar frame: {index} | {tif_path.name}</div>'
+            html=f'<div style="font-size:16px;color:white;background-color:black;padding:4px;">Frame: {index} | {tif_path.name}</div>'
         )
     ).add_to(m)
 
+    # Layer control (optional)
     folium.LayerControl().add_to(m)
+
     st_folium(m, width=900, height=600)
 
 # -----------------------------
-# PLAY / STOP
+# PLAY / STOP BUTTONS
 # -----------------------------
 col1, col2 = st.columns([1,1])
 with col1:
@@ -264,7 +269,7 @@ with col2:
         st.session_state.play = False
 
 # -----------------------------
-# Slider
+# SLIDER
 # -----------------------------
 frame = st.slider(
     "Radar Frame",
@@ -274,14 +279,14 @@ frame = st.slider(
 st.session_state.index = frame
 
 # -----------------------------
-# Display placeholder
+# DISPLAY PLACEHOLDER
 # -----------------------------
 placeholder = st.empty()
 with placeholder:
     display_radar(st.session_state.index)
 
 # -----------------------------
-# Animation loop
+# ANIMATION LOOP
 # -----------------------------
 if st.session_state.play:
     for i in range(st.session_state.index, len(tif_files)):
