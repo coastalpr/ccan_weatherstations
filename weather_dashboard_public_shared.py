@@ -280,7 +280,7 @@ def display_radar(index):
         title=f"Radar Overlay ({tif_files[index].name})"
     )
 
-    placeholder.plotly_chart(fig, use_container_width=True)
+    placeholder.plotly_chart(fig, width="stretch")
 
 # -----------------------------
 # RADAR ANIMATION LOOP
