@@ -171,11 +171,25 @@ st.markdown(
 ## ----------------------------------------
 # Wind Speed
 ## ----------------------------------------
+# ----------------------------
+# Ensure datetime
+# ----------------------------
+df["Hora"] = pd.to_datetime(df["Hora"])
+df = df.sort_values("Hora")
+
+# ----------------------------
+# Wind dataframe
+# ----------------------------
 df_wind = df[
-    (df["wind_avg"] > 0.1) & 
+    (df["wind_avg"].notna()) &
     (df["wind_direction"].notna())
-].iloc[::5].copy()  # downsample
-df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
+].copy()
+
+#df_wind = df[
+#    (df["wind_avg"] > 0.1) & 
+#    (df["wind_direction"].notna())
+#].iloc[::5].copy()  # downsample
+#df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 arrow_angles = (270 - df_wind["wind_direction"]) % 360
 
@@ -309,14 +323,14 @@ scatter = go.Scatter(
         opacity=0.9,
         line=dict(width=0.5, color="black"),
         colorbar=dict(
-            title="Wind Speed (kts)",
-            thickness=15,
+            title="(nudos)",
+            thickness=10,
             len=0.8
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Hora: %{x}<br>Speed: %{y} kts<br>Direction: %{text}°<extra></extra>",
-    name="Wind Data",
+    hovertemplate="Hora: %{x}<br>Velocidad: %{y} nudos<br>Dirección: %{text}°<extra></extra>",
+    name="Viento",
 )
 
 # ----------------------------
@@ -333,11 +347,11 @@ fig = go.Figure(data=[scatter])
 #)
 
 fig.update_layout(
-    title="Wind Speed & Direction",
+    title="Velocidad y Dirección del Viento",
     xaxis=dict(title="Hora"),
-    yaxis=dict(title="Wind Speed (kts)", range=[0, max_speed * 1.1]),
+    yaxis=dict(title="Velocidad del viento (nudos)", range=[0, max_speed * 1.1]),
     hovermode="x unified",
-    showlegend=False
+   legend=dict(orientation="h"),
 )
 
 
@@ -345,6 +359,53 @@ fig.update_layout(
 # Render in Streamlit
 # ----------------------------
 st.plotly_chart(fig, use_container_width=True)
+
+
+## ----------------------------------------
+# Air Temperature
+## ----------------------------------------
+
+fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
+
+# Hover: only y-value, no colored box
+fig.update_traces(
+    hovertemplate='%{y:.1f} °F<extra></extra>',
+)
+
+# Layout
+fig.update_layout(
+    hovermode="x unified",
+    xaxis=dict(
+        tickmode='array',
+        tickvals=ticks,
+        ticktext=tick_labels,   # date + hour for all ticks
+        tickangle=90,
+        showline=False,         # no black line
+        showspikes=True,       # no vertical blue line
+        spikecolor='rgb(128,128,128)',
+        range=[start_date, end_date],
+        side='bottom',
+        #fixedrange=True,  # Disable zoom on the x-axis
+    ),
+    #yaxis=dict(
+        #fixedrange=True  # Disable zoom on the y-axis
+    #),
+    yaxis_title="Temperatura (°F)",
+    showlegend=True,
+    #showlegend=False,
+    margin={"r": 10, "t": 40, "l": 40, "b": 40},  # Optional: Add margins for better fit
+    autosize=True,  # Let Plotly automatically adjust size
+    height=500,  # Fixed height for clarity
+)
+
+# Allow horizontal scrolling by not fixing x-axis range
+fig.update_layout(
+    dragmode=False,  # Disable panning (dragging)
+    xaxis=dict(fixedrange=False),  # Allow scrolling zoom on x-axis
+    yaxis=dict(fixedrange=False),  # Allow scrolling zoom on y-axis
+    showlegend=True  # Optional: You can disable if not needed
+)
+st.plotly_chart(fig, width="stretch")
 
 ## ----------------------------------------
 # Rain Accumulation
@@ -465,6 +526,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
