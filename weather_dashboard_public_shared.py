@@ -207,22 +207,20 @@ if not tif_files:
 # -----------------------------
 @st.cache_data
 def load_satellite_image(satellite_path):
+    """Load a georeferenced satellite GeoTIFF as PIL Image with bounds."""
     with rasterio.open(satellite_path) as src:
-        img_array = src.read([1, 2, 3]).transpose(1, 2, 0)
-        sat_img = Image.fromarray(img_array).convert("RGBA")    
-        #sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
-        sat_bounds = src.bounds
-        data = src.read()  # shape: (bands, height, width)
-        if data.shape[0] >= 3:
-            rgb = np.stack([data[0], data[1], data[2]], axis=2)
-        else:
-            rgb = np.stack([data[0]]*3, axis=2)
-        # Convert to uint8 if float
-        if rgb.dtype != np.uint8:
-            rgb = ((rgb - rgb.min()) / (rgb.max() - rgb.min()) * 255).astype(np.uint8)
-        img = Image.fromarray(rgb).convert("RGBA")
-        width, height = img.size
-    return img, width, height
+        # Read first 3 bands as RGB
+        data = src.read([1,2,3])
+        # Normalize to 0-255 if not uint8
+        if data.dtype != np.uint8:
+            data = ((data - data.min()) / (data.max() - data.min()) * 255).astype(np.uint8)
+        # Convert to HxWx3
+        img_array = data.transpose(1,2,0)
+        sat_img = Image.fromarray(img_array).convert("RGBA")
+        # Bounds for georeference
+        sat_bounds = src.bounds  # left, bottom, right, top
+        width, height = sat_img.size
+    return sat_img, sat_bounds, width, height
 
 sat_img, sat_width, sat_height = load_satellite_image(satellite_path)
 
