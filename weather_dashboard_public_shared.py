@@ -322,7 +322,6 @@ for _, row in df_wind.iterrows():
         )
     )
 
-     Map categories to numeric IDs
 category_labels = [cat["label"] for cat in wind_categories]
 category_colors = [cat["color"] for cat in wind_categories]
 
