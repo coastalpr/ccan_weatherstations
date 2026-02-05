@@ -215,9 +215,15 @@ def radar_to_image(tif_path):
         data = src.read(1, window=window)
         nodata = src.nodata
 
+    # Handle empty data
+    if data.size == 0:
+        # Return satellite image only
+        return sat_img.copy()
+
     data_masked = np.ma.masked_where(data == nodata, data)
 
-    if data_masked.max() > data_masked.min():
+    # Normalize safely
+    if data_masked.count() > 0 and data_masked.max() > data_masked.min():
         norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
         norm_data = data_masked * 0
