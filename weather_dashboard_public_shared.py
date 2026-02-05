@@ -98,7 +98,7 @@ st.markdown(
 latest = df.iloc[-1]
 
 # -----------------------------
-# UV
+# UV Ranges
 # -----------------------------
 # Assuming latest.uv is the UV index value
 uv_index = latest.uv  # Replace with actual UV index value
@@ -172,61 +172,88 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-# Bounding box in coordinates (longitude, latitude)
-lon_min, lon_max = -68, -64.0
-lat_min, lat_max = 17.5, 19.0
-
-# Folder with multiple radar tif files
 radar_folder = Path("radar_images")
+satellite_path = "satellite_map.png"  # static satellite image
+zoom_bbox = { "lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
+
+# -----------------------------
+# LOAD RADAR FILES
+# -----------------------------
 tif_files = sorted(radar_folder.glob("*.tif"))
-
 if not tif_files:
-    st.warning("No radar .tif files found")
+    st.warning("No radar files found in radar_images folder.")
+    st.stop()
 
-def tif_to_image(tif_path):
+# -----------------------------
+# FUNCTION TO CONVERT TIF TO RGBA
+# -----------------------------
+def tif_to_rgb_overlay(tif_path, bbox, alpha=0.5):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        from rasterio.windows import from_bounds
+        window = from_bounds(bbox["lon_min"], bbox["lat_min"],
+                             bbox["lon_max"], bbox["lat_max"], transform=src.transform)
         data = src.read(1, window=window)
         nodata = src.nodata
 
     data_masked = np.ma.masked_where(data == nodata, data)
     norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-    return Image.fromarray(rgb)
+    img = Image.fromarray(rgb)
+    img.putalpha(int(255 * alpha))
+    return img
 
+# -----------------------------
+# LOAD SATELLITE IMAGE
+# -----------------------------
+sat_img = Image.open(satellite_path)
+# Resize satellite image to match first radar frame
+radar_img_sample = tif_to_rgb_overlay(tif_files[-1], zoom_bbox)
+sat_img_resized = sat_img.resize(radar_img_sample.size)
+
+# -----------------------------
+# RADAR ANIMATION CONTROLS
+# -----------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2, col3,col4,col5,col6 = st.columns(6)
-with col3:
+col1, col2 = st.columns([1,1])
+with col1:
     if st.button("Play"):
         st.session_state.play = True
-with col4:
+with col2:
     if st.button("Stop"):
         st.session_state.play = False
 
-placeholder = st.empty()  # container to update images
+placeholder = st.empty()  # container for radar animation
 
-while st.session_state.play:
-    # show current radar frame
-    current_file = tif_files[st.session_state.index]
-    img = tif_to_image(current_file)
-    placeholder.image(img, caption=current_file.name, use_column_width=True)
+# -----------------------------
+# FUNCTION TO SHOW RADAR
+# -----------------------------
+def show_radar(index):
+    radar_img = tif_to_rgb_overlay(tif_files[index], zoom_bbox)
+    combined = Image.alpha_composite(sat_img_resized.convert("RGBA"), radar_img)
+    placeholder.image(combined, caption=tif_files[index].name, use_column_width=True)
 
-    # advance index
-    st.session_state.index += 1
-    if st.session_state.index >= len(tif_files):
-        st.session_state.index = 0  # loop
+# -----------------------------
+# PLAY RADAR ANIMATION
+# -----------------------------
+if st.session_state.play:
+    for i in range(st.session_state.index, len(tif_files)):
+        if not st.session_state.play:
+            break
+        st.session_state.index = i
+        show_radar(i)
+        time.sleep(1)
+    st.session_state.index = 0  # loop back
 
-    time.sleep(1)  # 1-second delay between frames
-
-slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
-current_file = tif_files[slider_index]
-img = tif_to_image(current_file)
-st.image(img, caption=current_file.name, use_column_width=True)
+# -----------------------------
+# SHOW LATEST RADAR FRAME (if not playing)
+# -----------------------------
+if not st.session_state.play:
+    show_radar(st.session_state.index)
 
 #################################################################################
 # -----------------------------
