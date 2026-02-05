@@ -172,8 +172,8 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-radar_folder = Path("radar_images")
-satellite_path = "satellite_image.png"  # static satellite image
+radar_folder = Path("radar_images")   # folder containing .tif radar images
+satellite_path = "satellite_map.png"  # static satellite base image
 zoom_bbox = { "lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
 
 # -----------------------------
@@ -185,9 +185,9 @@ if not tif_files:
     st.stop()
 
 # -----------------------------
-# FUNCTION TO CONVERT TIF TO RGBA
+# FUNCTION: TIF TO RGBA IMAGE
 # -----------------------------
-def tif_to_rgb_overlay(tif_path, bbox, alpha=0.5):
+def tif_to_rgba(tif_path, bbox, alpha=0.5):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         from rasterio.windows import from_bounds
@@ -195,24 +195,24 @@ def tif_to_rgb_overlay(tif_path, bbox, alpha=0.5):
                              bbox["lon_max"], bbox["lat_max"], transform=src.transform)
         data = src.read(1, window=window)
         nodata = src.nodata
+        bounds = src.bounds
 
     data_masked = np.ma.masked_where(data == nodata, data)
     norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
     img = Image.fromarray(rgb)
     img.putalpha(int(255 * alpha))
-    return img
+    return img, bounds
 
 # -----------------------------
 # LOAD SATELLITE IMAGE
 # -----------------------------
 sat_img = Image.open(satellite_path)
-# Resize satellite image to match first radar frame
-radar_img_sample = tif_to_rgb_overlay(tif_files[-1], zoom_bbox)
+radar_img_sample, bounds = tif_to_rgba(tif_files[-1], zoom_bbox)
 sat_img_resized = sat_img.resize(radar_img_sample.size)
 
 # -----------------------------
-# RADAR ANIMATION CONTROLS
+# SESSION STATE FOR ANIMATION
 # -----------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
@@ -227,33 +227,32 @@ with col2:
     if st.button("Stop"):
         st.session_state.play = False
 
-placeholder = st.empty()  # container for radar animation
+placeholder = st.empty()  # container for radar + wind overlay
 
 # -----------------------------
-# FUNCTION TO SHOW RADAR
+# FUNCTION TO DISPLAY RADAR OVER SATELLITE
 # -----------------------------
-def show_radar(index):
-    radar_img = tif_to_rgb_overlay(tif_files[index], zoom_bbox)
+def display_radar(index, df_wind=None):
+    radar_img, bounds = tif_to_rgba(tif_files[index], zoom_bbox)
     combined = Image.alpha_composite(sat_img_resized.convert("RGBA"), radar_img)
-    placeholder.image(combined, caption=tif_files[index].name, use_column_width=True)
-
-# -----------------------------
-# PLAY RADAR ANIMATION
-# -----------------------------
-if st.session_state.play:
-    for i in range(st.session_state.index, len(tif_files)):
-        if not st.session_state.play:
-            break
-        st.session_state.index = i
-        show_radar(i)
-        time.sleep(1)
-    st.session_state.index = 0  # loop back
-
-# -----------------------------
-# SHOW LATEST RADAR FRAME (if not playing)
-# -----------------------------
-if not st.session_state.play:
-    show_radar(st.session_state.index)
+    
+    # Convert combined to numpy for Plotly
+    combined_np = np.array(combined)
+    
+    fig = go.Figure()
+    
+    # Base satellite + radar image
+    fig.add_trace(go.Image(
+        z=combined_np,
+        x0=bounds.left,
+        y0=bounds.bottom,
+        dx=(bounds.right-bounds.left)/combined_np.shape[1],
+        dy=(bounds.top-bounds.bottom)/combined_np.shape[0],
+        name="Radar Overlay"
+    ))
+    
+  
+    placeholder.plotly_chart(fig, use_container_width=True)
 
 #################################################################################
 # -----------------------------
