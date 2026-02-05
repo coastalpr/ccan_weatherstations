@@ -371,7 +371,7 @@ scatter = go.Scatter(
         cmin=0,
         #cmax=len(category_colors)-1,
         cmax=50,
-        opacity=0.9,
+        opacity=1.0,
         line=dict(width=0.25, color="black"),
         colorbar=dict(
             title="(nudos)",
