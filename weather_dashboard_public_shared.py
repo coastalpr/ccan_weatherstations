@@ -302,7 +302,7 @@ def run_animation():
     while st.session_state.play:
         current_file = radar_files[st.session_state.index]
         img = radar_to_image(current_file)
-        placeholder.image(img, use_column_width=True)
+        placeholder.image(combined, width=900)
 
         st.session_state.index += 1
         if st.session_state.index >= len(radar_files):
