@@ -95,7 +95,7 @@ df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.62
 # -----------------------------
 
 def wind_direction_cardinal(degrees):
-    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    dirs = ["N", "NE", "E", "SE", "S", "SO", "O", "NO"]
     ix = int((degrees + 22.5) // 45) % 8
     return dirs[ix]
 
