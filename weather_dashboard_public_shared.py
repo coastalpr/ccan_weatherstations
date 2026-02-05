@@ -172,6 +172,9 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
+# Bounding box in coordinates (longitude, latitude)
+lon_min, lon_max = -68, -64.0
+lat_min, lat_max = 17.5, 19.0
 
 # Folder with multiple radar tif files
 radar_folder = Path("radar_images")
@@ -183,7 +186,8 @@ if not tif_files:
 def tif_to_image(tif_path):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        data = src.read(1)
+        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        data = src.read(1, window=window)
         nodata = src.nodata
 
     data_masked = np.ma.masked_where(data == nodata, data)
@@ -196,11 +200,11 @@ if "play" not in st.session_state:
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2 = st.columns(5)
-with col1:
+col1, col2, col3,col4,col5,col6 = st.columns(3)
+with col3:
     if st.button("Play"):
         st.session_state.play = True
-with col2:
+with col4:
     if st.button("Stop"):
         st.session_state.play = False
 
