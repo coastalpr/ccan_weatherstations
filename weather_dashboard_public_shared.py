@@ -181,15 +181,15 @@ radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.error("No radar .tif files found.")
+    st.error("No radar TIFF files found in radar_images/")
     st.stop()
 
 mapbox_token = st.secrets["mapbox"]["token"]
 
-# -------------------
-# TIF → PNG
-# -------------------
-def tif_to_png(tif_path):
+# -----------------------------
+# TIF → BASE64 IMAGE
+# -----------------------------
+def tif_to_base64(tif_path):
     cmap = plt.get_cmap("turbo")
 
     with rasterio.open(tif_path) as src:
@@ -204,21 +204,25 @@ def tif_to_png(tif_path):
 
     img = Image.fromarray(rgb).convert("RGBA")
 
-    return img, bounds
+    buf = io.BytesIO()
+    img.save(buf, format="PNG")
+    encoded = base64.b64encode(buf.getvalue()).decode()
 
-# -------------------
+    return f"data:image/png;base64,{encoded}", bounds
+
+# -----------------------------
 # FRAME SELECTOR
-# -------------------
+# -----------------------------
 frame = st.slider("Radar frame", 0, len(tif_files)-1, len(tif_files)-1)
 
-img, bounds = tif_to_png(tif_files[frame])
+img_uri, bounds = tif_to_base64(tif_files[frame])
 
 center_lat = (bounds.top + bounds.bottom) / 2
 center_lon = (bounds.left + bounds.right) / 2
 
-# -------------------
-# FIGURE
-# -------------------
+# -----------------------------
+# PLOTLY MAPBOX
+# -----------------------------
 fig = go.Figure()
 
 fig.update_layout(
@@ -230,14 +234,14 @@ fig.update_layout(
         layers=[
             dict(
                 sourcetype="image",
-                source=img,
+                source=img_uri,
                 coordinates=[
                     [bounds.left, bounds.top],
                     [bounds.right, bounds.top],
                     [bounds.right, bounds.bottom],
                     [bounds.left, bounds.bottom],
                 ],
-                opacity=0.65,
+                opacity=0.6,
             )
         ],
     ),
@@ -246,6 +250,7 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
+st.caption(f"Frame {frame+1} / {len(tif_files)}")
 st.caption(tif_files[frame].name)
 #################################################################################
 # -----------------------------
