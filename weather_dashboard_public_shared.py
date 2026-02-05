@@ -205,7 +205,7 @@ def get_satellite_background():
 
     url = (
         "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},6/800x800"
+        f"{center_lon},{center_lat},6/1200x1200"
         f"?access_token={token}"
     )
 
