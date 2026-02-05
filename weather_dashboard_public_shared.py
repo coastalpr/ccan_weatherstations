@@ -272,7 +272,7 @@ if st.session_state.play:
             break
         st.session_state.index = i
         display_radar(i)  # <-- this recreates the whole map
-        time.sleep(1)
+        time.sleep(60)
     st.session_state.index = 0
 else:
     with placeholder:
