@@ -208,7 +208,9 @@ if not tif_files:
 @st.cache_data
 def load_satellite_image(satellite_path):
     with rasterio.open(satellite_path) as src:
-        sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
+        img_array = src.read([1, 2, 3]).transpose(1, 2, 0)
+        sat_img = Image.fromarray(img_array).convert("RGBA")    
+        #sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
         sat_bounds = src.bounds
         data = src.read()  # shape: (bands, height, width)
         if data.shape[0] >= 3:
