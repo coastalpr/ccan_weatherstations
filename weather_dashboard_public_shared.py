@@ -23,6 +23,7 @@ import plotly.graph_objects as go
 import rasterio
 from rasterio.plot import reshape_as_image
 import folium
+from folium.raster_layers import ImageOverlay
 from streamlit_folium import st_folium
 from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
