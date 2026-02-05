@@ -218,19 +218,23 @@ def load_satellite_image(path):
 # -----------------------------
 # FUNCTION: CONVERT RADAR TIF TO RGBA IMAGE MATCHING SATELLITE
 # -----------------------------
+# Correct radar_to_image with proper bounds
 def radar_to_image(tif_path):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
-        # Clip radar data to satellite bounds
+        # Clip radar to satellite bounds
         window = from_bounds(
-            lon_min, lat_min, lon_max, lat_max,
+            left=lon_min,
+            bottom=lat_min,
+            right=lon_max,
+            top=lat_max,
             transform=src.transform
         )
         data = src.read(1, window=window)
         nodata = src.nodata
 
     if data.size == 0:
-        return sat_img.copy()  # empty radar, just return satellite
+        return sat_img.copy()  # return just satellite if no radar data
 
     # Mask nodata
     data_masked = np.ma.masked_where(data == nodata, data)
@@ -245,11 +249,11 @@ def radar_to_image(tif_path):
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
-    # Transparency based on data
-    alpha = (norm_data.filled(0) > 0.01) * 180  # adjust for visibility
+    # Transparency mask
+    alpha = (norm_data.filled(0) > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Resize radar to match satellite size
+    # Resize radar to match satellite
     radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
 
     # Overlay radar on satellite
