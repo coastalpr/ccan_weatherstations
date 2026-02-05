@@ -233,7 +233,7 @@ while st.session_state.play:
 slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
 current_file = tif_files[slider_index]
 img = tif_to_image(current_file)
-st.image(img, caption=current_file.name, use_column_width=True)
+st.image(img, caption=current_file.name, width="stretch")
 #################################################################################
 # -----------------------------
 # PLOTS
