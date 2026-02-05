@@ -249,8 +249,8 @@ def display_radar(index):
     tiles="Esri.WorldImagery"  # Satellite imagery
     )
     # Add satellite tiles as base
-    folium.TileLayer("Stamen Toner").add_to(m)
-    folium.TileLayer("Esri.WorldImagery").add_to(m)  # satellite layer
+    #folium.TileLayer("Stamen Toner").add_to(m)
+    #folium.TileLayer("Esri.WorldImagery").add_to(m)  # satellite layer
 
     # Overlay radar image
     ImageOverlay(
