@@ -225,9 +225,8 @@ sat_width, sat_height = sat_background.size
 # -----------------------------
 # Convert a radar .tif to RGBA image
 # -----------------------------
-def tif_to_image(tif_path, sat_width, sat_height):
-    cmap = plt.get_cmap("turbo")
-
+def tif_to_image(tif_path, sat_bg):
+    cmap = cm.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         data = src.read(1)
         nodata = src.nodata
@@ -248,11 +247,11 @@ def tif_to_image(tif_path, sat_width, sat_height):
     alpha = (norm_data.filled(0) > 0.05) * 150
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Resize radar to match satellite image
-    radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
+    # Resize radar to match satellite size
+    radar_img = radar_img.resize(sat_bg.size, resample=Image.BILINEAR)
 
     # Overlay radar on satellite
-    combined = sat_background.copy()
+    combined = sat_bg.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
     return combined
@@ -286,19 +285,19 @@ placeholder = st.empty()
 # -----------------------------
 while st.session_state.play:
     current_file = tif_files[st.session_state.index]
-    img = tif_to_image(current_file, sat_width, sat_height)
+    img = tif_to_image(current_file, sat_background)
 
     placeholder.image(
         img,
         caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-        width="stretch"
+        use_column_width=True
     )
 
     st.session_state.index += 1
     if st.session_state.index >= len(tif_files):
         st.session_state.index = 0
 
-    time.sleep(0.15)  # speed of animation
+    time.sleep(0.2)  # adjust speed
 
 
 #################################################################################
