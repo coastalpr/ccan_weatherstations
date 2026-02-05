@@ -27,7 +27,7 @@ from streamlit_folium import st_folium
 from rasterio.plot import reshape_as_image
 from rasterio.warp import transform_bounds
 from pathlib import Path
-
+from rasterio.windows import from_bounds
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
