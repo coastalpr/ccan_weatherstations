@@ -130,7 +130,10 @@ st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("🌬️ Velocidad del Viento (kts)", f"{latest.wind_avg:.1f}")
-c2.metric("🧭 Dirección del Viento (º)", f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)")
+c2.metric(
+    "🧭 Dirección del Viento (º)",
+    f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)"
+)
 c3.metric("🌡️ Temperatura (°F)", f"{latest.air_temperature:.1f}")
 c4.metric("💧 Humedad (%)", f"{latest.relative_humidity:.0f}")
 #c5.metric("☀️ Índice UV", f"{latest.uv:.1f}", color=color)
