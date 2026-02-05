@@ -237,12 +237,12 @@ def display_radar(index):
     # Folium map
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
-    m = folium.Map(
-    location=[center_lat, center_lon],
-    zoom_start=6,
-    tiles="Stamen Terrain",
-    attr="Map tiles by Stamen Design, CC BY 3.0 — Map data © OpenStreetMap contributors"
-    )
+    #m = folium.Map(
+    #location=[center_lat, center_lon],
+    #zoom_start=6,
+    #tiles="Stamen Terrain",
+    #attr="Map tiles by Stamen Design, CC BY 3.0 — Map data © OpenStreetMap contributors"
+    #)
     m = folium.Map(
     location=[center_lat, center_lon],
     zoom_start=6,
