@@ -327,7 +327,7 @@ else:
     # Show last selected frame
     current_file = radar_files[st.session_state.index]
     img = radar_to_image(current_file)
-    st.image(combined, width=900)
+    st.image(combined, width="content")
     
 #################################################################################
 # -----------------------------
