@@ -192,7 +192,7 @@ df_wind = df[
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 #arrow_angles = (270 - df_wind["wind_direction"]) % 360
-arrow_angles = (df_wind["wind_direction"]) % 360
+arrow_angles = (df_wind["wind_direction"])-270%60
 
 # ----------------------------
 def wind_to_uv(wd_deg, magnitude=1.0):
