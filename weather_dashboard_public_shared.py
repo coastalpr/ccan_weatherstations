@@ -205,7 +205,7 @@ def get_satellite_background():
 
     url = (
         "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},8/1280x1280"
+        f"{center_lon},{center_lat},8/1920x1280"
         f"?access_token={token}"
     )
 
@@ -217,6 +217,8 @@ def get_satellite_background():
 # -------------------------
 def tif_to_image(tif_path):
     cmap = plt.get_cmap("turbo")
+
+    # Load satellite background once
     sat = get_satellite_background().copy()
 
     with rasterio.open(tif_path) as src:
@@ -227,26 +229,27 @@ def tif_to_image(tif_path):
         data = src.read(1, window=window)
         nodata = src.nodata
 
+    # Mask nodata
     data_masked = np.ma.masked_where(data == nodata, data)
 
+    # Normalize
     if data_masked.max() > data_masked.min():
-        norm_data = (data_masked - data_masked.min()) / (
-            data_masked.max() - data_masked.min()
-        )
+        norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
     else:
         norm_data = data_masked * 0
 
+    # Convert radar to RGBA
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-
     radar = Image.fromarray(rgb).convert("RGBA")
 
-    # Match satellite size to radar grid
-    sat = sat.resize((rgb.shape[1], rgb.shape[0]))
-
     # Transparency mask
-    alpha = (norm_data.filled(0) > 0.05) * 150
+    alpha = (norm_data.filled(0) > 0.05) * 180
     radar.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
+    # Resize radar to match satellite pixels exactly
+    radar = radar.resize(sat.size, resample=Image.BILINEAR)
+
+    # Paste radar over satellite
     sat.paste(radar, (0, 0), radar)
 
     return sat
