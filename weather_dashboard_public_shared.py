@@ -311,7 +311,7 @@ def run_animation():
         placeholder.image(
             img,
             caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-            width=900
+            width="content"
         )
 
         st.session_state.index += 1
