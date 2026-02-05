@@ -344,9 +344,21 @@ else:
         sat_width,
         sat_height
     )
-    placeholder.image(img, caption=f"Frame {i+1}/{len(tif_files)}", use_column_width=True)
+    placeholder.image(img, caption=f"Frame {i+1}/{len(tif_files)}", width="stretch")
 
-
+# Slider to pick frame manually
+slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
+st.session_state.index = slider_index
+img = radar_to_image(
+    tif_files[slider_index],
+    sat_img,
+    sat_bounds,
+    sat_transform,
+    sat_crs,
+    sat_width,
+    sat_height
+)
+st.image(img, caption=f"Frame {slider_index+1}/{len(tif_files)}", width="stretch")
 #################################################################################
 # -----------------------------
 # PLOTS
