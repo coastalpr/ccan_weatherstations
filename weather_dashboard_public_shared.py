@@ -179,6 +179,22 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
+@st.cache_data
+def get_satellite_background():
+    token = st.secrets["mapbox"]["token"]
+
+    center_lon = (lon_min + lon_max) / 2
+    center_lat = (lat_min + lat_max) / 2
+
+    url = (
+        "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
+        f"{center_lon},{center_lat},6/800x800"
+        f"?access_token={token}"
+    )
+
+    r = requests.get(url)
+    return Image.open(io.BytesIO(r.content)).convert("RGBA")
+
 radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
