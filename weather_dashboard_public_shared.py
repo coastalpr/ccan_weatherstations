@@ -200,8 +200,8 @@ if not tif_files:
 def get_satellite_background():
     token = st.secrets["mapbox"]["token"]
 
-    center_lon = (lon_min + lon_max) 
-    center_lat = (lat_min + lat_max)
+    center_lon = (lon_min + lon_max) /2
+    center_lat = (lat_min + lat_max)/2
 
     url = (
         "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
