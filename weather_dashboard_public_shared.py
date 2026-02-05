@@ -184,13 +184,7 @@ if not tif_files:
     st.error("No radar files found in radar_images folder.")
     st.stop()
 
-# Bounding box for area of interest
-zoom_bbox = {
-    "lon_min": -80.5,
-    "lon_max": -75.0,
-    "lat_min": 17.5,
-    "lat_max": 21.0
-}
+zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}
 
 # -----------------------------
 # SESSION STATE
@@ -203,7 +197,7 @@ if "play" not in st.session_state:
 # -----------------------------
 # HELPER: Convert TIF to RGBA
 # -----------------------------
-def tif_to_rgba(tif_path, alpha=0.6):
+def tif_to_png(tif_path, alpha=0.6):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         from rasterio.windows import from_bounds
@@ -222,52 +216,44 @@ def tif_to_rgba(tif_path, alpha=0.6):
     return img
 
 # -----------------------------
-# FUNCTION: Create Plotly figure with radar overlay
+# FUNCTION: Display radar
 # -----------------------------
-def create_radar_fig(index):
+def display_radar(index):
     tif_path = tif_files[index]
-    radar_img = tif_to_rgba(tif_path)
+    radar_img = tif_to_png(tif_path)
     
-    # Convert PIL image to numpy array
-    img_array = np.array(radar_img)
-
-    # Map center
+    tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    radar_img.save(tmp_file.name)
+    
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
 
-    # Figure
-    fig = go.Figure()
+    # Folium map with satellite imagery
+    m = folium.Map(location=[center_lat, center_lon],
+                   zoom_start=6,
+                   tiles="Esri.WorldImagery")
 
-    # Add satellite map as background using Mapbox
-    fig.update_layout(
-        mapbox=dict(
-            style="satellite",
-            center={"lat": center_lat, "lon": center_lon},
-            zoom=6,
-        ),
-        margin={"l":0, "r":0, "t":0, "b":0},
-    )
+    # Overlay radar
+    ImageOverlay(
+        image=tmp_file.name,
+        bounds=[[zoom_bbox["lat_min"], zoom_bbox["lon_min"]],
+                [zoom_bbox["lat_max"], zoom_bbox["lon_max"]]],
+        opacity=0.6
+    ).add_to(m)
 
-    # Overlay radar image
-    fig.add_layout_image(
-        dict(
-            source=radar_img,
-            xref="x",
-            yref="y",
-            x=zoom_bbox["lon_min"],
-            y=zoom_bbox["lat_max"],  # origin upper-left
-            sizex=zoom_bbox["lon_max"] - zoom_bbox["lon_min"],
-            sizey=zoom_bbox["lat_max"] - zoom_bbox["lat_min"],
-            sizing="stretch",
-            opacity=0.6,
-            layer="above"
+    # Timestamp label
+    folium.map.Marker(
+        [zoom_bbox["lat_max"], zoom_bbox["lon_min"]],
+        icon=folium.DivIcon(
+            html=f'<div style="font-size:16px;color:white;background-color:black;padding:4px;">Radar frame: {index} | {tif_path.name}</div>'
         )
-    )
+    ).add_to(m)
 
-    return fig
+    folium.LayerControl().add_to(m)
+    st_folium(m, width=900, height=600)
 
 # -----------------------------
-# PLAY / STOP BUTTONS
+# PLAY / STOP
 # -----------------------------
 col1, col2 = st.columns([1,1])
 with col1:
@@ -278,7 +264,7 @@ with col2:
         st.session_state.play = False
 
 # -----------------------------
-# RADAR FRAME SLIDER
+# Slider
 # -----------------------------
 frame = st.slider(
     "Radar Frame",
@@ -288,21 +274,23 @@ frame = st.slider(
 st.session_state.index = frame
 
 # -----------------------------
-# PLACEHOLDER FOR FIGURE
+# Display placeholder
 # -----------------------------
 placeholder = st.empty()
-placeholder.plotly_chart(create_radar_fig(st.session_state.index), use_container_width=True)
+with placeholder:
+    display_radar(st.session_state.index)
 
 # -----------------------------
-# ANIMATION LOOP
+# Animation loop
 # -----------------------------
 if st.session_state.play:
     for i in range(st.session_state.index, len(tif_files)):
         if not st.session_state.play:
             break
         st.session_state.index = i
-        placeholder.plotly_chart(create_radar_fig(i), use_container_width=True)
-        time.sleep(0.5)  # adjust animation speed
+        with placeholder:
+            display_radar(i)
+        time.sleep(0.5)
 #################################################################################
 # -----------------------------
 # PLOTS
