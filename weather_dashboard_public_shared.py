@@ -383,7 +383,8 @@ hover_only = go.Scatter(
 fig = go.Figure(data=[scatter])
 fig = go.Figure()
 fig.add_trace(scatter)      # your visible arrow trace
-fig.add_trace(hover_only)   # invisible hover-only trace
+#fig.add_trace(hover_only)   # invisible hover-only trace
+
 # Layout
 fig.update_layout(
     hovermode="x unified",
