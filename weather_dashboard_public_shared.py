@@ -187,138 +187,86 @@ lon_min, lon_max = -67.5, -64.5
 lat_min, lat_max = 17.5, 18.5
 
 # Folders
-satellite_path = Path("satelliteimage1.tif")
-radar_folder = Path("radar_images")      # Folder with multiple radar GeoTIFFs
+satellite_path = "satellite.tif"
+with rasterio.open(satellite_path) as src:
+    sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
+    sat_bounds = src.bounds
 
-radar_files = sorted(radar_folder.glob("*.tif"))
-if not radar_files:
+# -----------------------
+# Load radar files
+# -----------------------
+radar_folder = Path("radar_images")
+tif_files = sorted(radar_folder.glob("*.tif"))
+if not tif_files:
     st.warning("No radar .tif files found")
     st.stop()
 
-# Get all .tif files sorted
-tif_files = sorted(radar_folder.glob("*.tif"))
-
-if not tif_files:
-    import streamlit as st
-    st.warning("No radar .tif files found in radar_images folder")
-    st.stop()
-# -----------------------------
-# LOAD SATELLITE IMAGE
-# -----------------------------
-@st.cache_data
-def load_satellite_image(satellite_path):
-    with rasterio.open(satellite_path) as src:
-        sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
-        sat_bounds = src.bounds
-        data = src.read()  # shape: (bands, height, width)
-        if data.shape[0] >= 3:
-            rgb = np.stack([data[0], data[1], data[2]], axis=2)
-        else:
-            rgb = np.stack([data[0]]*3, axis=2)
-        # Convert to uint8 if float
-        if rgb.dtype != np.uint8:
-            rgb = ((rgb - rgb.min()) / (rgb.max() - rgb.min()) * 255).astype(np.uint8)
-        img = Image.fromarray(rgb).convert("RGBA")
-        width, height = img.size
-    return img, width, height
-
-sat_img, sat_width, sat_height = load_satellite_image(satellite_path)
-
-# -----------------------------
-# RADAR IMAGE -> PIL with alpha overlay
-# -----------------------------
+# -----------------------
+# Radar overlay function
+# -----------------------
 def radar_to_image(tif_path, sat_img, lon_min, lat_min, lon_max, lat_max):
-    # Load radar data
     with rasterio.open(tif_path) as src:
-        window = from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
+        window = rasterio.windows.from_bounds(lon_min, lat_min, lon_max, lat_max, transform=src.transform)
         data = src.read(1, window=window)
         nodata = src.nodata
 
-    # Mask nodata
     data_masked = np.ma.masked_equal(data, nodata)
-
-    # Normalize 0-1
-    if data_masked.max() > data_masked.min():
-        norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
-    else:
-        norm_data = data_masked * 0
-
-    # Convert to RGBA
+    norm_data = (data_masked - data_masked.min()) / max(data_masked.max() - data_masked.min(), 1e-6)
     cmap = plt.get_cmap("turbo")
-    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-    radar_img = Image.fromarray(rgb).convert("RGBA")
+    rgb = (cmap(norm_data.filled(0))[:, :, :3]*255).astype(np.uint8)
 
-    # Transparency
+    radar_img = Image.fromarray(rgb).convert("RGBA")
     alpha = (norm_data.filled(0) > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Resize radar to match satellite
     radar_img = radar_img.resize(sat_img.size, resample=Image.BILINEAR)
-
-    # Overlay radar on satellite
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
 
-    # Draw timestamp / frame
+    # Timestamp / frame
     draw = ImageDraw.Draw(combined)
-    font_size = max(16, combined.height // 40)
-    try:
-        font = ImageFont.truetype("arial.ttf", font_size)
-    except:
-        font = ImageFont.load_default()
-    draw.text((10, 10), tif_path.stem, fill=(255,255,255,255), font=font)
+    font = ImageFont.load_default()
+    draw.text((10,10), f"{tif_path.name}", fill=(255,255,255,255), font=font)
     return combined
 
-# -----------------------------
-# SESSION STATE
-# -----------------------------
-if "play" not in st.session_state:
-    st.session_state.play = False
+# -----------------------
+# Session state
+# -----------------------
 if "index" not in st.session_state:
     st.session_state.index = 0
+if "play" not in st.session_state:
+    st.session_state.play = False
 
-# -----------------------------
-# CONTROLS
-# -----------------------------
-col1, col2, col3, col4 = st.columns(4)
-with col2:
+# -----------------------
+# Controls
+# -----------------------
+col1, col2 = st.columns(2)
+with col1:
     if st.button("Play"):
         st.session_state.play = True
-with col3:
+with col2:
     if st.button("Stop"):
         st.session_state.play = False
 
-# -----------------------------
-# PLACEHOLDER
-# -----------------------------
 placeholder = st.empty()
 
-# -----------------------------
-# ANIMATION LOOP
-# -----------------------------
-def run_animation():
-    while st.session_state.play:
-        current_file = tif_files[st.session_state.index]
+# -----------------------
+# Animation loop
+# -----------------------
+while st.session_state.play:
+    current_file = tif_files[st.session_state.index]
+    combined_img = radar_to_image(
+        current_file, sat_img,
+        sat_bounds.left, sat_bounds.bottom,
+        sat_bounds.right, sat_bounds.top
+    )
+    placeholder.image(combined_img, use_column_width=True)
 
-        # Combine satellite + radar overlay
-        img = radar_to_image(
-            current_file,
-            sat_img,            # the loaded satellite image
-            lon_min, lat_min,
-            lon_max, lat_max
-        )
+    st.session_state.index += 1
+    if st.session_state.index >= len(tif_files):
+        st.session_state.index = 0
+    time.sleep(0.2)
 
-        placeholder.image(
-            img,
-            caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-            width=900
-        )
-
-        st.session_state.index += 1
-        if st.session_state.index >= len(tif_files):
-            st.session_state.index = 0
-
-        time.sleep(0.15)
 
 # Run animation if Play
 if st.session_state.play:
