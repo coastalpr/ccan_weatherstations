@@ -321,6 +321,21 @@ for _, row in df_wind.iterrows():
             ),
         )
     )
+
+     Map categories to numeric IDs
+category_labels = [cat["label"] for cat in wind_categories]
+category_colors = [cat["color"] for cat in wind_categories]
+
+def speed_to_id(speed):
+    for i, cat in enumerate(wind_categories):
+        if cat["min"] <= speed <= cat["max"]:
+            return i
+    return np.nan
+
+df_wind["cat_id"] = df_wind["wind_avg"].apply(speed_to_id)
+
+# Build Plotly discrete colorscale
+colorscale = [[i/(len(category_colors)-1), color] for i, color in enumerate(category_colors)]
 # ----------------------------
 # Scatter points (same color logic)
 # ----------------------------
@@ -352,9 +367,10 @@ scatter = go.Scatter(
         size=12,
         angle=arrow_angles,              # important: rotate arrows
         #color=df_wind["wind_avg"],       # numeric for colorbar
-        color=df_wind["color"],       # numeric for colorbar
+        color=df_wind["cat_id"],       # numeric for colorbar
         colorscale=colorscale,
-        #cmin=min_speed,
+        cmin=0,
+        cmax=len(category_colors)-1,
         #cmax=max_speed,
         opacity=0.9,
         line=dict(width=0.5, color="black"),
@@ -365,7 +381,8 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Hora: %{x}<br>Velocidad: %{y} nudos<br>Dirección: %{text}°<extra></extra>",
+    hovertemplate="Hora: %{x}<br>Speed: %{customdata} kts<br>Direction: %{text}°<extra></extra>",
+    customdata=df_wind["speed_hover"]  # passes formatted speed
     name="Viento",
 )
 
