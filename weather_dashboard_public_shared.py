@@ -298,7 +298,7 @@ if st.session_state.play:
         st.session_state.index = i
         with placeholder:
             display_radar(i)
-        time.sleep(0.5)  # animation speed
+        time.sleep(6000)  # animation speed
 
 #################################################################################
 # -----------------------------
