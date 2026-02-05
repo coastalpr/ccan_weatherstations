@@ -367,7 +367,7 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="<br>Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
+    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     name="Viento",
 )
 
@@ -456,7 +456,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
-    hovertemplate='%{y:.4f}"<extra></extra>',
+    hovertemplate='Lluvia: %{y:.4f}"<extra></extra>',
 )
 
 ymax = df["rain_accumulated"].max()
@@ -474,7 +474,7 @@ fig.update_layout(
         range=[start_date, end_date + timedelta(hours=1)],
         side='bottom'
     ),
-    yaxis_title="Precipitación Acumulada (\")",
+    yaxis_title="Lluvia (pulgadas)",
    # range=[0, ymax * 1.1],  # add 10% headroom
     showlegend=False
 )
@@ -490,7 +490,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
-    hovertemplate='%{y}<extra></extra>',
+    hovertemplate='UV:%{y}<extra></extra>',
 )
 
 # Layout
@@ -520,7 +520,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
+    hovertemplate='Distancia:%{y:.1f} °F<extra></extra>',
 )
 
 # Layout
