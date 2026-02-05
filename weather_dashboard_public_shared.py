@@ -490,7 +490,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
-    hovertemplate='%{y:.1f} °F<extra></extra>',
+    hovertemplate='%{y}<extra></extra>',
 )
 
 # Layout
