@@ -167,55 +167,32 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ----------------------------
-# Radar image URL (NWS)
-# ----------------------------
-radar_url = "https://radar.weather.gov/ridge/Conus/RadarImg/latest_radaronly.gif"
-response = requests.get(radar_url)
+local_tif = Path("radar_images")
+with rasterio.open(local_tif) as src:
+    radar_data = src.read(1)  # single band
+    bounds = src.bounds       # geographic bounding box
+    transform = src.transform
 
-if response.status_code == 200:
-    radar_img = Image.open(BytesIO(response.content))
-else:
-    radar_img = None
-    st.warning("Could not load radar image")
+# Convert raster to image
+radar_data_masked = np.ma.masked_where(radar_data == src.nodata, radar_data)
 
-# ----------------------------
-# Display radar over a satellite map
-# ----------------------------
-if radar_img:
-    # Example bounding box (CONUS)
-    lon_min, lon_max = -130, -65
-    lat_min, lat_max = 20, 55
+fig = px.imshow(
+    radar_data_masked,
+    origin='upper',
+    color_continuous_scale="turbo",
+    labels={"color": "dBZ"},
+    aspect="auto"
+)
 
-    fig_radar = go.Figure()
+fig.update_layout(
+    title="MRMS Caribbean Radar",
+    xaxis_title="Longitude",
+    yaxis_title="Latitude",
+    xaxis=dict(range=[bounds.left, bounds.right]),
+    yaxis=dict(range=[bounds.bottom, bounds.top])
+)
 
-    fig_radar.add_layout_image(
-        dict(
-            source=radar_img,
-            xref="x",
-            yref="y",
-            x=lon_min,
-            y=lat_max,
-            sizex=(lon_max-lon_min),
-            sizey=(lat_max-lat_min),
-            xanchor="left",
-            yanchor="top",
-            sizing="stretch",
-            layer="below",
-        )
-    )
-
-    # Add satellite basemap
-    fig_radar.update_layout(
-        xaxis=dict(range=[lon_min, lon_max], visible=False),
-        yaxis=dict(range=[lat_min, lat_max], visible=False),
-        template="plotly_white",
-        margin=dict(l=0, r=0, t=0, b=0),
-        height=400
-    )
-
-    st.subheader("NWS Radar (Over Satellite Map)")
-    st.plotly_chart(fig_radar, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 # -----------------------------
 # PLOTS
 # -----------------------------
