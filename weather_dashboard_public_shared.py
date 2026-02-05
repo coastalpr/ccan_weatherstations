@@ -206,8 +206,10 @@ if not tif_files:
 # LOAD SATELLITE IMAGE
 # -----------------------------
 @st.cache_data
-def load_satellite_image(path):
-    with rasterio.open(path) as src:
+def load_satellite_image(satellite_path):
+    with rasterio.open(satellite_path) as src:
+        sat_img = Image.fromarray(src.read([1,2,3]).transpose(1,2,0)).convert("RGBA")
+        sat_bounds = src.bounds
         data = src.read()  # shape: (bands, height, width)
         if data.shape[0] >= 3:
             rgb = np.stack([data[0], data[1], data[2]], axis=2)
