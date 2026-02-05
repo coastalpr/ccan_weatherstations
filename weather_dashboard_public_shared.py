@@ -181,45 +181,39 @@ st.markdown(
 ## ----------------------------------------
 #################################################################################
 satellite_path = Path("satelliteimage1.tif")
-radar_folder = Path("radar_images")           # folder with radar TIFs
+radar_folder = Path("radar_images")    # folder with radar TIFs
 tif_files = sorted(radar_folder.glob("*.tif"))
 
+if not satellite_path.exists():
+    st.error("Satellite TIF not found!")
+    st.stop()
+
 if not tif_files:
-    st.warning("No radar .tif files found")
+    st.error("No radar TIFs found in radar_images folder!")
     st.stop()
 
 # -------------------------
-# Load satellite image and bounds
+# LOAD SATELLITE IMAGE AND BOUNDS
 # -------------------------
 @st.cache_data
 def load_satellite_image(path):
     with rasterio.open(path) as src:
-        sat_bounds = src.bounds
-        sat_transform = src.transform
-        sat_crs = src.crs
-        sat_data = src.read()  # (bands, H, W)
-        sat_height, sat_width = sat_data.shape[1], sat_data.shape[2]
-
-    # Convert to RGBA
-    sat_img = np.transpose(sat_data, (1, 2, 0))  # HWC
-    if sat_img.shape[2] == 3:
-        alpha = 255 * np.ones((sat_height, sat_width), dtype=np.uint8)
-        sat_img = np.dstack([sat_img, alpha])
-    pil_img = Image.fromarray(sat_img.astype(np.uint8)).convert("RGBA")
-
-    return pil_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height
+        img = src.read()  # shape: bands, rows, cols
+        bounds = src.bounds
+        crs = src.crs
+        # convert to PIL image
+        img = img.transpose(1,2,0)  # rows, cols, bands
+        img = Image.fromarray(img).convert("RGBA")
+        width, height = img.size
+    transform = from_bounds(bounds.left, bounds.bottom, bounds.right, bounds.top, width, height)
+    return img, bounds, transform, crs, width, height
 
 sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height = load_satellite_image(satellite_path)
 
 # -------------------------
-# Radar overlay function (georeferenced)
+# RADAR TO IMAGE FUNCTION
 # -------------------------
-def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height):
-    import matplotlib.pyplot as plt
-    from PIL import Image, ImageDraw, ImageFont
-    cmap = plt.get_cmap("turbo")
-
-    # --- Read radar TIF ---
+def radar_to_image(radar_path):
     with rasterio.open(radar_path) as src:
         radar_data = src.read(1)
         radar_nodata = src.nodata
@@ -229,7 +223,7 @@ def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_
     # Mask nodata
     radar_data = np.ma.masked_where(radar_data == radar_nodata, radar_data)
 
-    # --- REPROJECT RADAR TO SATELLITE GRID ---
+    # Reproject to satellite grid
     reprojected = np.zeros((sat_height, sat_width), dtype=np.float32)
     reproject(
         source=radar_data,
@@ -241,27 +235,26 @@ def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_
         resampling=Resampling.bilinear
     )
 
-    # Now reprojected has the same pixel grid as satellite
-    data_masked = np.ma.masked_where(reprojected == 0, reprojected)
-
-    # --- NORMALIZE AND MAKE IMAGE ---
-    if data_masked.max() > data_masked.min():
-        norm_data = (data_masked - data_masked.min()) / (data_masked.max() - data_masked.min())
+    # Normalize for colormap
+    valid = reprojected > 0
+    if np.any(valid):
+        norm_data = (reprojected - reprojected[valid].min()) / (reprojected[valid].max() - reprojected[valid].min() + 1e-6)
     else:
-        norm_data = data_masked * 0
+        norm_data = reprojected * 0
 
-    rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
+    cmap = plt.get_cmap("turbo")
+    rgb = (cmap(norm_data)[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
-    # Transparency
-    alpha = (norm_data.filled(0) > 0.01) * 180
+    # Transparency mask
+    alpha = (norm_data > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
-    # Overlay
+    # Overlay on satellite
     combined = sat_img.copy()
-    combined.paste(radar_img, (0, 0), radar_img)
+    combined.paste(radar_img, (0,0), radar_img)
 
-    # Add timestamp / frame info
+    # Add timestamp and frame counter
     draw = ImageDraw.Draw(combined)
     font_size = max(16, sat_height // 40)
     try:
@@ -274,91 +267,65 @@ def radar_to_image(radar_path, sat_img, sat_bounds, sat_transform, sat_crs, sat_
     text = f"{timestamp}   {frame_info}"
 
     margin = 10
-    draw.rectangle(
-        [(margin, sat_height - font_size - margin),
-         (sat_width - margin, sat_height - margin)],
-        fill=(0, 0, 0, 120)
-    )
-    draw.text((margin + 5, sat_height - font_size - margin + 2), text, fill=(255, 255, 255, 255), font=font)
+    draw.rectangle([(margin, sat_height - font_size - margin),
+                    (sat_width - margin, sat_height - margin)], fill=(0,0,0,120))
+    draw.text((margin + 5, sat_height - font_size - margin + 2), text, fill=(255,255,255,255), font=font)
 
     return combined
 
 # -------------------------
-# Session state
+# SESSION STATE
 # -------------------------
 if "play" not in st.session_state:
     st.session_state.play = False
 if "index" not in st.session_state:
-    st.session_state.index = len(tif_files)-1  # start with latest frame
+    st.session_state.index = 0
 
 # -------------------------
-# Controls
+# CONTROLS
 # -------------------------
-col1, col2, col3, col4, col5, col6 = st.columns(6)
-with col3:
+col1, col2, col3, col4, col5 = st.columns(5)
+with col2:
     if st.button("Play"):
         st.session_state.play = True
-with col4:
+with col3:
     if st.button("Stop"):
         st.session_state.play = False
 
+# -------------------------
+# PLACEHOLDER FOR ANIMATION
+# -------------------------
 placeholder = st.empty()
 
 # -------------------------
-# Animation loop
+# ANIMATION LOOP
 # -------------------------
 def run_animation():
     while st.session_state.play:
-        i = st.session_state.index
-        img = radar_to_image(
-            tif_files[i],
-            sat_img,
-            sat_bounds,
-            sat_transform,
-            sat_crs,
-            sat_width,
-            sat_height
-        )
-        placeholder.image(
-            img,
-            caption=f"Frame {i+1}/{len(tif_files)}",
-            width="stretch",
-        )
+        current_file = tif_files[st.session_state.index]
+        img = radar_to_image(current_file)
+        placeholder.image(img, width="stretch")
+
         st.session_state.index += 1
         if st.session_state.index >= len(tif_files):
             st.session_state.index = 0
-        time.sleep(0.2)
+        time.sleep(0.15)
 
-# Run animation if playing
 if st.session_state.play:
     run_animation()
 else:
-    # Show last frame
-    i = st.session_state.index
-    img = radar_to_image(
-        tif_files[i],
-        sat_img,
-        sat_bounds,
-        sat_transform,
-        sat_crs,
-        sat_width,
-        sat_height
-    )
-    placeholder.image(img, caption=f"Frame {i+1}/{len(tif_files)}", width="stretch")
+    # Show latest image
+    current_file = tif_files[st.session_state.index]
+    img = radar_to_image(current_file)
+    placeholder.image(img, width="stretch")
 
-# Slider to pick frame manually
+# -------------------------
+# SLIDER
+# -------------------------
 slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
-st.session_state.index = slider_index
-img = radar_to_image(
-    tif_files[slider_index],
-    sat_img,
-    sat_bounds,
-    sat_transform,
-    sat_crs,
-    sat_width,
-    sat_height
-)
-st.image(img, caption=f"Frame {slider_index+1}/{len(tif_files)}", width="stretch")
+current_file = tif_files[slider_index]
+img = radar_to_image(current_file)
+st.image(img, width="stretch")
 #################################################################################
 # -----------------------------
 # PLOTS
