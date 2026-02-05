@@ -210,8 +210,8 @@ df_wind = df[
 ].iloc[::1].copy()  # downsample
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
-#arrow_angles = (270 - df_wind["wind_direction"]) % 360
-arrow_angles = (df_wind["wind_direction"]) % 360
+arrow_angles = (270 - df_wind["wind_direction"]) % 360
+#arrow_angles = (df_wind["wind_direction"]) % 360
 
 
 def wind_to_uv(wd_deg, magnitude=1.0):
@@ -248,7 +248,7 @@ df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
 speeds = df_wind["wind_avg"] 
-directions = 270-df_wind["wind_direction"]
+directions = df_wind["wind_direction"]
 
 min_speed = speeds.min()
 max_speed = speeds.max()
@@ -351,7 +351,7 @@ scatter = go.Scatter(
     marker=dict(
         symbol="arrow",
         size=15,
-        angle=270-arrow_angles,              # important: rotate arrows
+        angle=arrow_angles,              # important: rotate arrows
         #color=df_wind["wind_avg"],       # numeric for colorbar
         color=df_wind["cat_id"],       # numeric for colorbar
         colorscale=colorscale,
