@@ -318,14 +318,19 @@ def run_animation():
         time.sleep(0.15)
 
 # Run animation if Play
-#if st.session_state.play:
-#    run_animation()
-#else:
+if st.session_state.play:
+    run_animation()
+else:
     # Show last selected frame
 #    current_file = radar_files[st.session_state.index]
 #    img = radar_to_image(current_file)
 #    st.image(combined, width="content")
-    
+    combined_img = radar_to_image(
+    selected_file, sat_img,
+    sat_bounds.left, sat_bounds.bottom,
+    sat_bounds.right, sat_bounds.top
+)
+st.image(combined_img, width="content")   
 #################################################################################
 # -----------------------------
 # PLOTS
