@@ -173,7 +173,7 @@ st.markdown(
 ## ----------------------------------------
 #################################################################################
 radar_folder = Path("radar_images")
-satellite_path = "satellite_map.png"  # static satellite image
+satellite_path = "satellite_image.png"  # static satellite image
 zoom_bbox = { "lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
 
 # -----------------------------
