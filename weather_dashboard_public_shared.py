@@ -180,7 +180,7 @@ st.markdown(
 ## ----------------------------------------
 #################################################################################
 # Bounding box in coordinates (longitude, latitude)
-lon_min, lon_max = -67.5, -64.5
+lon_min, lon_max = -68, -64
 lat_min, lat_max = 17.5, 18.5
 
 # -------------------------
@@ -205,23 +205,13 @@ def get_satellite_background():
 
     url = (
         "https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},8/1280x1080"
+        f"{center_lon},{center_lat},8/1920x1280"
         f"?access_token={token}"
     )
 
     r = requests.get(url)
-    
-    if r.status_code != 200:
-        st.error(f"Mapbox request failed! Status code: {r.status_code}")
-        st.stop()
-    
-    try:
-        img = Image.open(io.BytesIO(r.content)).convert("RGBA")
-    except Exception as e:
-        st.error(f"Failed to open Mapbox image: {e}")
-        st.stop()
-    
-    return img
+    return Image.open(io.BytesIO(r.content)).convert("RGBA")
+
 # -------------------------
 # Radar rendering
 # -------------------------
