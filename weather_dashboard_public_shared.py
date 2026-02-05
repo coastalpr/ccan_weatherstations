@@ -302,7 +302,7 @@ def run_animation():
     while st.session_state.play:
         current_file = radar_files[st.session_state.index]
         img = radar_to_image(current_file)
-        placeholder.image(img, width="stretch")
+        placeholder.image(img, width="content")
 
         st.session_state.index += 1
         if st.session_state.index >= len(radar_files):
@@ -316,7 +316,8 @@ else:
     # Show last selected frame
     current_file = radar_files[st.session_state.index]
     img = radar_to_image(current_file)
-    placeholder.image(img, width="stretch")
+    placeholder.image(img, width="content")
+    
 #################################################################################
 # -----------------------------
 # PLOTS
