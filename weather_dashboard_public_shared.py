@@ -32,6 +32,7 @@ from pathlib import Path
 from rasterio.windows import from_bounds
 import tempfile
 import io, base64, time, re
+from PIL import Image, ImageDraw, ImageFont
 
 
 # -----------------------------
