@@ -193,14 +193,15 @@ if not tif_files:
 @st.cache_data
 def load_satellite_image(path):
     with rasterio.open(path) as src:
-        img = src.read()  # shape: (bands, height, width)
+        img = src.read()  # (bands, H, W)
         bounds = src.bounds
         height, width = img.shape[1], img.shape[2]
 
     # Convert to PIL RGBA
     img = np.transpose(img, (1, 2, 0))  # HWC
     if img.shape[2] == 3:
-        img = np.dstack([img, 255*np.ones((height, width), dtype=np.uint8)])  # add alpha
+        alpha = 255 * np.ones((height, width), dtype=np.uint8)
+        img = np.dstack([img, alpha])
     pil_img = Image.fromarray(img.astype(np.uint8)).convert("RGBA")
     return pil_img, bounds, width, height
 
@@ -238,9 +239,33 @@ def radar_to_image(tif_path, sat_img, sat_width, sat_height, lon_min, lon_max, l
     # resize radar to match satellite
     radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
 
-    # overlay
+    # overlay radar on satellite
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
+
+    # -------------------------
+    # Add text overlay: timestamp & frame
+    # -------------------------
+    draw = ImageDraw.Draw(combined)
+    font_size = max(16, sat_height // 40)
+    try:
+        font = ImageFont.truetype("arial.ttf", font_size)
+    except:
+        font = ImageFont.load_default()
+
+    # Extract timestamp from filename if possible
+    timestamp = tif_path.stem  # customize parsing if your filename contains time
+    frame_info = f"{tif_path.name} | Frame {tif_files.index(tif_path)+1}/{len(tif_files)}"
+    text = f"{timestamp}   {frame_info}"
+
+    margin = 10
+    draw.rectangle(
+        [(margin, sat_height - font_size - margin),
+         (sat_width - margin, sat_height - margin)],
+        fill=(0, 0, 0, 120)
+    )
+    draw.text((margin + 5, sat_height - font_size - margin + 2), text, fill=(255, 255, 255, 255), font=font)
+
     return combined
 
 # -------------------------
@@ -285,7 +310,7 @@ def run_animation():
         )
         placeholder.image(
             img,
-            caption=f"{tif_files[i].name} | Frame {i+1}/{len(tif_files)}",
+            caption=f"Frame {i+1}/{len(tif_files)}",
             use_column_width=True
         )
 
@@ -315,30 +340,10 @@ else:
     )
     placeholder.image(
         img,
-        caption=f"{tif_files[i].name} | Frame {i+1}/{len(tif_files)}",
+        caption=f"Frame {i+1}/{len(tif_files)}",
         use_column_width=True
     )
 
-# -------------------------
-# Slider to pick frame manually
-# -------------------------
-slider_index = st.slider("Select Radar Frame:", 0, len(tif_files)-1, st.session_state.index)
-st.session_state.index = slider_index
-img = radar_to_image(
-    tif_files[slider_index],
-    sat_img,
-    sat_width,
-    sat_height,
-    lon_min,
-    lon_max,
-    lat_min,
-    lat_max
-)
-st.image(
-    img,
-    caption=f"{tif_files[slider_index].name} | Frame {slider_index+1}/{len(tif_files)}",
-    use_column_width=True
-)
 #################################################################################
 # -----------------------------
 # PLOTS
