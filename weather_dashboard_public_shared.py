@@ -179,10 +179,7 @@ st.markdown(
 # Radar
 ## ----------------------------------------
 #################################################################################
-sat_file = Path("satelliteimage1.tif")
-if not sat_file.exists():
-    st.error("Satellite image not found!")
-    st.stop()
+satellite_path = Path("satelliteimage1.tif")
 
 radar_folder = Path("radar_images")      # folder with multiple radar TIFs
 radar_files = sorted(radar_folder.glob("*.tif"))
