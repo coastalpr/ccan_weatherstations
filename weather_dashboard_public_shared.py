@@ -366,21 +366,13 @@ scatter = go.Scatter(
             len=1.0
         ),
     ),
+    line=dict(width=0),  # invisible line
+    marker=dict(size=0), # no visible markers
     text=df_wind["wind_direction"],
     hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
     name="Viento",
 )
-hover_only = go.Scatter(
-    x=df_wind["Hora"],
-    y=df_wind["wind_avg"],
-    mode="lines+markers",
-    line=dict(width=0),       # no visible line
-    marker=dict(size=0),      # no visible marker
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text}°<extra></extra>",
-    text=df_wind["wind_direction"],
-    showlegend=False,         # hide from legend
-    name="HoverOnly"
-)
+
 
 fig = go.Figure(data=[scatter])
 
