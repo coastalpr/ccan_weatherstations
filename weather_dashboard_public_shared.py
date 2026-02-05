@@ -322,7 +322,7 @@ def run_animation():
         placeholder.image(
             img,
             caption=f"Frame {i+1}/{len(tif_files)}",
-            width="stretch"
+            width="stretch",
         )
         st.session_state.index += 1
         if st.session_state.index >= len(tif_files):
