@@ -174,23 +174,30 @@ st.markdown(
 ## ----------------------------------------
 #################################################################################
 radar_folder = Path("radar_images")   # folder containing .tif radar images
-mapbox_token = st.secrets["mapbox"]["token"]
+zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}  # zoomed area
 
-satellite_path = "satellite_image.png"  # static satellite base image
-zoom_bbox = { "lon_min": -68.5, "lon_max": -64.5, "lat_min": 17.5, "lat_max": 21.0 }  # zoom area
+# -----------------------------
+# LOAD MAPBOX TOKEN
+# -----------------------------
+mapbox_token = None
+try:
+    mapbox_token = st.secrets["mapbox"]["token"]
+except KeyError:
+    st.warning("Mapbox token not found in secrets! Using OpenStreetMap as fallback.")
 
 # -----------------------------
 # LOAD RADAR FILES
 # -----------------------------
 tif_files = sorted(radar_folder.glob("*.tif"))
 if not tif_files:
-    st.warning("No radar files found in radar_images folder.")
+    st.error("No radar files found in radar_images folder.")
     st.stop()
 
 # -----------------------------
-# FUNCTION: TIF TO RGBA
+# FUNCTION: TIF → RGBA IMAGE
 # -----------------------------
-def tif_to_rgba(tif_path, alpha=0.5):
+def tif_to_rgba(tif_path, alpha=0.6):
+    """Convert a GeoTIFF to RGBA image for overlay."""
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         from rasterio.windows import from_bounds
@@ -218,7 +225,7 @@ if "play" not in st.session_state:
 if "index" not in st.session_state:
     st.session_state.index = 0
 
-col1, col2 = st.columns([1, 1])
+col1, col2 = st.columns([1,1])
 with col1:
     if st.button("Play"):
         st.session_state.play = True
@@ -229,14 +236,14 @@ with col2:
 placeholder = st.empty()  # container for radar animation
 
 # -----------------------------
-# FUNCTION: DISPLAY RADAR OVER MAPBOX
+# FUNCTION: DISPLAY RADAR ON MAP
 # -----------------------------
 def display_radar(index):
-    radar_img, bounds = tif_to_rgba(tif_files[index], alpha=0.5)
+    radar_img, bounds = tif_to_rgba(tif_files[index])
     
     fig = go.Figure()
 
-    # Add radar image as layout image (overlay)
+    # Overlay radar image
     fig.add_layout_image(
         dict(
             source=radar_img,
@@ -252,16 +259,22 @@ def display_radar(index):
         )
     )
 
-    # Mapbox layout
+    # Map center
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
 
+    # Mapbox vs fallback
+    if mapbox_token:
+        map_style = "satellite"
+    else:
+        map_style = "open-street-map"  # fallback
+
     fig.update_layout(
         mapbox=dict(
-            style="satellite",
+            style=map_style,
             center={"lat": center_lat, "lon": center_lon},
             zoom=6,
-            accesstoken=mapbox_token
+            accesstoken=mapbox_token if mapbox_token else None
         ),
         margin={"r":0,"t":0,"l":0,"b":0},
         title=f"Radar Overlay ({tif_files[index].name})"
@@ -270,7 +283,7 @@ def display_radar(index):
     placeholder.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
-# RADAR ANIMATION
+# RADAR ANIMATION LOOP
 # -----------------------------
 if st.session_state.play:
     for i in range(st.session_state.index, len(tif_files)):
@@ -278,7 +291,7 @@ if st.session_state.play:
             break
         st.session_state.index = i
         display_radar(i)
-        time.sleep(1)
+        time.sleep(1)  # adjust speed here
     st.session_state.index = 0
 else:
     display_radar(st.session_state.index)
