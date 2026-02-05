@@ -184,7 +184,7 @@ if not tif_files:
     st.error("No radar files found in radar_images folder.")
     st.stop()
 
-# Area of interest (lat/lon bounding box)
+# Bounding box of area of interest
 zoom_bbox = {"lon_min": -80.5, "lon_max": -75.0, "lat_min": 17.5, "lat_max": 21.0}
 
 # -----------------------------
@@ -196,9 +196,9 @@ if "play" not in st.session_state:
     st.session_state.play = False
 
 # -----------------------------
-# HELPER: Convert TIF to RGBA with alpha
+# HELPER: Convert TIF to RGBA
 # -----------------------------
-def tif_to_png(tif_path, alpha=0.6):
+def tif_to_rgba(tif_path, alpha=0.6):
     cmap = plt.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         from rasterio.windows import from_bounds
@@ -217,45 +217,58 @@ def tif_to_png(tif_path, alpha=0.6):
     return img
 
 # -----------------------------
-# FUNCTION: Display radar overlay on static satellite map
+# FUNCTION: Create Plotly Mapbox figure
 # -----------------------------
-def display_radar(index):
+def create_radar_fig(index):
     tif_path = tif_files[index]
-    radar_img = tif_to_png(tif_path)
+    radar_img = tif_to_rgba(tif_path)
 
-    # Save temporary PNG
-    tmp_file = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
-    radar_img.save(tmp_file.name)
-
-    # Center of map
+    # Map center
     center_lat = (zoom_bbox["lat_min"] + zoom_bbox["lat_max"]) / 2
     center_lon = (zoom_bbox["lon_min"] + zoom_bbox["lon_max"]) / 2
 
-    # Create Folium map with static satellite image
-    m = folium.Map(location=[center_lat, center_lon],
-                   zoom_start=6,
-                   tiles="Esri.WorldImagery")
+    fig = go.Figure()
 
-    # Overlay radar
-    ImageOverlay(
-        image=tmp_file.name,
-        bounds=[[zoom_bbox["lat_min"], zoom_bbox["lon_min"]],
-                [zoom_bbox["lat_max"], zoom_bbox["lon_max"]]],
-        opacity=0.6
-    ).add_to(m)
+    # Add static satellite map
+    fig.update_layout(
+        mapbox=dict(
+            style="satellite",
+            center={"lat": center_lat, "lon": center_lon},
+            zoom=6,
+        ),
+        margin={"l":0, "r":0, "t":0, "b":0},
+    )
 
-    # Timestamp / radar frame label
-    folium.map.Marker(
-        [zoom_bbox["lat_max"], zoom_bbox["lon_min"]],
-        icon=folium.DivIcon(
-            html=f'<div style="font-size:16px;color:white;background-color:black;padding:4px;">Frame: {index} | {tif_path.name}</div>'
+    # Overlay radar image as layout image
+    fig.add_layout_image(
+        dict(
+            source=radar_img,
+            xref="x",
+            yref="y",
+            x=zoom_bbox["lon_min"],
+            y=zoom_bbox["lat_max"],  # origin upper-left
+            sizex=zoom_bbox["lon_max"] - zoom_bbox["lon_min"],
+            sizey=zoom_bbox["lat_max"] - zoom_bbox["lat_min"],
+            sizing="stretch",
+            opacity=0.6,
+            layer="above"
         )
-    ).add_to(m)
+    )
 
-    # Layer control (optional)
-    folium.LayerControl().add_to(m)
+    # Add timestamp / frame label
+    fig.add_annotation(
+        text=f"Frame: {index} | {tif_path.name}",
+        xref="paper",
+        yref="paper",
+        x=0.01,
+        y=0.99,
+        showarrow=False,
+        font=dict(color="white", size=16),
+        bgcolor="black",
+        borderpad=2
+    )
 
-    st_folium(m, width=900, height=600)
+    return fig
 
 # -----------------------------
 # PLAY / STOP BUTTONS
@@ -271,31 +284,15 @@ with col2:
 # -----------------------------
 # SLIDER
 # -----------------------------
-frame = st.slider(
-    "Radar Frame",
-    0, len(tif_files)-1,
-    st.session_state.index
-)
+frame = st.slider("Radar Frame", 0, len(tif_files)-1, st.session_state.index)
 st.session_state.index = frame
 
 # -----------------------------
-# DISPLAY PLACEHOLDER
+# PLACEHOLDER
 # -----------------------------
 placeholder = st.empty()
-with placeholder:
-    display_radar(st.session_state.index)
+placeholder.plotly_chart(create_radar_fig(st.session_state.index), use_container_width=True)
 
-# -----------------------------
-# ANIMATION LOOP
-# -----------------------------
-if st.session_state.play:
-    for i in range(st.session_state.index, len(tif_files)):
-        if not st.session_state.play:
-            break
-        st.session_state.index = i
-        with placeholder:
-            display_radar(i)
-        time.sleep(0.5)
 #################################################################################
 # -----------------------------
 # PLOTS
