@@ -369,8 +369,8 @@ scatter = go.Scatter(
         color=df_wind["cat_id"],       # numeric for colorbar
         colorscale=colorscale,
         cmin=0,
-        cmax=len(category_colors)-1,
-        #cmax=max_speed,
+        #cmax=len(category_colors)-1,
+        cmax=50,
         opacity=0.9,
         line=dict(width=0.5, color="black"),
         colorbar=dict(
