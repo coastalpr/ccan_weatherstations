@@ -271,9 +271,8 @@ if st.session_state.play:
         if not st.session_state.play:
             break
         st.session_state.index = i
-        with placeholder:
-            display_radar(i)
-        time.sleep(1)  # adjust animation speed
+        display_radar(i)  # <-- this recreates the whole map
+        time.sleep(1)
     st.session_state.index = 0
 else:
     with placeholder:
