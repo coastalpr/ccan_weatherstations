@@ -315,34 +315,7 @@ fig.update_layout(
     plot_bgcolor="rgba(240,240,240,0.1)",
 )
 
-# ----------------------------
-# Discrete colorbar as dummy scatter
-# ----------------------------
-colorbar_trace = go.Scatter(
-    x=[None]*len(wind_categories),
-    y=[None]*len(wind_categories),
-    mode="markers",
-    marker=dict(
-        size=20,
-        color=[cat["color"] for cat in wind_categories],
-        symbol="square",
-        line=dict(width=1, color="black"),
-        showscale=True,
-        cmin=0,
-        cmax=len(wind_categories),
-        colorbar=dict(
-            tickvals=[i + 0.5 for i in range(len(wind_categories))],
-            ticktext=[f"{cat['label']} ({cat['min']}-{cat['max']} kts)" for cat in wind_categories],
-            title="Wind Category",
-            lenmode="pixels",
-            len=300,
-            thickness=20,
-            tickfont=dict(size=12),
-        ),
-    ),
-    showlegend=False
-)
-fig.add_trace(colorbar_trace)
+
 
 # ----------------------------
 # Render in Streamlit
@@ -468,6 +441,7 @@ for col, img in zip(cols, images):
 
     
 st.caption("Powered by Streamlit • Plotly • NetCDF • Python")
+
 
 
 
