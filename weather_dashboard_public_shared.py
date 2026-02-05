@@ -214,59 +214,47 @@ sat_img, sat_bounds, sat_transform, sat_crs, sat_width, sat_height = load_satell
 # RADAR TO IMAGE FUNCTION
 # -------------------------
 def radar_to_image(radar_path):
-    # Open radar TIF
+    # Open radar
     with rasterio.open(radar_path) as src:
         radar_data = src.read(1)
         radar_nodata = src.nodata
-        radar_crs = src.crs
+        radar_crs = src.crs if src.crs else "EPSG:4326"
         radar_transform = src.transform
 
-    # Mask nodata
     radar_data = np.ma.masked_where(radar_data == radar_nodata, radar_data)
 
-    # Reproject radar to match satellite
+    # Destination array matches satellite image size
     reprojected = np.zeros((sat_height, sat_width), dtype=np.float32)
+
+    # Reproject radar onto satellite CRS/grid
     reproject(
         source=radar_data,
         destination=reprojected,
         src_transform=radar_transform,
-        src_crs=radar_crs if radar_crs else "EPSG:4326",
+        src_crs=radar_crs,
         dst_transform=sat_transform,
-        dst_crs=sat_crs if sat_crs else "EPSG:4326",
+        dst_crs=sat_crs,
         resampling=Resampling.bilinear
     )
 
     # Normalize and apply colormap
     valid = reprojected > 0
     if np.any(valid):
-        norm_data = (reprojected - reprojected[valid].min()) / (reprojected[valid].max() - reprojected[valid].min() + 1e-6)
+        norm = (reprojected - reprojected[valid].min()) / (reprojected[valid].max() - reprojected[valid].min() + 1e-6)
     else:
-        norm_data = reprojected * 0
+        norm = reprojected * 0
 
     cmap = plt.get_cmap("turbo")
-    rgb = (cmap(norm_data)[:, :, :3] * 255).astype(np.uint8)
+    rgb = (cmap(norm)[:, :, :3] * 255).astype(np.uint8)
     radar_img = Image.fromarray(rgb).convert("RGBA")
 
     # Transparency
-    alpha = (norm_data > 0.01) * 180
+    alpha = (norm > 0.01) * 180
     radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
 
     # Overlay on satellite
     combined = sat_img.copy()
     combined.paste(radar_img, (0, 0), radar_img)
-
-    # Timestamp + frame counter
-    draw = ImageDraw.Draw(combined)
-    font_size = max(16, sat_height // 40)
-    try:
-        font = ImageFont.truetype("arial.ttf", font_size)
-    except:
-        font = ImageFont.load_default()
-    timestamp = radar_path.stem
-    frame_info = f"Frame {tif_files.index(radar_path)+1}/{len(tif_files)}"
-    draw.rectangle([(10, sat_height - font_size - 10),
-                    (sat_width - 10, sat_height - 10)], fill=(0,0,0,120))
-    draw.text((15, sat_height - font_size - 8), f"{timestamp}   {frame_info}", fill=(255,255,255,255), font=font)
 
     return combined
 
