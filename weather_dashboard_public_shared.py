@@ -300,23 +300,7 @@ while st.session_state.play:
 
     time.sleep(0.15)  # speed of animation
 
-# -----------------------------
-# Slider control
-# -----------------------------
-slider_index = st.slider(
-    "Select Radar Frame:",
-    0,
-    len(tif_files) - 1,
-    st.session_state.index
-)
 
-current_file = tif_files[slider_index]
-img = tif_to_image(current_file, sat_width, sat_height)
-st.image(
-    img,
-    caption=f"{current_file.name} | Frame {slider_index+1}/{len(tif_files)}",
-    use_column_width=True
-)
 #################################################################################
 # -----------------------------
 # PLOTS
