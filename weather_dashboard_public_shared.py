@@ -214,6 +214,16 @@ df_wind = (
       .dropna()
       .reset_index()
 )
+
+# Get the latest observation
+latest = df[["Hora", "wind_avg", "wind_direction"]].sort_values("Hora").iloc[-1:]
+
+# Append it to the resampled dataframe if it's not already included
+if latest["Hora"].iloc[0] not in df_wind["Hora"].values:
+    df_wind = pd.concat([df_wind, latest], ignore_index=True)
+
+# Sort again by time
+df_wind = df_wind.sort_values("Hora").reset_index(drop=True)
 #df_wind = df_wind.resample("10min", on="Hora").mean().dropna()
 
 #arrow_angles = (270 - df_wind["wind_direction"]) % 360
