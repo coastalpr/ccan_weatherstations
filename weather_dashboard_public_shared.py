@@ -141,7 +141,7 @@ c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
 with c2:
     st.markdown(
         f"""
-        <div style="font-size:0.75rem; font-weight:bold;">
+        <div style=" font-size: 1rem; margin-top: -30px; padding: 0;">
             ({latest.wind_direction:.0f}°)
         </div>
         """,
