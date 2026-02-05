@@ -380,8 +380,7 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Hora: %{x}<br>Speed: %{customdata} kts<br>Direction: %{text}°<extra></extra>",
-    customdata=df_wind["speed_hover"],  # passes formatted speed
+    hovertemplate="Hora: %{x}<br>Speed: %{y:.1f} kts<br>Direction: %{text}°<extra></extra>",
     name="Viento",
 )
 
