@@ -190,47 +190,27 @@ radar_folder = Path("radar_images")
 tif_files = sorted(radar_folder.glob("*.tif"))
 
 if not tif_files:
-    st.warning("No radar .tif files found")
+    st.warning("No radar files found!")
     st.stop()
 
 # -----------------------------
-# Get Mapbox satellite background
+# Load Mapbox token
 # -----------------------------
-@st.cache_data
-def get_satellite_background():
-    token = st.secrets["mapbox"]["token"]
-
-    center_lon = (lon_min + lon_max) / 2
-    center_lat = (lat_min + lat_max) / 2
-
-    # Mapbox Static Image URL
-    zoom = 8
-    width, height = 1024, 1024  # <=1280 max
-    url = (
-        f"https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/"
-        f"{center_lon},{center_lat},{zoom}/{width}x{height}"
-        f"?access_token={token}"
-    )
-
-    r = requests.get(url)
-    if r.status_code != 200:
-        st.error(f"Mapbox request failed! Status code: {r.status_code}")
-        st.stop()
-
-    return Image.open(io.BytesIO(r.content)).convert("RGBA")
-
-sat_background = get_satellite_background()
-sat_width, sat_height = sat_background.size
+mapbox_token = None
+try:
+    mapbox_token = st.secrets["mapbox"]["token"]
+except KeyError:
+    st.warning("Mapbox token not found, using OpenStreetMap as fallback.")
 
 # -----------------------------
-# Convert a radar .tif to RGBA image
+# Convert georeferenced tif to RGBA image
 # -----------------------------
-def tif_to_image(tif_path, sat_width, sat_height):
-    cmap = plt.get_cmap("turbo")
-
+def tif_to_rgba(tif_path, alpha=0.6):
+    cmap = cm.get_cmap("turbo")
     with rasterio.open(tif_path) as src:
         data = src.read(1)
         nodata = src.nodata
+        bounds = src.bounds
 
     # Mask nodata
     data_masked = np.ma.masked_where(data == nodata, data)
@@ -242,20 +222,10 @@ def tif_to_image(tif_path, sat_width, sat_height):
         norm_data = data_masked * 0
 
     rgb = (cmap(norm_data.filled(0))[:, :, :3] * 255).astype(np.uint8)
-    radar_img = Image.fromarray(rgb).convert("RGBA")
+    img = Image.fromarray(rgb)
+    img.putalpha(Image.fromarray((norm_data.filled(0) * 255 * alpha).astype(np.uint8)))
 
-    # Transparency based on data
-    alpha = (norm_data.filled(0) > 0.05) * 150
-    radar_img.putalpha(Image.fromarray(alpha.astype(np.uint8)))
-
-    # Resize radar to match satellite image
-    radar_img = radar_img.resize((sat_width, sat_height), resample=Image.BILINEAR)
-
-    # Overlay radar on satellite
-    combined = sat_background.copy()
-    combined.paste(radar_img, (0, 0), radar_img)
-
-    return combined
+    return img, bounds
 
 # -----------------------------
 # Session state
@@ -277,28 +247,71 @@ with col4:
         st.session_state.play = False
 
 # -----------------------------
-# Animation container
+# Placeholder for Plotly map
 # -----------------------------
 placeholder = st.empty()
 
 # -----------------------------
-# Animation loop
+# Function to display radar on map
 # -----------------------------
-while st.session_state.play:
-    current_file = tif_files[st.session_state.index]
-    img = tif_to_image(current_file, sat_width, sat_height)
+def display_radar(index):
+    tif_path = tif_files[index]
+    radar_img, bounds = tif_to_rgba(tif_path)
 
-    placeholder.image(
-        img,
-        caption=f"{current_file.name} | Frame {st.session_state.index+1}/{len(tif_files)}",
-        width="stretch"
+    fig = go.Figure()
+
+    # Overlay radar image
+    fig.add_layout_image(
+        dict(
+            source=radar_img,
+            xref="x",
+            yref="y",
+            x=bounds.left,
+            y=bounds.top,
+            sizex=bounds.right - bounds.left,
+            sizey=bounds.top - bounds.bottom,
+            sizing="stretch",
+            opacity=0.6,
+            layer="above",
+        )
     )
 
-    st.session_state.index += 1
-    if st.session_state.index >= len(tif_files):
-        st.session_state.index = 0
+    # Map center
+    center_lon = (lon_min + lon_max) / 2
+    center_lat = (lat_min + lat_max) / 2
 
-    time.sleep(0.15)  # speed of animation
+    # Map layout
+    if mapbox_token:
+        map_style = "satellite"
+    else:
+        map_style = "open-street-map"
+
+    fig.update_layout(
+        mapbox=dict(
+            style=map_style,
+            center={"lat": center_lat, "lon": center_lon},
+            zoom=7,
+            accesstoken=mapbox_token if mapbox_token else None,
+        ),
+        margin={"r":0,"t":0,"l":0,"b":0},
+        title=f"Radar Overlay ({tif_files[index].name}) | Frame {index+1}/{len(tif_files)}",
+    )
+
+    placeholder.plotly_chart(fig, use_container_width=True)
+
+# -----------------------------
+# Animation loop
+# -----------------------------
+if st.session_state.play:
+    for i in range(st.session_state.index, len(tif_files)):
+        if not st.session_state.play:
+            break
+        st.session_state.index = i
+        display_radar(i)
+        time.sleep(0.5)
+    st.session_state.index = 0
+else:
+    display_radar(st.session_state.index)
 
 
 #################################################################################
