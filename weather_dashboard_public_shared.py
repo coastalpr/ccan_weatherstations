@@ -490,7 +490,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
-    hovertemplate='UV:%{y}<extra></extra>',
+    hovertemplate='UV: %{y}<extra></extra>',
 )
 
 # Layout
@@ -520,7 +520,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
-    hovertemplate='Distancia:%{y:.1f} °F<extra></extra>',
+    hovertemplate='Distancia: %{y:.1f} °F<extra></extra>',
 )
 
 # Layout
@@ -532,6 +532,8 @@ fig.update_layout(
         tickangle=90,
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
+        ymin=0,
+        ymax = 4,
         spikecolor='rgb(128,128,128)',
         range=[start_date, end_date + timedelta(hours=1)],
         side='bottom'
