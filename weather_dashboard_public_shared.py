@@ -246,6 +246,13 @@ colorscale = [
     for i, cat in enumerate(wind_categories)
 ]
 
+def speed_to_color(speed):
+    for cat in wind_categories:
+        if cat["min"] <= speed <= cat["max"]:
+            return cat["color"]
+    return "#000000"  # fallback if out of range
+
+df_wind["color"] = df_wind["wind_avg"].apply(speed_to_color)
 df_wind["Hora"] = pd.to_datetime(df_wind["Hora"])
 
 times =   df["Hora"] 
@@ -344,10 +351,11 @@ scatter = go.Scatter(
         symbol="arrow",
         size=12,
         angle=arrow_angles,              # important: rotate arrows
-        color=df_wind["wind_avg"],       # numeric for colorbar
+        #color=df_wind["wind_avg"],       # numeric for colorbar
+        color=df_wind["color"],       # numeric for colorbar
         colorscale=colorscale,
-        cmin=min_speed,
-        cmax=max_speed,
+        #cmin=min_speed,
+        #cmax=max_speed,
         opacity=0.9,
         line=dict(width=0.5, color="black"),
         colorbar=dict(
