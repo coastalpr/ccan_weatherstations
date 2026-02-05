@@ -310,7 +310,7 @@ slider_index = st.slider(
 current_file = tif_files[slider_index]
 img = tif_to_image(current_file)
 st.image(img, width=900)
-st.image("satellite.png", use_container_width=True)
+#st.image("satellite.png", use_container_width=True)
 
 #st.image(
 #    img,
