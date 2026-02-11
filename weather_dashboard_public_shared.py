@@ -297,7 +297,7 @@ line_avg = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="lines",
-    line=dict(color="#74b2d6", width=2),
+    line=dict(color="#1ee3dc", width=3),
     name="Viento Promedio"
 )
 
@@ -306,7 +306,7 @@ line_gust = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_gust"],
     mode="lines",
-    line=dict(color="#1ee3dc", width=3),
+    line=dict(color="#e3351e", width=3),
     name="Ráfaga"
 )
 
