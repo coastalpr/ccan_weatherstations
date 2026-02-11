@@ -297,7 +297,7 @@ line_avg = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="lines",
-    line=dict(color="black", width=2,dash="dash"),
+    line=dict(color="black", width=2),
     name="Viento Promedio"
 )
 
@@ -503,7 +503,7 @@ fig.update_layout(
         tickangle=90,
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
-        spikecolor='rgb(128,128,128)',
+        spikecolor="#202121",
         range=[start_date, end_date + timedelta(hours=3)],
         side='bottom',
         #fixedrange=True,  # Disable zoom on the x-axis
