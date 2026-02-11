@@ -90,7 +90,7 @@ redirect_url = "https://ccan-upr.org"
 image_url = "logo.png"  # Replace with your image URL or local path
 
 # Title text
-title_text = "Estación Meteorológica"
+title_text = "Estación Meteorológica - Balneario Punta Salinas, Toa Baja"
 
 # Create columns
 col1, col2 = st.columns([2, 5])  # Column width ratio: first column for the image, second for the title
