@@ -508,7 +508,7 @@ fig.update_layout(
 fig.update_layout(
     legend=dict(
         x=0.01,       # 1% from left
-        y=0.99,       # 99% from bottom (top-left)
+        y=0.95,       # 99% from bottom (top-left)
         xanchor="left",
         yanchor="top",
         orientation="h",  # vertical
@@ -743,7 +743,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
-    line=dict(color="#2a4352", width=3),
+    line=dict(color="#0b72b3", width=2),
     hovertemplate='Distancia: %{y:.1f} mi<extra></extra>',
 )
 
