@@ -103,7 +103,7 @@ with col2:
     st.markdown(
             f"""
             <div style=" font-size: 1.5rem; margin-top: -30px; padding: 0;">
-                (" Balneario Punta Salinas, Toa Baja")
+                Balneario Punta Salinas, Toa Baja, Puerto Rico
             </div>
             """,
             unsafe_allow_html=True
