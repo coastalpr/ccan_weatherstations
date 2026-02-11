@@ -138,16 +138,18 @@ else:
 
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
-c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts" f"{latest.wind_gust:.1f} kts")
-#c2.metric("🧭 Dirección del Viento (º)",f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)")
-c2.metric("🧭 Dirección del Viento",f"Del {wind_direction_cardinal(latest.wind_direction)}")
-c3.metric("🌡️ Temperatura", f"{latest.air_temperature:.1f} °F")
-c4.metric("💧 Humedad", f"{latest.relative_humidity:.0f}%")
-# Display the metric using c5
-c5.metric("☀️ Índice UV", f"{latest.uv:.1f}")
+c1, c2, c3, c4, c5, c6 = st.columns(6)
+c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts")
+c2.metric("🌬️ Ráfagas", f"{latest.wind_gust:.1f} kts")
 
-with c2:
+#c2.metric("🧭 Dirección del Viento (º)",f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)")
+c3.metric("🧭 Dirección del Viento",f"Del {wind_direction_cardinal(latest.wind_direction)}")
+c4.metric("🌡️ Temperatura", f"{latest.air_temperature:.1f} °F")
+c5.metric("💧 Humedad", f"{latest.relative_humidity:.0f}%")
+# Display the metric using c5
+c6.metric("☀️ Índice UV", f"{latest.uv:.1f}")
+
+with c3:
     st.markdown(
         f"""
         <div style=" font-size: 1.5rem; margin-top: -30px; padding: 0;">
@@ -157,7 +159,7 @@ with c2:
         unsafe_allow_html=True
     )
 
-with c5:
+with c6:
    st.markdown(f"<h3 style='color:{color}; font-size: 1rem; margin-top: -30px; padding: 0;'> {description}</h3>", unsafe_allow_html=True)
 
 st.markdown(
