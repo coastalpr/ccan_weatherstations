@@ -115,7 +115,7 @@ st.caption("Los datos meteorológicos recopilados por la estación Tempest se pr
 # -----------------------------
 # LOAD DATA
 # -----------------------------
-@st.cache_data(ttl=300)
+@st.cache_data(ttl=60)
 def load_weather_data(nc_file):
     ds = xr.open_dataset(nc_file, decode_timedelta=True)
     df = ds.to_dataframe().reset_index()
