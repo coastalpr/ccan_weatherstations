@@ -555,7 +555,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 
 # Hover: only y-value, no colored box
 fig.update_traces(
-    line=dict(color="#0b72b3", width=3),
+    line=dict(color="#0b72b3", width=2),
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
 
