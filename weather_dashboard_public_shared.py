@@ -63,15 +63,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown(
-    """
-    <style>
-    .stApp { background-color: #ffffff !important; color: #000000 !important; }
-    .css-1v3fvcr { background-color: #f0f2f6 !important; color: #000000 !important; }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+
 
 st.set_page_config(layout="wide", page_title="Radar Dashboard")
 
@@ -513,6 +505,11 @@ fig.update_layout(
     )
 )
 
+fig.update_layout(
+    paper_bgcolor="white",    # chart background
+    plot_bgcolor="white",     # plotting area background
+    font_color="black"        # text and labels
+)
 st.plotly_chart(fig, width="stretch")
 
 #################################################################################
