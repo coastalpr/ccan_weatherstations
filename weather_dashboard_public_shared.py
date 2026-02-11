@@ -311,7 +311,7 @@ line_gust = go.Scatter(
 )
 
 # Add these traces to the figure
-fig.add_traces([line_avg, line_gust])
+#fig.add_traces([line_avg, line_gust])
 # Arrow parameters
 
 from datetime import timedelta
@@ -431,8 +431,11 @@ scatter = go.Scatter(
     name="Viento",
 )
 
-
-fig = go.Figure(data=[scatter])
+fig = go.Figure()  # empty figure
+fig.add_trace(line_avg)
+fig.add_trace(line_gust)
+fig.add_trace(scatter)  # arro
+#fig = go.Figure(data=[scatter])
 
 
 
