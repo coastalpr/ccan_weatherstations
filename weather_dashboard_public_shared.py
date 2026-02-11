@@ -306,7 +306,7 @@ line_gust = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_gust"],
     mode="lines",
-    line=dict(color="#e3351e", width=3),
+    line=dict(color="#0d6ca3", width=3,dash="dash"),
     name="Ráfaga"
 )
 
