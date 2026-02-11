@@ -337,7 +337,7 @@ line_avg = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="lines",
-    line=dict(color="#0b72b3", width=2),
+    line=dict(color="#0b72b3", width=3),
     name="Viento Promedio"
 )
 
@@ -555,7 +555,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 
 # Hover: only y-value, no colored box
 fig.update_traces(
-    line=dict(color="#0b72b3", width=2),
+    line=dict(color="#0b72b3", width=3),
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
 
@@ -686,7 +686,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
-    line=dict(color="#0b72b3", width=2),
+    line=dict(color="#0b72b3", width=3),
     hovertemplate='UV: %{y}<extra></extra>',
 )
 
@@ -743,7 +743,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="lightning_strike_avg_distance", title="Distancia del Rayo",labels={"lightning_strike_avg_distance": "Distancia del Rayo (mi)"})
 
 fig.update_traces(
-    line=dict(color="#0b72b3", width=2),
+    line=dict(color="#0b72b3", width=3),
     hovertemplate='Distancia: %{y:.1f} mi<extra></extra>',
 )
 
