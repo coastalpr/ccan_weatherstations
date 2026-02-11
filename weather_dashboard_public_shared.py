@@ -337,7 +337,7 @@ line_avg = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="lines",
-    line=dict(color="black", width=2),
+    line=dict(color="#0b72b3", width=2),
     name="Viento Promedio"
 )
 
@@ -555,7 +555,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 
 # Hover: only y-value, no colored box
 fig.update_traces(
-    line=dict(color="#3b3e40", width=3),
+    line=dict(color="#0b72b3", width=3),
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
 
@@ -628,7 +628,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
-    marker_color="#3b3e40",
+    marker_color="#0b72b3",
     hovertemplate='Lluvia: %{y:.4f}"<extra></extra>',
 )
 
@@ -686,7 +686,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.line(df, x="Hora", y="uv", title="Índice UV",labels={"uv": "UV"})
 
 fig.update_traces(
-    line=dict(color="#174c6e", width=2),
+    line=dict(color="#0b72b3", width=2),
     hovertemplate='UV: %{y}<extra></extra>',
 )
 
