@@ -99,7 +99,6 @@ with col1:
     st.image(image_url, width=300)  # Adjust width as needed
 with col2:
     st.title(title_text)
-    st.markdown("<h1 style='text-align: center; color: black;'>Balneario Punta Salinas, Toa Baja</h1>", unsafe_allow_html=True)
 # Or for a slightly smaller large size:
     st.markdown("### Balneario Punta Salinas, Toa Baja")
 
