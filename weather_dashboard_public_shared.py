@@ -473,8 +473,8 @@ fig.update_layout(
         yanchor="top",
         orientation="h",  # vertical
         bgcolor="rgba(255,255,255,0.5)",  # semi-transparent background
-        bordercolor="none",
-        borderwidth=1
+        bordercolor="black",
+        borderwidth=0
     )
 )
 
