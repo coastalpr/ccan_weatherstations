@@ -293,6 +293,25 @@ directions = df_wind["wind_direction"]
 min_speed = speeds.min()
 max_speed = speeds.max()
 
+line_avg = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_avg"],
+    mode="lines",
+    line=dict(color="#74b2d6", width=2),
+    name="Viento Promedio"
+)
+
+# Wind gust line
+line_gust = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_gust"],
+    mode="lines",
+    line=dict(color="#d67f74", width=2, dash="dash"),
+    name="Ráfaga"
+)
+
+# Add these traces to the figure
+fig.add_traces([line_avg, line_gust])
 # Arrow parameters
 
 from datetime import timedelta
@@ -345,9 +364,10 @@ for _, row in df_wind.iterrows():
             arrowcolor=arrow_color,
             showarrow=True,
             hovertext=(
-                f"Time: {row.Hora}<br>"
-                f"Speed: {row.wind_avg:.1f} kts<br>"
-                f"Direction: {row.wind_direction:.0f}°"
+                f"Tiempo: {row.Hora}<br>"
+                f"Velocidad: {row.wind_avg:.1f} kts<br>"
+                f"Ráfaga: {row.wind_avg:.1f} kts<br>"
+                f"Dirección: {row.wind_direction:.0f}°"
             ),
         )
     )
@@ -414,25 +434,7 @@ scatter = go.Scatter(
 
 fig = go.Figure(data=[scatter])
 
-line_avg = go.Scatter(
-    x=df_wind["Hora"],
-    y=df_wind["wind_avg"],
-    mode="lines",
-    line=dict(color="blue", width=2),
-    name="Viento Promedio"
-)
 
-# Wind gust line
-line_gust = go.Scatter(
-    x=df_wind["Hora"],
-    y=df_wind["wind_gust"],
-    mode="lines",
-    line=dict(color="red", width=2, dash="dash"),
-    name="Ráfaga"
-)
-
-# Add these traces to the figure
-fig.add_traces([line_avg, line_gust])
 
 # Layout
 fig.update_layout(
