@@ -99,8 +99,16 @@ with col1:
     st.image(image_url, width=300)  # Adjust width as needed
 with col2:
     st.title(title_text)
-# Or for a slightly smaller large size:
-    st.markdown("margin-top: -30px; padding: 0;### Balneario Punta Salinas, Toa Baja")
+    # Or for a slightly smaller large size:
+    st.markdown(
+            f"""
+            <div style=" font-size: 1.5rem; margin-top: -30px; padding: 0;">
+                (" Balneario Punta Salinas, Toa Baja")
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    #st.markdown("margin-top: -30px; padding: 0;### Balneario Punta Salinas, Toa Baja")
 
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
