@@ -523,6 +523,31 @@ fig.update_layout(
     paper_bgcolor="white",              # chart background
     plot_bgcolor="white"                # plotting area background
 )
+
+fig.update_layout(
+    paper_bgcolor="white",   # entire chart background
+    plot_bgcolor="white",    # plotting area
+    font=dict(color="black"),  # default text color
+    title=dict(font=dict(color="black", size=20)),  # chart title
+    xaxis=dict(
+        title=dict(font=dict(color="black", size=14)),
+        tickfont=dict(color="black", size=12),
+        showgrid=True,
+        gridcolor="#e0e0e0",
+        zeroline=False
+    ),
+    yaxis=dict(
+        title=dict(font=dict(color="black", size=14)),
+        tickfont=dict(color="black", size=12),
+        showgrid=True,
+        gridcolor="#e0e0e0",
+        zeroline=False
+    ),
+    legend=dict(
+        font=dict(color="black")  # make legend text black
+    )
+)
+
 st.plotly_chart(fig, width="stretch")
 
 #################################################################################
