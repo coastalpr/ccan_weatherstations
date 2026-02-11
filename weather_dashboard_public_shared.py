@@ -506,7 +506,7 @@ fig.update_layout(
 )
 
 fig.update_layout(
-    paper_bgcolor="white",    # chart background
+    #paper_bgcolor="white",    # chart background
     plot_bgcolor="white",     # plotting area background
     font_color="black"        # text and labels
 )
