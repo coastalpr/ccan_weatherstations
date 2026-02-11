@@ -538,7 +538,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
-    marker_color=="#3b3e40",
+    marker_color="#3b3e40",
     hovertemplate='Lluvia: %{y:.4f}"<extra></extra>',
 )
 
