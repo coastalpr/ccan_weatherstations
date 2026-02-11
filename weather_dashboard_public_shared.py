@@ -90,7 +90,7 @@ redirect_url = "https://ccan-upr.org"
 image_url = "logo.png"  # Replace with your image URL or local path
 
 # Title text
-title_text = "Estación Meteorológica - Balneario Punta Salinas, Toa Baja"
+title_text = "Estación Meteorológica"
 
 # Create columns
 col1, col2 = st.columns([2, 5])  # Column width ratio: first column for the image, second for the title
@@ -99,7 +99,7 @@ with col1:
     st.image(image_url, width=300)  # Adjust width as needed
 with col2:
     st.title(title_text)
-
+    st.caption(Balneario Punta Salinas, Toa Baja)
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
 # -----------------------------
