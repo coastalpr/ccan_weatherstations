@@ -38,6 +38,31 @@ from PIL import Image, ImageDraw, ImageFont
 # -----------------------------
 # PAGE CONFIG
 # -----------------------------
+
+st.markdown(
+    """
+    <style>
+    /* Main app background */
+    .stApp {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    /* Sidebar background */
+    .css-1v3fvcr {  /* class may vary by Streamlit version */
+        background-color: #f0f2f6 !important;
+        color: #000000 !important;
+    }
+
+    /* Optional: adjust text and header colors */
+    .css-1d391kg p, .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
+        color: #000000 !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 st.set_page_config(layout="wide", page_title="Radar Dashboard")
 
 # Add logo at the top
