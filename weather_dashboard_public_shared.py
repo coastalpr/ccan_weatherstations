@@ -507,15 +507,6 @@ fig.update_layout(
 )
 
 fig.update_layout(
-    title=dict(text="Your Chart Title", font=dict(color="black", size=20)),
-    xaxis=dict(
-        title=dict(text="X-axis Label", font=dict(color="black", size=14)),
-        tickfont=dict(color="black", size=12),
-    ),
-    yaxis=dict(
-        title=dict(text="Y-axis Label", font=dict(color="black", size=14)),
-        tickfont=dict(color="black", size=12),
-    ),
     font=dict(color="black"),           # fallback for other text
     paper_bgcolor="white",              # chart background
     plot_bgcolor="white"                # plotting area background
