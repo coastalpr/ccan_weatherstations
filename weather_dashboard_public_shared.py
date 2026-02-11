@@ -139,7 +139,7 @@ else:
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts" (f"{latest.wind_gust:.1f} kts"))
+c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts" f"{latest.wind_gust:.1f} kts")
 #c2.metric("🧭 Dirección del Viento (º)",f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)")
 c2.metric("🧭 Dirección del Viento",f"Del {wind_direction_cardinal(latest.wind_direction)}")
 c3.metric("🌡️ Temperatura", f"{latest.air_temperature:.1f} °F")
