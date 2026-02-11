@@ -504,7 +504,7 @@ fig.update_layout(
         tickangle=90,
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
-        spikecolor="'rgb(128,128,128)'",
+        spikecolor='rgb(128,128,128)',
         range=[start_date, end_date + timedelta(hours=3)],
         side='bottom',
         #fixedrange=True,  # Disable zoom on the x-axis
