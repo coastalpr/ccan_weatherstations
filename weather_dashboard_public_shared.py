@@ -223,7 +223,7 @@ df = df.sort_values("Hora")
 df["wind_avg"] = pd.to_numeric(df["wind_avg"], errors="coerce")
 df["wind_direction"] = pd.to_numeric(df["wind_direction"], errors="coerce")
 df["wind_gust"] = pd.to_numeric(df["wind_gust"], errors="coerce")
-df_wind["wind_gust"] = df["wind_gust"]
+#df_wind["wind_gust"] = df["wind_gust"]
 #df_wind = df[
 #    (df["wind_avg"] > 0.1) & 
 #    (df["wind_direction"].notna())
