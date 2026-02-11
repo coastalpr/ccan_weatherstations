@@ -472,8 +472,8 @@ scatter = go.Scatter(
 )
 
 fig = go.Figure()  # empty figure
-fig.add_trace(line_avg)
 fig.add_trace(line_gust)
+fig.add_trace(line_avg)
 fig.add_trace(scatter)  # arro
 #fig = go.Figure(data=[scatter])
 
