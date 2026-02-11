@@ -428,7 +428,7 @@ scatter = go.Scatter(
     ),
     text=df_wind["wind_direction"],
     hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
-    name="Viento",
+    name="Dirección",
 )
 
 fig = go.Figure()  # empty figure
@@ -471,9 +471,9 @@ fig.update_layout(
         y=0.99,       # 99% from bottom (top-left)
         xanchor="left",
         yanchor="top",
-        orientation="v",  # vertical
+        orientation="h",  # vertical
         bgcolor="rgba(255,255,255,0.5)",  # semi-transparent background
-        bordercolor="black",
+        bordercolor="none",
         borderwidth=1
     )
 )
