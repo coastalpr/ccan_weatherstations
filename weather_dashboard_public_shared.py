@@ -40,29 +40,41 @@ from PIL import Image, ImageDraw, ImageFont
 # -----------------------------
 
 
+import streamlit as st
+
+# Force light background and black font for the whole app
 st.markdown(
     """
     <style>
-    /* Main page */
+    /* Main page and sidebar */
     .stApp {
         background-color: #ffffff !important;
         color: #000000 !important;
     }
-
-    /* Sidebar */
     .css-1v3fvcr { 
         background-color: #f0f2f6 !important;
         color: #000000 !important;
     }
 
-    /* Text elements: paragraphs and headers */
+    /* Text elements: paragraphs, headers */
     .css-1d391kg p, .css-1d391kg h1, .css-1d391kg h2, .css-1d391kg h3 {
         color: #000000 !important;
+    }
+
+    /* Metrics: title and value text */
+    .stMetric label, .stMetric div[data-testid="stMetricValue"] {
+        color: black !important;
+    }
+
+    /* Plotly legends: force black font */
+    .legendtext {
+        fill: black !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 
 
