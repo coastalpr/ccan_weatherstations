@@ -100,7 +100,7 @@ with col1:
 with col2:
     st.title(title_text)
 # Or for a slightly smaller large size:
-    st.markdown("### Balneario Punta Salinas, Toa Baja")
+    st.markdown("margin-top: -30px; padding: 0;### Balneario Punta Salinas, Toa Baja")
 
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
