@@ -87,6 +87,7 @@ df = load_weather_data(DATA_FILE)
 # -----------------------------
 df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 df["wind_avg"] = df["wind_avg"] * 1.94384
+df["wind_gust"] = df["wind_gust"] * 1.94384
 df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
 df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
 
@@ -138,7 +139,7 @@ else:
 st.caption(f"🕒 Última observación: {latest.timestamp_ampm}")
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts")
+c1.metric("🌬️ Velocidad del Viento", f"{latest.wind_avg:.1f} kts" (f"{latest.wind_gust:.1f}kts"))
 #c2.metric("🧭 Dirección del Viento (º)",f"Del {wind_direction_cardinal(latest.wind_direction)}\n({latest.wind_direction:.0f}°)")
 c2.metric("🧭 Dirección del Viento",f"Del {wind_direction_cardinal(latest.wind_direction)}")
 c3.metric("🌡️ Temperatura", f"{latest.air_temperature:.1f} °F")
