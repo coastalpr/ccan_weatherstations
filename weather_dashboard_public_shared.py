@@ -222,15 +222,16 @@ df = df.sort_values("Hora")
 #df["Hora"] = pd.to_datetime(df["Hora"])
 df["wind_avg"] = pd.to_numeric(df["wind_avg"], errors="coerce")
 df["wind_direction"] = pd.to_numeric(df["wind_direction"], errors="coerce")
-
+df["wind_gust"] = pd.to_numeric(df["wind_gust"], errors="coerce")
+df_wind["wind_gust"] = df["wind_gust"]
 #df_wind = df[
 #    (df["wind_avg"] > 0.1) & 
 #    (df["wind_direction"].notna())
 #].iloc[::1].copy()  # downsample
 
 df_wind = (
-    df.set_index("Hora")[["wind_avg","wind_direction"]]
-      .resample("15T")
+    df.set_index("Hora")[["wind_avg","wind_gust","wind_direction"]]
+      .resample("10T")
       .mean()
       .dropna()
       .reset_index()
@@ -413,6 +414,26 @@ scatter = go.Scatter(
 
 fig = go.Figure(data=[scatter])
 
+line_avg = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_avg"],
+    mode="lines",
+    line=dict(color="blue", width=2),
+    name="Viento Promedio"
+)
+
+# Wind gust line
+line_gust = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_gust"],
+    mode="lines",
+    line=dict(color="red", width=2, dash="dash"),
+    name="Ráfaga"
+)
+
+# Add these traces to the figure
+fig.add_traces([line_avg, line_gust])
+
 # Layout
 fig.update_layout(
     hovermode="x unified",
@@ -427,6 +448,10 @@ fig.update_layout(
         side='bottom',
     ),
 )
+
+max_speed = max(df_wind["wind_avg"].max(), df_wind["wind_gust"].max())
+
+
 fig.update_layout(
     title="Velocidad y Dirección del Viento",
     xaxis=dict(title="Hora"),
