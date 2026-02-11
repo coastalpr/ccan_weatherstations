@@ -306,7 +306,7 @@ line_gust = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_gust"],
     mode="lines",
-    line=dict(color="#d67f74", width=2, dash="dash"),
+    line=dict(color="#1ee3dc", width=3),
     name="Ráfaga"
 )
 
@@ -465,6 +465,18 @@ fig.update_layout(
    legend=dict(orientation="h"),
 )
 
+fig.update_layout(
+    legend=dict(
+        x=0.01,       # 1% from left
+        y=0.99,       # 99% from bottom (top-left)
+        xanchor="left",
+        yanchor="top",
+        orientation="v",  # vertical
+        bgcolor="rgba(255,255,255,0.5)",  # semi-transparent background
+        bordercolor="black",
+        borderwidth=1
+    )
+)
 
 st.plotly_chart(fig, width="stretch")
 
