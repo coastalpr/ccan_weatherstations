@@ -413,11 +413,11 @@ for _, row in df_wind.iterrows():
             arrowwidth=2,
             arrowcolor=arrow_color,
             showarrow=True,
-            hovertext=(
-                f"Tiempo: {row.Hora}<br>"
-                f"Velocidad: {row.wind_avg:.1f} kts<br>"
-                f"Ráfaga: {row.wind_avg:.1f} kts<br>"
-                f"Dirección: {row.wind_direction:.0f}°"
+            #hovertext=(
+            #    f"Tiempo: {row.Hora}<br>"
+            #    f"Velocidad: {row.wind_avg:.1f} kts<br>"
+            #    f"Ráfaga: {row.wind_avg:.1f} kts<br>"
+            #    f"Dirección: {row.wind_direction:.0f}°"
             ),
         )
     )
@@ -477,7 +477,7 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
+    hovertemplate="Velocidad: %{y:.1f} kts<br>Ráfaga: {row.wind_avg:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
     name="Dirección",
 )
 
