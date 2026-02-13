@@ -360,6 +360,9 @@ line_gust = go.Scatter(
     name="Ráfaga"
 )
 
+line_avg.update(hoverinfo="skip")
+line_gust.update(hoverinfo="skip")
+
 # Add these traces to the figure
 #fig.add_traces([line_avg, line_gust])
 # Arrow parameters
