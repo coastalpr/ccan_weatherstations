@@ -243,7 +243,7 @@ st.markdown(
 
 # Determine last 2 days
 end_date = df['Hora'].max()
-start_date = end_date - pd.Timedelta(days=0.5)
+start_date = end_date - pd.Timedelta(days=0.25)
 
 # Generate hourly ticks (optional: every 1 hour)
 ticks = pd.date_range(df['Hora'].min(), df['Hora'].max(), freq='3h')
