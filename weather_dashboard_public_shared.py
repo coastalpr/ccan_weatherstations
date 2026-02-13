@@ -477,7 +477,7 @@ scatter = go.Scatter(
         ),
     ),
     text=df_wind["wind_direction"],
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Ráfaga: {row.wind_avg:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
+    hovertemplate="Velocidad: %{y:.1f} kts<br>Ráfaga: %{row.wind_avg:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
     name="Dirección",
 )
 
