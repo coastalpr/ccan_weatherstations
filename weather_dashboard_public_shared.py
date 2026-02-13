@@ -359,9 +359,6 @@ line_gust = go.Scatter(
     line=dict(color="#e3351e", width=3),
     name="Ráfaga"
 )
-line_avg.update(hoverinfo="skip")
-line_gust.update(hoverinfo="skip")
-
 
 # Add these traces to the figure
 #fig.add_traces([line_avg, line_gust])
@@ -464,11 +461,13 @@ scatter = go.Scatter(
     marker=dict(
         symbol="arrow",
         size=20,
-        angle=arrow_angles,
-        color=df_wind["cat_id"],
+        angle=arrow_angles,              # important: rotate arrows
+        #color=df_wind["wind_avg"],       # numeric for colorbar
+        color=df_wind["cat_id"],       # numeric for colorbar
         colorscale=colorscale,
         cmin=0,
-        cmax=len(category_colors) - 1,
+        #cmax=len(category_colors)-1,
+        cmax=50,
         opacity=1.0,
         line=dict(width=0.25, color="white"),
         colorbar=dict(
@@ -493,7 +492,6 @@ scatter = go.Scatter(
     ),
     name="Dirección",
 )
-
 fig = go.Figure()  # empty figure
 fig.add_trace(line_gust)
 fig.add_trace(line_avg)
