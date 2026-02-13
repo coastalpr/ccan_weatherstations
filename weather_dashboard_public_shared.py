@@ -359,6 +359,9 @@ line_gust = go.Scatter(
     line=dict(color="#e3351e", width=3),
     name="Ráfaga"
 )
+line_avg.update(hoverinfo="skip")
+line_gust.update(hoverinfo="skip")
+
 
 # Add these traces to the figure
 #fig.add_traces([line_avg, line_gust])
