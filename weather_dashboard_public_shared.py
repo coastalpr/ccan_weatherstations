@@ -461,13 +461,11 @@ scatter = go.Scatter(
     marker=dict(
         symbol="arrow",
         size=20,
-        angle=arrow_angles,              # important: rotate arrows
-        #color=df_wind["wind_avg"],       # numeric for colorbar
-        color=df_wind["cat_id"],       # numeric for colorbar
+        angle=arrow_angles,
+        color=df_wind["cat_id"],
         colorscale=colorscale,
         cmin=0,
-        #cmax=len(category_colors)-1,
-        cmax=50,
+        cmax=len(category_colors) - 1,
         opacity=1.0,
         line=dict(width=0.25, color="white"),
         colorbar=dict(
@@ -476,8 +474,20 @@ scatter = go.Scatter(
             len=1.0
         ),
     ),
-    text=df_wind["wind_direction"],
-    hovertemplate="Velocidad: %{y:.1f} kts<br>Ráfaga: %{row.wind_avg:.1f} kts<br>Dirección: %{text:.1f}°<extra></extra>",
+    customdata=np.stack(
+        (
+            df_wind["wind_avg"],
+            df_wind["wind_gust"],
+            df_wind["wind_direction"],
+        ),
+        axis=-1,
+    ),
+    hovertemplate=(
+        "Velocidad: %{customdata[0]:.1f} kts<br>"
+        "Ráfaga: %{customdata[1]:.1f} kts<br>"
+        "Dirección: %{customdata[2]:.0f}°"
+        "<extra></extra>"
+    ),
     name="Dirección",
 )
 
