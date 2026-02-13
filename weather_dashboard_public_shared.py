@@ -418,7 +418,7 @@ for _, row in df_wind.iterrows():
             #    f"Velocidad: {row.wind_avg:.1f} kts<br>"
             #    f"Ráfaga: {row.wind_avg:.1f} kts<br>"
             #    f"Dirección: {row.wind_direction:.0f}°"
-            ),
+            #),
         )
     )
 
