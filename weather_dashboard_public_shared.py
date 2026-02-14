@@ -577,13 +577,14 @@ st.plotly_chart(fig, width="stretch")
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
 
-line_gust.update(hoverinfo="skip")
+fig.update(hoverinfo="skip")
 
 # Hover: only y-value, no colored box
 fig.update_traces(
     line=dict(color="#0b72b3", width=3),
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
+
 
 # Layout
 fig.update_layout(
