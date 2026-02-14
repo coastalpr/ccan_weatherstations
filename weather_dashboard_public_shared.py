@@ -496,12 +496,14 @@ scatter = go.Scatter(
             df_wind["wind_avg"],
             df_wind["wind_gust"],
             df_wind["wind_direction"],
+            df_wind["wind_lull"],
         ),
         axis=-1,
     ),
     hovertemplate=(
         "Velocidad: %{customdata[0]:.1f} kts<br>"
         "Ráfaga: %{customdata[1]:.1f} kts<br>"
+        "Calma: %{customdata[3]:.1f} kts<br>"
         "Dirección: %{customdata[2]:.0f}°"
         "<extra></extra>"
     ),
