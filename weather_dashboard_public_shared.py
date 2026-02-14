@@ -513,7 +513,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=1)],
+        range=[start_date, end_date + timedelta(hours=0.5)],
         side='bottom',
     ),
 )
@@ -536,7 +536,7 @@ fig.update_layout(
         xanchor="left",
         yanchor="top",
         orientation="h",  # vertical
-        bgcolor="rgba(255,255,255,1)",  # semi-transparent background
+        bgcolor="rgba(255,255,255,0.5)",  # semi-transparent background
         bordercolor="black",
         borderwidth=0
     )
