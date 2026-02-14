@@ -138,6 +138,7 @@ df = load_weather_data(DATA_FILE)
 df["air_temperature"] = df["air_temperature"] * 1.8 + 32
 df["wind_avg"] = df["wind_avg"] * 1.94384
 df["wind_gust"] = df["wind_gust"] * 1.94384
+df["wind_lull"] = df["wind_lull"] * 1.94384
 df["rain_accumulated"] = df["rain_accumulated"] * 0.0393701
 df["lightning_strike_avg_distance"] = df["lightning_strike_avg_distance"] * 0.621371
 
@@ -273,6 +274,8 @@ df = df.sort_values("Hora")
 df["wind_avg"] = pd.to_numeric(df["wind_avg"], errors="coerce")
 df["wind_direction"] = pd.to_numeric(df["wind_direction"], errors="coerce")
 df["wind_gust"] = pd.to_numeric(df["wind_gust"], errors="coerce")
+df["wind_lull"] = pd.to_numeric(df["wind_lull"], errors="coerce")
+
 #df_wind["wind_gust"] = df["wind_gust"]
 #df_wind = df[
 #    (df["wind_avg"] > 0.1) & 
@@ -280,7 +283,7 @@ df["wind_gust"] = pd.to_numeric(df["wind_gust"], errors="coerce")
 #].iloc[::1].copy()  # downsample
 
 df_wind = (
-    df.set_index("Hora")[["wind_avg","wind_gust","wind_direction"]]
+    df.set_index("Hora")[["wind_avg","wind_gust","wind_lull","wind_direction"]]
       .resample("4T")
       .mean()
       .dropna()
@@ -513,7 +516,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=0.5)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom',
     ),
 )
@@ -596,7 +599,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=0.5)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom',
         #fixedrange=True,  # Disable zoom on the x-axis
     ),
@@ -670,7 +673,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=0.5)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom'
     ),
     yaxis_title="Lluvia (pulgadas)",
@@ -726,7 +729,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=0.5)],
+        range=[start_date, end_date + timedelta(hours=3)],
         side='bottom'
     ),
     yaxis_title="Índice UV",
@@ -784,7 +787,7 @@ fig.update_layout(
         showspikes=True,
         spikecolor='rgb(128,128,128)',
         side='bottom',
-        range=[start_date, end_date + timedelta(hours=0.5)]
+        range=[start_date, end_date + timedelta(hours=1)]
     ),
     yaxis=dict(
         title="Distancia del Rayo (mi)",
