@@ -524,7 +524,7 @@ max_speed = max(df_wind["wind_avg"].max(), df_wind["wind_gust"].max())
 fig.update_layout(
     title="Velocidad y Dirección del Viento",
     xaxis=dict(title="Hora"),
-    yaxis=dict(title="Velocidad del viento (nudos)", range=[0, max_speed * 1.2]),
+    yaxis=dict(title="Velocidad del viento (nudos)", range=[0, max_speed * 1.5]),
     hovermode="x unified",
    legend=dict(orientation="h"),
 )
@@ -580,7 +580,7 @@ fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",la
 
 # Hover: only y-value, no colored box
 fig.update_traces(
-    line=dict(color="#0b72b3", width=3),
+    line=dict(color="#3db1e3", width=3),
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
 
@@ -654,7 +654,7 @@ st.plotly_chart(fig, width="stretch")
 fig = px.bar(df, x="Hora", y="rain_accumulated", title="Precipitación Acumulada",labels={"rain_accumulated": "Precipitación (\")"})
 
 fig.update_traces(
-    marker_color="#0b72b3",
+    marker_color="#3db1e3",
     hovertemplate='Lluvia: %{y:.4f}"<extra></extra>',
 )
 
