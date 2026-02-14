@@ -347,7 +347,7 @@ line_avg = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_avg"],
     mode="lines",
-    line=dict(color="#3181ff", width=3),
+    line=dict(color="#3db1e3", width=3),
     name="Viento Promedio"
 )
 
