@@ -463,7 +463,7 @@ scatter = go.Scatter(
     mode="markers",
     marker=dict(
         symbol="arrow",
-        size=20,
+        size=12,
         angle=arrow_angles,              # important: rotate arrows
         #color=df_wind["wind_avg"],       # numeric for colorbar
         color=df_wind["cat_id"],       # numeric for colorbar
@@ -576,7 +576,6 @@ st.plotly_chart(fig, width="stretch")
 #################################################################################
 
 fig = px.line(df, x="Hora", y="air_temperature", title="Temperatura del Aire",labels={"air_temperature": "Temperatura (ºF)"})
-
 
 
 # Hover: only y-value, no colored box
