@@ -364,7 +364,7 @@ line_gust = go.Scatter(
 )
 
 # Wind lull line
-line_gust = go.Scatter(
+line_lull = go.Scatter(
     x=df_wind["Hora"],
     y=df_wind["wind_lull"],
     mode="lines",
