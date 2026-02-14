@@ -524,7 +524,7 @@ max_speed = max(df_wind["wind_avg"].max(), df_wind["wind_gust"].max())
 fig.update_layout(
     title="Velocidad y Dirección del Viento",
     xaxis=dict(title="Hora"),
-    yaxis=dict(title="Velocidad del viento (nudos)", range=[0, max_speed * 1.1]),
+    yaxis=dict(title="Velocidad del viento (nudos)", range=[0, max_speed * 1.2]),
     hovermode="x unified",
    legend=dict(orientation="h"),
 )
