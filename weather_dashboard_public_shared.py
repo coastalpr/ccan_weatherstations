@@ -585,7 +585,7 @@ fig.update_traces(
     hovertemplate="Temperatura: %{y:.1f}°F<extra></extra>",
 )
 
-fig.update(hoverinfo="skip")
+
 # Layout
 fig.update_layout(
     hovermode="x unified",
