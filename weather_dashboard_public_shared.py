@@ -513,7 +513,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=3)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom',
     ),
 )
@@ -597,7 +597,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=3)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom',
         #fixedrange=True,  # Disable zoom on the x-axis
     ),
@@ -671,7 +671,7 @@ fig.update_layout(
         showline=False,         # no black line
         showspikes=True,       # no vertical blue line
         spikecolor='rgb(128,128,128)',
-        range=[start_date, end_date + timedelta(hours=3)],
+        range=[start_date, end_date + timedelta(hours=1)],
         side='bottom'
     ),
     yaxis_title="Lluvia (pulgadas)",
@@ -785,7 +785,7 @@ fig.update_layout(
         showspikes=True,
         spikecolor='rgb(128,128,128)',
         side='bottom',
-        range=[start_date, end_date + timedelta(hours=3)]
+        range=[start_date, end_date + timedelta(hours=1)]
     ),
     yaxis=dict(
         title="Distancia del Rayo (mi)",
