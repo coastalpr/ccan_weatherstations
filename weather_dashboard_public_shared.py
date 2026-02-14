@@ -363,9 +363,18 @@ line_gust = go.Scatter(
     name="Ráfaga"
 )
 
+# Wind lull line
+line_gust = go.Scatter(
+    x=df_wind["Hora"],
+    y=df_wind["wind_lull"],
+    mode="lines",
+    line=dict(color="#e3351e", width=3),
+    name="Calma"
+)
+
 line_avg.update(hoverinfo="skip")
 line_gust.update(hoverinfo="skip")
-
+line_lull.update(hoverinfo="skip")
 # Add these traces to the figure
 #fig.add_traces([line_avg, line_gust])
 # Arrow parameters
