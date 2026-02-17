@@ -94,27 +94,30 @@ image_url3 = "logo_egsp.png"  # Replace with your image URL or local path
 # Title text
 title_text = "Estación Meteorológica"
 
-# Create columns
-col1, col2, col3, col4 = st.columns([4, 5, 1, 1])
-with col1:
-    st.image(image_url, width=300)  # Adjust width as needed
-with col2:
-    st.image(image_url2, width=300)  # Adjust width as needed
-with col3:
-    st.image(image_url3, width=300)  # Adjust width as needed
-with col4:
-    st.title(title_text)
-    # Or for a slightly smaller large size:
-    st.markdown(
-            f"""
-            <div style=" font-size: 1.5rem; margin-top: -30px; padding: 0;">
-                Balneario Punta Salinas, Toa Baja, Puerto Rico
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-    #st.markdown("margin-top: -30px; padding: 0;### Balneario Punta Salinas, Toa Baja")
+# --- Row 1: Logos side by side ---
+col1, col2, col3 = st.columns(3)
 
+with col1:
+    st.image(image_url, width=300)
+
+with col2:
+    st.image(image_url2, width=300)
+
+with col3:
+    st.image(image_url3, width=300)
+
+
+# --- Row 2: Title below logos ---
+st.title(title_text)
+
+st.markdown(
+    """
+    <div style="font-size: 1.5rem; margin-top: -10px;">
+        Balneario Punta Salinas, Toa Baja, Puerto Rico
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
 # -----------------------------
