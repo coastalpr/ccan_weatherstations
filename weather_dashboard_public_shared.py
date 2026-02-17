@@ -88,6 +88,8 @@ redirect_url = "https://ccan-upr.org"
 
 # Image URL or local path
 image_url = "logo.png"  # Replace with your image URL or local path
+image_url2 = "logo_toabaja.png"  # Replace with your image URL or local path
+image_url3 = "logo_egsp.png"  # Replace with your image URL or local path
 
 # Title text
 title_text = "Estación Meteorológica"
@@ -97,6 +99,8 @@ col1, col2 = st.columns([2, 5])  # Column width ratio: first column for the imag
 
 with col1:
     st.image(image_url, width=300)  # Adjust width as needed
+    st.image(image_url2, width=300)  # Adjust width as needed
+    st.image(image_url3, width=300)  # Adjust width as needed
 with col2:
     st.title(title_text)
     # Or for a slightly smaller large size:
