@@ -98,7 +98,7 @@ title_text = "Estación Meteorológica"
 col1, col2, col3, col4 = st.columns([4, 5, 1, 1])
 with col1:
     st.image(image_url, width=300)  # Adjust width as needed
-with col12:
+with col2:
     st.image(image_url2, width=300)  # Adjust width as needed
 with col3:
     st.image(image_url3, width=300)  # Adjust width as needed
