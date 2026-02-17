@@ -95,8 +95,7 @@ image_url3 = "logo_egsp.png"  # Replace with your image URL or local path
 title_text = "Estación Meteorológica"
 
 # Create columns
-col1, col2, col3, col4 = st.columns([4, 5])  # Column width ratio: first column for the image, second for the title
-
+col1, col2, col3, col4 = st.columns([4, 5, 1, 1])
 with col1:
     st.image(image_url, width=300)  # Adjust width as needed
 with col12:
