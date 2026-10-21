@@ -118,6 +118,13 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
+# Aviso visible mientras la estación está en mantenimiento
+st.warning(
+    "⚠️ AVISO DE MANTENIMIENTO: La estación meteorológica se encuentra en mantenimiento. "
+    "Los valores mostrados no son datos en tiempo real y no provienen de la ubicación indicada."
+)
+
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
 # -----------------------------
@@ -292,7 +299,7 @@ df["wind_lull"] = pd.to_numeric(df["wind_lull"], errors="coerce")
 
 df_wind = (
     df.set_index("Hora")[["wind_avg","wind_gust","wind_lull","wind_direction"]]
-      .resample("4T")
+      .resample("4h")
       .mean()
       .dropna()
       .reset_index()
