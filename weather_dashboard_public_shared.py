@@ -120,11 +120,36 @@ st.markdown(
 )
 
 # Aviso visible mientras la estación está en mantenimiento
-st.warning(
-    "⚠️ AVISO DE MANTENIMIENTO: La estación meteorológica se encuentra en mantenimiento. "
-    "Los valores mostrados no son datos en tiempo real y no provienen de la ubicación indicada."
+#st.warning(
+#    "⚠️ AVISO DE MANTENIMIENTO: La estación meteorológica se encuentra en mantenimiento. "
+#    "Los valores mostrados no son datos en tiempo real y no provienen de la ubicación indicada."
+#)
+# Aviso destacado mientras la estación está en mantenimiento
+st.markdown(
+    """
+    <div role="alert" style="
+        width: 100%;
+        box-sizing: border-box;
+        background: #b91c1c;
+        color: #ffffff;
+        border: 4px solid #7f1d1d;
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin: 18px 0 22px 0;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    ">
+        <div style="font-size: 2rem; font-weight: 900; line-height: 1.25; margin-bottom: 10px;">
+            🚧 ⚠️ AVISO IMPORTANTE: ESTACIÓN EN MANTENIMIENTO ⚠️ 🚧
+        </div>
+        <div style="font-size: 1.2rem; font-weight: 700; line-height: 1.5;">
+            Los valores mostrados <u>no son datos en tiempo real</u> y
+            <u>no corresponden a la ubicación indicada</u>.
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
-
 st.caption("Los datos meteorológicos recopilados por la estación Tempest se proporcionan únicamente con fines informativos. Su exactitud no está garantizada y toda interpretación, análisis o uso de los datos se realiza bajo la exclusiva responsabilidad del usuario.")
 
 # -----------------------------
